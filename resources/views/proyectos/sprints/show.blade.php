@@ -42,8 +42,7 @@
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</p>
                         @php
                             $badgeClass = match($sprint->estado) {
-                                'activo'      => 'bg-indigo-100 text-indigo-700',
-                                'finalizado',
+                                'en_progreso' => 'bg-indigo-100 text-indigo-700',
                                 'completado'  => 'bg-green-100 text-green-700',
                                 'planificado' => 'bg-gray-100 text-gray-600',
                                 default       => 'bg-yellow-100 text-yellow-700',

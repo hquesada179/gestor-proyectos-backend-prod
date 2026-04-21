@@ -9,11 +9,17 @@ use Illuminate\Support\Facades\Auth;
 
 class SprintController extends Controller
 {
-    public function index(Proyecto $proyecto)
+    public function index(Request $request, Proyecto $proyecto)
     {
         abort_if($proyecto->user_id !== Auth::id(), 403);
 
-        $sprints = $proyecto->sprints()->withCount('tasks')->latest()->get();
+        $query = $proyecto->sprints()->withCount('tasks')->latest();
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        $sprints = $query->get();
 
         return view('proyectos.sprints.index', compact('proyecto', 'sprints'));
     }

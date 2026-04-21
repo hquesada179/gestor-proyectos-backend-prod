@@ -26,11 +26,30 @@
                 </div>
             @endif
 
+            {{-- Filtro por estado --}}
+            <form method="GET" action="{{ route('proyectos.sprints.index', $proyecto) }}" class="mb-4 flex items-center gap-3">
+                <select name="estado" onchange="this.form.submit()"
+                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="planificado"  {{ request('estado') === 'planificado'  ? 'selected' : '' }}>Planificado</option>
+                    <option value="en_progreso"  {{ request('estado') === 'en_progreso'  ? 'selected' : '' }}>En progreso</option>
+                    <option value="completado"   {{ request('estado') === 'completado'   ? 'selected' : '' }}>Completado</option>
+                </select>
+                @if (request('estado'))
+                    <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="text-xs text-gray-500 hover:text-gray-700">Limpiar</a>
+                @endif
+            </form>
+
             @if ($sprints->isEmpty())
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-500 text-sm">
-                        Este proyecto no tiene sprints todavía.
-                        <a href="{{ route('proyectos.sprints.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Agregar el primero</a>.
+                        @if (request('estado'))
+                            No hay sprints con el estado seleccionado.
+                            <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Ver todos</a>.
+                        @else
+                            Este proyecto no tiene sprints todavía.
+                            <a href="{{ route('proyectos.sprints.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Agregar el primero</a>.
+                        @endif
                     </div>
                 </div>
             @else
@@ -57,11 +76,10 @@
                                     <td class="px-6 py-4">
                                         @php
                                             $badgeClass = match($sprint->estado) {
-                                                'activo'     => 'bg-indigo-100 text-indigo-700',
-                                                'finalizado',
-                                                'completado' => 'bg-green-100 text-green-700',
-                                                'planificado'=> 'bg-gray-100 text-gray-600',
-                                                default      => 'bg-yellow-100 text-yellow-700',
+                                                'en_progreso' => 'bg-indigo-100 text-indigo-700',
+                                                'completado'  => 'bg-green-100 text-green-700',
+                                                'planificado' => 'bg-gray-100 text-gray-600',
+                                                default       => 'bg-yellow-100 text-yellow-700',
                                             };
                                         @endphp
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize {{ $badgeClass }}">
