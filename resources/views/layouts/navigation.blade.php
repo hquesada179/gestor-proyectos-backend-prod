@@ -15,6 +15,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Panel principal
                     </x-nav-link>
+                    <x-nav-link :href="route('proyectos.index')" :active="request()->routeIs('proyectos.*')">
+                        Proyectos
+                    </x-nav-link>
                     <x-nav-link :href="route('mis-tareas')" :active="request()->routeIs('mis-tareas')">
                         Mis tareas
                     </x-nav-link>
@@ -72,6 +75,9 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Panel principal
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('proyectos.index')" :active="request()->routeIs('proyectos.*')">
+                Proyectos
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('mis-tareas')" :active="request()->routeIs('mis-tareas')">
                 Mis tareas
