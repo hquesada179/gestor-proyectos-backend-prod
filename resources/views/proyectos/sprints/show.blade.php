@@ -40,7 +40,18 @@
 
                     <div>
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</p>
-                        <p class="mt-1 text-sm text-gray-900 capitalize">{{ str_replace('_', ' ', $sprint->estado) }}</p>
+                        @php
+                            $badgeClass = match($sprint->estado) {
+                                'activo'      => 'bg-indigo-100 text-indigo-700',
+                                'finalizado',
+                                'completado'  => 'bg-green-100 text-green-700',
+                                'planificado' => 'bg-gray-100 text-gray-600',
+                                default       => 'bg-yellow-100 text-yellow-700',
+                            };
+                        @endphp
+                        <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize {{ $badgeClass }}">
+                            {{ str_replace('_', ' ', $sprint->estado) }}
+                        </span>
                     </div>
 
                     @if ($sprint->objetivo)
