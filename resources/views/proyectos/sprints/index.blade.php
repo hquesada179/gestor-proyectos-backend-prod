@@ -54,7 +54,20 @@
                                             {{ $sprint->nombre }}
                                         </a>
                                     </td>
-                                    <td class="px-6 py-4 text-gray-600 capitalize">{{ str_replace('_', ' ', $sprint->estado) }}</td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $badgeClass = match($sprint->estado) {
+                                                'activo'     => 'bg-indigo-100 text-indigo-700',
+                                                'finalizado',
+                                                'completado' => 'bg-green-100 text-green-700',
+                                                'planificado'=> 'bg-gray-100 text-gray-600',
+                                                default      => 'bg-yellow-100 text-yellow-700',
+                                            };
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize {{ $badgeClass }}">
+                                            {{ str_replace('_', ' ', $sprint->estado) }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4">
                                         @if ($sprint->tasks_count > 0)
                                             <span class="text-gray-700">{{ $sprint->tasks_count }}</span>
