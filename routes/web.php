@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ModuloSelectorController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectInputController;
@@ -21,7 +22,7 @@ Route::get('/dashboard', function () {
     $totalProyectos    = Auth::user()->proyectos()->count();
     $sprintsActivos    = Sprint::whereHas('proyecto', fn($q) => $q->where('user_id', Auth::id()))
                              ->where('estado', 'en_progreso')->count();
-    $tareasPendientes  = Task::whereHas('proyecto', fn($q) => $q->where('user_id', Auth::id()))
+    $tareasPendientes  = Task::where('assigned_to', Auth::id())
                              ->whereHas('status', fn($q) => $q->where('nombre', '!=', 'Completado'))
                              ->count();
     $proyectosRecientes = Auth::user()->proyectos()
@@ -38,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/mis-tareas', [MyTasksController::class, 'index'])->name('mis-tareas');
+    Route::get('/modulo/{modulo}', [ModuloSelectorController::class, 'show'])->name('modulo.selector');
 
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
