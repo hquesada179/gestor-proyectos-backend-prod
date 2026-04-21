@@ -53,7 +53,12 @@ class SprintController extends Controller
 
         $tasks = $sprint->tasks()->with('status', 'assignedTo')->orderBy('created_at')->get();
 
-        return view('proyectos.sprints.show', compact('proyecto', 'sprint', 'tasks'));
+        $total      = $tasks->count();
+        $completadas = $tasks->filter(fn($t) => strtolower($t->status->nombre ?? '') === 'completado')->count();
+        $progreso   = $total > 0 ? round($completadas / $total * 100) : 0;
+        $porEstado  = $tasks->groupBy(fn($t) => $t->status->nombre ?? '—');
+
+        return view('proyectos.sprints.show', compact('proyecto', 'sprint', 'tasks', 'total', 'completadas', 'progreso', 'porEstado'));
     }
 
     public function edit(Proyecto $proyecto, Sprint $sprint)

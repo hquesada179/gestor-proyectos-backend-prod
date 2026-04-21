@@ -79,6 +79,48 @@
                 </div>
             </div>
 
+            {{-- Resumen de progreso --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-4">Progreso del sprint</h3>
+
+                    @if ($total === 0)
+                        <p class="text-sm text-gray-400">Sin tareas asociadas aún.</p>
+                    @else
+                        {{-- Barra de progreso --}}
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="flex-1 bg-gray-100 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full transition-all"
+                                     style="width: {{ $progreso }}%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 w-12 text-right">{{ $progreso }}%</span>
+                        </div>
+
+                        {{-- Conteos por estado --}}
+                        <div class="flex flex-wrap gap-4">
+                            @foreach ($porEstado as $nombreEstado => $grupo)
+                                @php
+                                    $dot = match(strtolower($nombreEstado)) {
+                                        'completado'  => 'bg-green-500',
+                                        'en progreso' => 'bg-blue-500',
+                                        'en revisión' => 'bg-yellow-500',
+                                        default       => 'bg-gray-400',
+                                    };
+                                @endphp
+                                <div class="flex items-center gap-1.5 text-sm text-gray-600">
+                                    <span class="inline-block w-2 h-2 rounded-full {{ $dot }}"></span>
+                                    {{ $nombreEstado }}
+                                    <span class="font-semibold text-gray-800">{{ $grupo->count() }}</span>
+                                </div>
+                            @endforeach
+                            <div class="text-sm text-gray-400 ml-auto">
+                                {{ $completadas }} de {{ $total }} completadas
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Tareas del sprint</h3>
