@@ -1,116 +1,187 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Mis tareas
-        </h2>
+        <span class="text-sm font-medium text-gray-400">Mis Tareas</span>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+    <div class="p-8 space-y-6 max-w-[1400px]">
 
-            <form method="GET" action="{{ route('mis-tareas') }}" class="flex items-center gap-4 flex-wrap">
-                @if ($sprintsDisponibles->isNotEmpty())
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-500">Sprint:</span>
-                        <select name="sprint" onchange="this.form.submit()"
-                            class="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-1 pl-2 pr-6">
-                            <option value="todos" {{ $sprintFiltro === 'todos' ? 'selected' : '' }}>Todos</option>
-                            <option value="sin_sprint" {{ $sprintFiltro === 'sin_sprint' ? 'selected' : '' }}>Sin sprint</option>
-                            @foreach ($sprintsDisponibles as $sprint)
-                                <option value="{{ $sprint->id }}" {{ (string) $sprintFiltro === (string) $sprint->id ? 'selected' : '' }}>
-                                    {{ $sprint->nombre }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
+        {{-- ── Page header ──────────────────────────────────────────── --}}
+        <div>
+            <h1 class="text-2xl font-bold text-white">Mis Tareas</h1>
+            <p class="text-sm text-on-surface-variant mt-1">Todas las tareas asignadas en tus proyectos</p>
+        </div>
+
+        {{-- ── Filters ───────────────────────────────────────────────── --}}
+        <form method="GET" action="{{ route('mis-tareas') }}"
+              class="glass-panel rounded-2xl px-5 py-4 flex items-center gap-5 flex-wrap">
+
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-gray-500" style="font-size: 16px;">filter_list</span>
+                <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Filtros</span>
+            </div>
+
+            @if ($sprintsDisponibles->isNotEmpty())
                 <div class="flex items-center gap-2">
-                    <span class="text-sm text-gray-500">Estado:</span>
-                    <select name="estado" onchange="this.form.submit()"
-                        class="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-1 pl-2 pr-6">
-                        <option value="todos" {{ $estadoFiltro === 'todos' ? 'selected' : '' }}>Todos</option>
-                        @foreach ($estadosDisponibles as $status)
-                            <option value="{{ $status->id }}" {{ (string) $estadoFiltro === (string) $status->id ? 'selected' : '' }}>
-                                {{ $status->nombre }}
+                    <label class="text-xs text-gray-400 whitespace-nowrap">Sprint:</label>
+                    <select name="sprint" onchange="this.form.submit()" class="ds-select">
+                        <option value="todos" {{ $sprintFiltro === 'todos' ? 'selected' : '' }}>Todos</option>
+                        <option value="sin_sprint" {{ $sprintFiltro === 'sin_sprint' ? 'selected' : '' }}>Sin sprint</option>
+                        @foreach ($sprintsDisponibles as $sprint)
+                            <option value="{{ $sprint->id }}"
+                                {{ (string) $sprintFiltro === (string) $sprint->id ? 'selected' : '' }}>
+                                {{ $sprint->nombre }}
                             </option>
                         @endforeach
                     </select>
                 </div>
-            </form>
-
-            @if ($tasks->isEmpty())
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-500 text-sm">
-                        @if ($sprintFiltro !== 'todos' || $estadoFiltro !== 'todos')
-                            No hay tareas asignadas para este filtro.
-                        @else
-                            No tienes tareas asignadas en ningún proyecto todavía.
-                        @endif
-                    </div>
-                </div>
-            @else
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tarea</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Proyecto</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Sprint</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Fecha límite</th>
-                                <th class="px-6 py-3"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-100">
-                            @php $today = now()->startOfDay(); @endphp
-                            @foreach ($tasks as $task)
-                                <tr>
-                                    <td class="px-6 py-4 font-medium text-gray-900">
-                                        {{ $task->titulo }}
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-600">
-                                        <a href="{{ route('proyectos.show', $task->proyecto) }}" class="hover:text-indigo-600">
-                                            {{ $task->proyecto->nombre }}
-                                        </a>
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-600">{{ $task->status->nombre ?? '—' }}</td>
-                                    <td class="px-6 py-4 text-gray-600">{{ $task->sprint->nombre ?? '—' }}</td>
-                                    <td class="px-6 py-4">
-                                        @if ($task->fecha_limite)
-                                            @php
-                                                $isOverdue  = $task->fecha_limite->lt($today);
-                                                $isUpcoming = !$isOverdue && $task->fecha_limite->lte($today->copy()->addDays(3));
-                                            @endphp
-                                            <span class="text-xs font-medium
-                                                {{ $isOverdue ? 'text-red-500' : ($isUpcoming ? 'text-amber-500' : 'text-gray-600') }}">
-                                                {{ $task->fecha_limite->format('d/m/Y') }}
-                                                @if ($isOverdue) · Vencida
-                                                @elseif ($isUpcoming) · Próxima
-                                                @endif
-                                            </span>
-                                        @else
-                                            <span class="text-gray-400">—</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('proyectos.tasks.show', [$task->proyecto, $task]) }}"
-                                            class="text-indigo-600 hover:underline text-xs">
-                                            Ver tarea
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-
-                    @if ($tasks->hasPages())
-                        <div class="px-6 py-4 border-t border-gray-100">
-                            {{ $tasks->links() }}
-                        </div>
-                    @endif
-                </div>
             @endif
 
-        </div>
+            <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-400 whitespace-nowrap">Estado:</label>
+                <select name="estado" onchange="this.form.submit()" class="ds-select">
+                    <option value="todos" {{ $estadoFiltro === 'todos' ? 'selected' : '' }}>Todos</option>
+                    @foreach ($estadosDisponibles as $status)
+                        <option value="{{ $status->id }}"
+                            {{ (string) $estadoFiltro === (string) $status->id ? 'selected' : '' }}>
+                            {{ $status->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            @if ($sprintFiltro !== 'todos' || $estadoFiltro !== 'todos')
+                <a href="{{ route('mis-tareas') }}"
+                   class="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors ml-auto">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                    Limpiar filtros
+                </a>
+            @endif
+
+        </form>
+
+        {{-- ── Empty state ──────────────────────────────────────────── --}}
+        @if ($tasks->isEmpty())
+            <div class="glass-panel rounded-2xl p-14 text-center">
+                <span class="material-symbols-outlined text-gray-600 block mb-4" style="font-size: 48px;">task_alt</span>
+                <p class="text-sm text-gray-500">
+                    @if ($sprintFiltro !== 'todos' || $estadoFiltro !== 'todos')
+                        No hay tareas para el filtro seleccionado.
+                    @else
+                        No tienes tareas asignadas en ningún proyecto todavía.
+                    @endif
+                </p>
+                @if ($sprintFiltro !== 'todos' || $estadoFiltro !== 'todos')
+                    <a href="{{ route('mis-tareas') }}"
+                       class="text-xs text-blue-400 hover:underline mt-2 inline-block">
+                        Ver todas las tareas →
+                    </a>
+                @endif
+            </div>
+
+        {{-- ── Tasks table ───────────────────────────────────────────── --}}
+        @else
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <table class="ds-table w-full">
+                    <thead>
+                        <tr>
+                            <th>Tarea</th>
+                            <th>Proyecto</th>
+                            <th>Estado</th>
+                            <th>Sprint</th>
+                            <th>Fecha límite</th>
+                            <th class="px-6 py-4 border-b border-white/5"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $today = now()->startOfDay(); @endphp
+                        @foreach ($tasks as $task)
+                            <tr class="group">
+
+                                <td>
+                                    <span class="text-sm font-semibold text-on-surface">
+                                        {{ $task->titulo }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a href="{{ route('proyectos.show', $task->proyecto) }}"
+                                       class="text-sm text-gray-400 hover:text-blue-400 transition-colors">
+                                        {{ $task->proyecto->nombre }}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    @if ($task->status)
+                                        @php
+                                            $statusNombre = strtolower($task->status->nombre ?? '');
+                                            $statusClass = match(true) {
+                                                in_array($statusNombre, ['hecho', 'completado', 'done', 'finalizado']) =>
+                                                    'bg-green-500/10 text-green-400 border-green-500/20',
+                                                in_array($statusNombre, ['en progreso', 'en_progreso', 'progreso', 'in progress']) =>
+                                                    'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                                in_array($statusNombre, ['pendiente', 'por hacer', 'nuevo', 'todo']) =>
+                                                    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                                                in_array($statusNombre, ['bloqueado', 'cancelado']) =>
+                                                    'bg-red-500/10 text-red-400 border-red-500/20',
+                                                default =>
+                                                    'bg-white/5 text-gray-400 border-white/10',
+                                            };
+                                        @endphp
+                                        <span class="status-badge {{ $statusClass }}">
+                                            {{ $task->status->nombre }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-600">—</span>
+                                    @endif
+                                </td>
+
+                                <td class="text-xs text-gray-500">
+                                    {{ $task->sprint->nombre ?? '—' }}
+                                </td>
+
+                                <td>
+                                    @if ($task->fecha_limite)
+                                        @php
+                                            $isOverdue  = $task->fecha_limite->lt($today);
+                                            $isUpcoming = !$isOverdue && $task->fecha_limite->lte($today->copy()->addDays(3));
+                                            $dateIcon   = $isOverdue ? 'event_busy' : ($isUpcoming ? 'schedule' : 'calendar_today');
+                                            $dateClass  = $isOverdue ? 'text-red-400' : ($isUpcoming ? 'text-amber-400' : 'text-gray-400');
+                                        @endphp
+                                        <span class="text-xs font-medium {{ $dateClass }} flex items-center gap-1">
+                                            <span class="material-symbols-outlined" style="font-size: 13px;">{{ $dateIcon }}</span>
+                                            {{ $task->fecha_limite->format('d/m/Y') }}
+                                            @if ($isOverdue)
+                                                <span class="text-red-500/70">· Vencida</span>
+                                            @elseif ($isUpcoming)
+                                                <span class="text-amber-500/70">· Próxima</span>
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-600">—</span>
+                                    @endif
+                                </td>
+
+                                <td class="text-right">
+                                    <a href="{{ route('proyectos.tasks.show', [$task->proyecto, $task]) }}"
+                                       class="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100
+                                              transition-opacity flex items-center gap-1 justify-end">
+                                        Ver tarea
+                                        <span class="material-symbols-outlined" style="font-size: 13px;">open_in_new</span>
+                                    </a>
+                                </td>
+
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                @if ($tasks->hasPages())
+                    <div class="px-6 py-4 border-t border-white/5">
+                        {{ $tasks->links() }}
+                    </div>
+                @endif
+            </div>
+        @endif
+
     </div>
 </x-app-layout>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Architecture &amp; Project Organization - Aether AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#e2dfff",
+                        "on-secondary-fixed": "#0f0069",
+                        "inverse-surface": "#d4e4fa",
+                        "outline-variant": "#46464b",
+                        "inverse-primary": "#5d5e65",
+                        "on-tertiary-container": "#a74bfe",
+                        "tertiary-fixed-dim": "#ddb8ff",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#c5c6ce",
+                        "surface": "#051424",
+                        "on-primary-fixed-variant": "#45464e",
+                        "on-surface": "#d4e4fa",
+                        "on-primary": "#2e3037",
+                        "tertiary-container": "#1d0039",
+                        "tertiary": "#ddb8ff",
+                        "surface-container-low": "#0d1c2d",
+                        "primary-fixed": "#e2e2eb",
+                        "surface-container-high": "#1c2b3c",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "secondary-container": "#3626ce",
+                        "on-surface-variant": "#c7c6cb",
+                        "error-container": "#93000a",
+                        "on-secondary": "#1d00a5",
+                        "surface-dim": "#051424",
+                        "on-error": "#690005",
+                        "surface-bright": "#2c3a4c",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "primary-fixed-dim": "#c5c6ce",
+                        "surface-container-highest": "#273647",
+                        "surface-variant": "#273647",
+                        "on-tertiary": "#490080",
+                        "background": "#051424",
+                        "surface-container": "#122131",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#909095",
+                        "primary": "#c5c6ce",
+                        "tertiary-fixed": "#f0dbff",
+                        "secondary": "#c3c0ff",
+                        "on-tertiary-fixed": "#2c0051",
+                        "on-secondary-container": "#b3b1ff",
+                        "on-background": "#d4e4fa",
+                        "surface-container-lowest": "#010f1f",
+                        "on-tertiary-fixed-variant": "#6800b4",
+                        "inverse-on-surface": "#233143",
+                        "on-primary-fixed": "#191b22",
+                        "on-primary-container": "#7b7c84",
+                        "primary-container": "#0f1117"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "margin": "32px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(167, 75, 254, 0.2);
+            border: 1px solid rgba(167, 75, 254, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-base antialiased min-h-screen overflow-x-hidden">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-50 bg-white/5 backdrop-blur-2xl border-r border-white/5 flex flex-col h-full py-6 gap-2">
+<div class="px-4 mb-8">
+<h1 class="text-lg font-black text-white px-4">Project Alpha</h1>
+<p class="text-xs text-on-surface-variant px-4 opacity-60">Enterprise Tier</p>
+</div>
+<nav class="flex-1 space-y-1 px-4">
+<a class="flex items-center gap-3 text-gray-400 px-4 py-3 hover:text-white hover:bg-white/5 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-gray-400 px-4 py-3 hover:text-white hover:bg-white/5 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-medium text-sm">Planning Hub</span>
+</a>
+<a class="flex items-center gap-3 text-gray-400 px-4 py-3 hover:text-white hover:bg-white/5 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-medium text-sm">Requirements</span>
+</a>
+<a class="flex items-center gap-3 text-gray-400 px-4 py-3 hover:text-white hover:bg-white/5 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">view_kanban</span>
+<span class="font-medium text-sm">Scrum Board</span>
+</a>
+<a class="flex items-center gap-3 bg-blue-500/10 text-blue-400 rounded-lg px-4 py-3 border-l-2 border-blue-500" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-medium text-sm">Architecture</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pt-4 border-t border-white/5">
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 mb-6 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                New Project
+            </button>
+<a class="flex items-center gap-3 text-gray-400 px-4 py-3 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-medium text-sm">Support</span>
+</a>
+<a class="flex items-center gap-3 text-gray-400 px-4 py-3 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="pl-[280px]">
+<!-- TopNavBar Shell -->
+<header class="sticky top-0 z-40 bg-[#0F1117]/80 backdrop-blur-xl border-b border-white/10 h-16 flex justify-between items-center w-full px-8">
+<div class="flex items-center gap-6 flex-1">
+<span class="text-xl font-bold tracking-tight text-white font-body-base">Aether AI</span>
+<div class="relative max-w-md w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">search</span>
+<input class="w-full bg-white/5 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-500" placeholder="Explore architecture..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 border border-white/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional headshot of a male architect with a confident expression in a minimal studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR8ldrRXEXivOvlzwwgeqaqmGvPgoVRQNIcCFJRP3cy9F6fGY5dz8cOc_UHLoKAROKwcowUNIw-AdJGnpVKx3WlnVe6rjSGergRlyV5ARjlAEQ_1rkhG3IDbip1mEptiu7u36vP7wu5UO-az03_cO-cW-p1r7AnCs4HCi7-dQmtvQDxXr2VZyuj98vSXmLdlQWqoRjq7VOVeqKyBewCMsr9eAyf8eSEI_gxhQf_w3ZYUxSAwn1yruny6pOzLVOu-ms-azH1x3bmw3P"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="p-margin max-w-container-max mx-auto space-y-margin">
+<!-- Hero Stats Row -->
+<div class="grid grid-cols-12 gap-gutter">
+<div class="col-span-8 glass-panel rounded-xl p-gutter flex items-center justify-between overflow-hidden relative">
+<div class="relative z-10">
+<h2 class="text-headline-md font-headline-md text-white mb-2">Architectural Blueprint Phase</h2>
+<p class="text-on-surface-variant max-w-md mb-6">Current progress tracking for Project Alpha core infrastructure. Deployment scheduled for Q4.</p>
+<div class="flex items-center gap-4">
+<button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-blue-700 transition-colors">
+<span class="material-symbols-outlined">description</span>
+                                View Specs
+                            </button>
+<button class="border border-white/10 text-white px-6 py-2 rounded-lg font-medium text-sm hover:bg-white/5 transition-colors">
+                                Export Schema
+                            </button>
+</div>
+</div>
+<div class="relative w-48 h-48 flex items-center justify-center">
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="8"></circle>
+<circle class="transform -rotate-90 origin-center" cx="50" cy="50" fill="transparent" r="40" stroke="#3b82f6" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-4xl font-extrabold text-white">75%</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant">Complete</span>
+</div>
+</div>
+<div class="absolute -right-20 -bottom-20 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full"></div>
+</div>
+<div class="col-span-4 glass-panel rounded-xl p-gutter">
+<h3 class="font-bold text-white mb-6 flex items-center justify-between">
+                        Participants
+                        <span class="text-xs font-normal text-blue-400">12 Active</span>
+</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full border border-white/10" data-alt="portrait of a male engineer in a professional tech environment with soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpF4a3TAMBzYr_sjdWb3sMMZjBhjUTBPDc2jlFoFBnV2gB_p9j7YpDqPc0ySvMsHQ_wxVtsNwvLVbe19yEXBdgGRCNfYeyr6HyyBVxiT90HPMhn5h-dWtWTki8yQecC-8LceR9ZlnGRctweoWjDbgWdVylgHEY0ObhD6X13Ytu2e1lvXBjbHr3Ww3mqqRtr6iVETNclt8IpuUvVYHnLT89GAIlJhACFxIgEx0KOaqHq8QzuXiPqSgGVKYyIx_GGjbFCQCQPwuKNk13"/>
+<div>
+<p class="text-sm font-semibold text-white">Alex Rivera</p>
+<p class="text-xs text-on-surface-variant">Lead Architect</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-500 group-hover:text-white transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full border border-white/10" data-alt="portrait of a smiling female product manager with creative glasses in a bright workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-3i_rnK9yDsM8gZIyroWQZ29jKcTgXLxm2voMoqUNHIeyJDrTvgki2RLPvC0U01ljy7D3QGGsGdR_ORDhPVabQLPG1JtnwEIZTnT1Y1CjUO726rX9xSg-QQApbdYl4WnqWC29qSnlt6k3I9Y1JJNa_uH6O8ryoW4BjG-jhKgBybDX3YnA1PJOhVtM0_LMhxQJy_dv3YppBOE7lReop7U3tZIp2xIcVPEEQhdHTQDxH_XF-skGqAYjANLqIoLRuhBeYCTsQmPjBSaA"/>
+<div>
+<p class="text-sm font-semibold text-white">Sarah Chen</p>
+<p class="text-xs text-on-surface-variant">System Designer</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-500 group-hover:text-white transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full border border-white/10" data-alt="close up headshot of a male developer with focused look and neutral background lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU1cneQ1NEHjiyQkRWJN0hjTFFEMJV9PQyDoZnlacfKRjx0qRDbAwqynTvxvmsni8IR2Gl1KMpGRFruuaD7siFXEnqz-2ZvlEvPoJ0ZH-ScdGP4l0jUqaag_JoBJ3dxjmvgx6ZcuysTOoPiamAv7NAKDAqSHauM9ejdqj7g3Ayr_y8X0hdGbnm442gQv-0knPb9k9BQF50g8zYIi74bxpzq6rRPe_KgkqvjZgYXHMTHZqpArUqK7BefOfsZT_6t8AeZEopuMgKxQxD"/>
+<div>
+<p class="text-sm font-semibold text-white">Marc J.</p>
+<p class="text-xs text-on-surface-variant">DevOps Lead</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-500 group-hover:text-white transition-colors cursor-pointer">more_vert</span>
+</div>
+<button class="w-full py-2 mt-2 border border-dashed border-white/20 rounded-lg text-xs text-on-surface-variant hover:border-white/40 transition-colors">
+                            + Add Contributor
+                        </button>
+</div>
+</div>
+</div>
+<!-- Bento Layout Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Project Calendar View -->
+<div class="col-span-8 glass-panel rounded-xl p-gutter">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-lg font-bold text-white">Project Timeline</h3>
+<p class="text-xs text-on-surface-variant">October 2023 - Milestones &amp; Deadlines</p>
+</div>
+<div class="flex items-center gap-2 bg-white/5 p-1 rounded-lg">
+<button class="px-3 py-1 text-xs font-medium text-white bg-white/10 rounded">Month</button>
+<button class="px-3 py-1 text-xs font-medium text-gray-400">Week</button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-2">
+<!-- Calendar Header -->
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Mon</div>
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Tue</div>
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Wed</div>
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Thu</div>
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Fri</div>
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter text-blue-400">Sat</div>
+<div class="text-center py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter text-blue-400">Sun</div>
+<!-- Empty cells for start of month -->
+<div class="h-20 p-2 bg-white/5 rounded-lg opacity-20"></div>
+<div class="h-20 p-2 bg-white/5 rounded-lg opacity-20"></div>
+<!-- Calendar Days -->
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">01</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">02</span>
+<div class="mt-2 p-1 bg-tertiary/20 text-tertiary border border-tertiary/30 rounded text-[9px] leading-tight">Sprint Start</div>
+</div>
+<div class="h-24 p-2 bg-blue-500/10 rounded-lg border border-blue-500/30 relative">
+<span class="text-xs text-white font-bold">03</span>
+<div class="absolute bottom-2 left-2 flex gap-1">
+<div class="w-1 h-1 rounded-full bg-blue-500"></div>
+<div class="w-1 h-1 rounded-full bg-violet-500"></div>
+</div>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">04</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">05</span>
+<div class="mt-2 p-1 bg-error/20 text-error border border-error/30 rounded text-[9px] leading-tight">API Freeze</div>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">06</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">07</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">08</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">09</span>
+<div class="mt-2 p-1 bg-blue-400/20 text-blue-400 border border-blue-400/30 rounded text-[9px] leading-tight">Stakeholder Sync</div>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">10</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">11</span>
+</div>
+<div class="h-24 p-2 bg-white/5 rounded-lg border border-white/5 relative">
+<span class="text-xs text-on-surface-variant">12</span>
+</div>
+</div>
+</div>
+<!-- Activity Log -->
+<div class="col-span-4 glass-panel rounded-xl p-gutter flex flex-col">
+<h3 class="font-bold text-white mb-6">Activity Log</h3>
+<div class="flex-1 space-y-6">
+<div class="flex gap-4 relative">
+<div class="absolute left-4 top-8 bottom-[-24px] w-px bg-white/10"></div>
+<div class="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0 relative z-10">
+<span class="material-symbols-outlined text-blue-400 text-sm">commit</span>
+</div>
+<div>
+<p class="text-sm text-white font-medium">Marc J. pushed 4 commits</p>
+<p class="text-[11px] text-on-surface-variant mb-2">Updated load balancer architecture</p>
+<span class="text-[10px] text-on-surface-variant opacity-60">2 hours ago</span>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="absolute left-4 top-8 bottom-[-24px] w-px bg-white/10"></div>
+<div class="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/40 flex items-center justify-center shrink-0 relative z-10">
+<span class="material-symbols-outlined text-violet-400 text-sm">auto_awesome</span>
+</div>
+<div>
+<p class="text-sm text-white font-medium">AI Agent Suggestion</p>
+<p class="text-[11px] text-on-surface-variant mb-2">Identified 3 bottlenecks in DB cluster</p>
+<span class="text-[10px] text-on-surface-variant opacity-60">5 hours ago</span>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="absolute left-4 top-8 bottom-[-24px] w-px bg-white/10"></div>
+<div class="w-8 h-8 rounded-full bg-tertiary/20 border border-tertiary/40 flex items-center justify-center shrink-0 relative z-10">
+<span class="material-symbols-outlined text-tertiary text-sm">task_alt</span>
+</div>
+<div>
+<p class="text-sm text-white font-medium">Sarah Chen completed task</p>
+<p class="text-[11px] text-on-surface-variant mb-2">Finalize UI/UX design tokens</p>
+<span class="text-[10px] text-on-surface-variant opacity-60">Yesterday</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0 relative z-10">
+<span class="material-symbols-outlined text-blue-400 text-sm">history</span>
+</div>
+<div>
+<p class="text-sm text-white font-medium">Sprint 12 archived</p>
+<p class="text-[11px] text-on-surface-variant mb-2">Transitioned to Sprint 13 successfully</p>
+<span class="text-[10px] text-on-surface-variant opacity-60">2 days ago</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 py-2 text-xs font-semibold text-on-surface-variant hover:text-white transition-colors flex items-center justify-center gap-2">
+                        View Full History
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+<!-- Secondary Visual Row -->
+<div class="col-span-12 glass-panel rounded-xl p-gutter grid grid-cols-4 gap-gutter">
+<div class="col-span-1 bg-white/5 rounded-lg p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-blue-400 text-sm">storage</span>
+<span class="text-xs font-bold text-white uppercase tracking-widest">Storage Node</span>
+</div>
+<div class="text-2xl font-bold text-white">4.2 TB</div>
+<div class="w-full h-1 bg-white/10 rounded-full mt-2">
+<div class="h-full w-[65%] bg-blue-400 rounded-full"></div>
+</div>
+</div>
+<div class="col-span-1 bg-white/5 rounded-lg p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-violet-400 text-sm">psychology</span>
+<span class="text-xs font-bold text-white uppercase tracking-widest">AI Compute</span>
+</div>
+<div class="text-2xl font-bold text-white">92.4%</div>
+<div class="w-full h-1 bg-white/10 rounded-full mt-2">
+<div class="h-full w-[92%] bg-violet-400 rounded-full"></div>
+</div>
+</div>
+<div class="col-span-1 bg-white/5 rounded-lg p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-tertiary text-sm">network_check</span>
+<span class="text-xs font-bold text-white uppercase tracking-widest">Latency</span>
+</div>
+<div class="text-2xl font-bold text-white">12 ms</div>
+<div class="w-full h-1 bg-white/10 rounded-full mt-2">
+<div class="h-full w-[15%] bg-tertiary rounded-full"></div>
+</div>
+</div>
+<div class="col-span-1 bg-white/5 rounded-lg p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-error text-sm">warning</span>
+<span class="text-xs font-bold text-white uppercase tracking-widest">Active Risks</span>
+</div>
+<div class="text-2xl font-bold text-white">03</div>
+<div class="w-full h-1 bg-white/10 rounded-full mt-2">
+<div class="h-full w-[30%] bg-error rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Command Bar (Floating) -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[600px] z-50">
+<div class="glass-panel ai-glow rounded-full px-6 py-3 flex items-center gap-4 shadow-2xl shadow-black/40">
+<span class="material-symbols-outlined text-violet-400" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-white w-full placeholder:text-gray-500" placeholder="Ask AI about this architecture..." type="text"/>
+<div class="flex items-center gap-2">
+<kbd class="px-2 py-1 bg-white/10 rounded text-[10px] text-gray-400 border border-white/10">⌘</kbd>
+<kbd class="px-2 py-1 bg-white/10 rounded text-[10px] text-gray-400 border border-white/10">K</kbd>
+</div>
+</div>
+</div>
+</main>
+</body></html>

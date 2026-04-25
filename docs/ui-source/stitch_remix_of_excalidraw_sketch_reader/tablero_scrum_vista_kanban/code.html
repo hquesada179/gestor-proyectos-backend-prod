@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aether Control - Scrum Board</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #051424;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#0f1117",
+                        "surface": "#051424",
+                        "secondary-container": "#3626ce",
+                        "primary-fixed-dim": "#c5c6ce",
+                        "primary-fixed": "#e2e2eb",
+                        "surface-variant": "#273647",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#010f1f",
+                        "secondary": "#c3c0ff",
+                        "on-tertiary-fixed": "#2c0051",
+                        "error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ddb8ff",
+                        "surface-bright": "#2c3a4c",
+                        "on-tertiary": "#490080",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "on-tertiary-fixed-variant": "#6800b4",
+                        "on-secondary-container": "#b3b1ff",
+                        "tertiary-container": "#1d0039",
+                        "tertiary": "#ddb8ff",
+                        "on-primary-container": "#7b7c84",
+                        "on-surface": "#d4e4fa",
+                        "inverse-on-surface": "#233143",
+                        "on-primary": "#2e3037",
+                        "surface-container": "#122131",
+                        "inverse-surface": "#d4e4fa",
+                        "on-secondary-fixed": "#0f0069",
+                        "on-error": "#690005",
+                        "inverse-primary": "#5d5e65",
+                        "background": "#051424",
+                        "outline-variant": "#46464b",
+                        "surface-dim": "#051424",
+                        "surface-container-highest": "#273647",
+                        "surface-container-low": "#0d1c2d",
+                        "on-secondary": "#1d00a5",
+                        "on-primary-fixed-variant": "#45464e",
+                        "surface-container-high": "#1c2b3c",
+                        "secondary-fixed": "#e2dfff",
+                        "tertiary-fixed": "#f0dbff",
+                        "surface-tint": "#c5c6ce",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#c7c6cb",
+                        "primary": "#c5c6ce",
+                        "on-background": "#d4e4fa",
+                        "outline": "#909095",
+                        "on-tertiary-container": "#a74bfe",
+                        "on-primary-fixed": "#191b22"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-base": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-base": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface antialiased overflow-hidden">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-50 border-r border-white/10 bg-[#0F1117]/90 backdrop-blur-[20px] flex flex-col h-full py-6 font-inter text-sm antialiased">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center overflow-hidden">
+<img alt="Project Alpha" class="w-6 h-6" data-alt="minimalist geometric logo for a tech startup engineering team project alpha" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChrJL0FptrfBaJ2IVhClICNkKS-GPHapNtCrQqUgTZAgUQnLwfHY6yDBS2mV8WRGaOpdUAWi7SAcmH77jFzLMtHuCS0DkCzyiXTbpgie8aV-_85W9Sv4qQ5idY3ObzmJAARS1_4ONFcXinZRdr6qcT3RaBQMBfvG8FQvWPtMd0rpMCdWHYYOJ23s1mZy3M4ErPUhzVAdjWcRwBXcZJBa2eh_0Mbjbzs9L5r9Q6jfXX9_qrnuMUG55E_KQh6wB9-dcMlLnVQEMGEcpj"/>
+</div>
+<div>
+<h1 class="text-lg font-black text-white">Project Alpha</h1>
+<p class="text-[10px] text-on-primary-container font-semibold uppercase tracking-widest">Engineering Team</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="text-slate-400 flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="space_dashboard">space_dashboard</span>
+                Workspace
+            </a>
+<a class="bg-white/5 text-blue-400 border-r-2 border-blue-500 flex items-center gap-3 px-4 py-3 font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="view_kanban">view_kanban</span>
+                Active Sprints
+            </a>
+<a class="text-slate-400 flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+                My Assignments
+            </a>
+<a class="text-slate-400 flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                Project Files
+            </a>
+<a class="text-slate-400 flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Team Directory
+            </a>
+</nav>
+<div class="px-4 mb-4">
+<button class="w-full ai-glow bg-[#1d0039] text-tertiary-fixed py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-xs uppercase tracking-widest active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+                AI Command
+            </button>
+</div>
+<div class="mt-auto pt-4 border-t border-white/5 px-3 space-y-1">
+<a class="text-slate-400 flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                Documentation
+            </a>
+<a class="text-slate-400 flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+</aside>
+<!-- TopNavBar (Authority: JSON) -->
+<header class="fixed top-0 w-full z-40 border-b border-white/10 bg-[#0F1117]/60 backdrop-blur-[20px] shadow-[0_4px_30px_rgba(0,0,0,0.1)] flex justify-between items-center h-16 px-8 ml-[280px]">
+<div class="flex items-center gap-8 pr-[280px]">
+<span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent font-inter">Aether Control</span>
+<div class="hidden md:flex items-center gap-6 font-inter text-sm font-medium tracking-tight h-full pt-1">
+<a class="text-blue-400 border-b-2 border-blue-500 pb-[18px]" href="#">Board</a>
+<a class="text-slate-400 hover:text-slate-100 transition-colors pb-[18px]" href="#">Timeline</a>
+<a class="text-slate-400 hover:text-slate-100 transition-colors pb-[18px]" href="#">Backlog</a>
+<a class="text-slate-400 hover:text-slate-100 transition-colors pb-[18px]" href="#">Insights</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-slate-400">
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+<button class="bg-blue-500 text-on-primary font-inter text-sm font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform">
+                Create Task
+            </button>
+</div>
+</header>
+<!-- Main Content (The Canvas) -->
+<main class="ml-[280px] pt-16 h-screen overflow-hidden flex flex-col bg-surface-container-lowest">
+<!-- Board Header -->
+<div class="px-8 py-6 flex justify-between items-end border-b border-white/5">
+<div>
+<div class="flex items-center gap-2 text-on-primary-container text-xs mb-1">
+<span class="material-symbols-outlined text-xs" data-icon="view_kanban">view_kanban</span>
+<span class="font-label-caps uppercase">Sprint 24 • Engineering</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface">Main Scrum Board</h2>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface" data-alt="portrait of a software developer engineer with glasses in a professional studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2cfUjsFttKCOoKhDfxuVsF2CtxKTFMmhbZpoXeUYbH0I9DUJKBXjDeGqqvtXXiSqFIhrC7mDvPsEBzb2faBJFNPl7mE7szlyF23lyvnmSJTwOX5t1sCt5KrFkowt6zgEmGtrlS-_cLIXgZJZ2cVjdu9pZn6hOmlkp1UH9cXmqepSxs4GCujxz2n1Gc_8P54dsBMmWm0EuALG5J2VRkglfeI8_Zgf6aia5ErbbwvGqn8wYOpiusH9wzSyXN32HiKWtyvAVU3bY2akx"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface" data-alt="professional woman in corporate attire smiling confidently against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDR0q1HKUOsDzbuJnhlGLmRolrC-LASkhlK0wysC1ciSv7BewH_HQSIgwtoWEPqYIIZgAxz4-DgZIayYW-vtC29k50jsBcMqdKMSx9I8mFiskUL40OvI4UYCpytANq09rlu25bs_QMVTKelYSZWbLKu0nisfSN_9Q5dGLyr-zEkNT2a89TppLh-u2DelyPPILWUIH5IYTvurXMLFrwr4FgNEVckdu-JToJOwkqtNJIUDjW5FnqKLoDgh2WOM7P-ZdVQcNj4VVOARFy"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface" data-alt="smiling man with beard wearing a casual hoodie in a bright airy office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtYWjih7sqIuWJhfBPzVZXp-BkFk3jPk3Fj6V9uZVoElm4-MeCEhNOQgRd61Cbu-ZF7v2UmaIby6UzPCL3C8KxiS3V3gATKx5L29fe-8qsKFbjcFxIXuIAfqNoq3wMRYs2f1d4ZlItor582knetdl-TKkODxSDkxoi9EW9klLyFbGS11eP3QrCf6WrrSXqkxXV2rqHtbODWLuRe563PNM8CUpiYRv5q-OfO2QKTsz645kzVHVcLqlJrYq3nimUz5Pu1Jn0FosOIvYt"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-variant flex items-center justify-center text-[10px] font-bold text-on-surface-variant">+8</div>
+</div>
+<div class="h-6 w-px bg-white/10 mx-2"></div>
+<button class="glass-card px-4 py-2 rounded-lg flex items-center gap-2 text-body-sm font-body-sm text-on-surface">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                    Filter
+                </button>
+<button class="glass-card px-4 py-2 rounded-lg flex items-center gap-2 text-body-sm font-body-sm text-on-surface">
+<span class="material-symbols-outlined text-sm" data-icon="share">share</span>
+                    Share
+                </button>
+</div>
+</div>
+<!-- Kanban Board Area -->
+<div class="flex-1 overflow-x-auto overflow-y-hidden p-8 flex gap-8 custom-scrollbar">
+<!-- Column: Pendiente -->
+<div class="flex flex-col w-[350px] min-w-[350px] shrink-0 h-full">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span>
+<h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">Pendiente</h3>
+<span class="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-slate-400">4</span>
+</div>
+<button class="text-slate-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar pb-12">
+<!-- Task Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab active:cursor-grabbing hover:border-blue-500/30 transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-error-container/10 text-error text-[10px] font-bold uppercase tracking-tight">High Priority</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-102</span>
+</div>
+<h4 class="text-body-base font-medium text-on-surface mb-4 leading-tight group-hover:text-blue-400 transition-colors">Neural link architecture refactoring for v2 protocol</h4>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-on-primary-container">
+<span class="flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-sm" data-icon="forum">forum</span> 12</span>
+<span class="flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-sm" data-icon="link">link</span> 3</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="headshot of a focused system architect in a high-tech dark environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-0t1f_7uiQ379mulDyfKcLMx9_Crr3kkgw57t6uD0PggZlARkJw9AMwRzflR2K11ra1mtxHEV4uKINXYk4ySbZxSS9rBxpofQvEnZp2RjbGYPVJ8oxWg8WM62be4gZfWHDmblTarD7kumyuZk9BV_ZLFBKaRk9ORNX6QRfd-eIRmIrcSzoMAZDWYPySMXLwyORtnxz1YSYzrU5n8Lb2Ih3ZFs1r00oq8cy2fzDzCFTCMqrrQ5B8uNiGRkZO_h9VgFLNaCTuXJwLwf"/>
+</div>
+</div>
+<!-- Task Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab active:cursor-grabbing hover:border-blue-500/30 transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-tight">Feature</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-105</span>
+</div>
+<h4 class="text-body-base font-medium text-on-surface mb-4 leading-tight group-hover:text-blue-400 transition-colors">Design system token expansion for multi-region support</h4>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-on-primary-container">
+<span class="flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-sm" data-icon="forum">forum</span> 2</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="portrait of a senior designer looking professional in a minimalist setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOBncnj6KKD6BDApXdm9JbPqB9Z3hElJ5Ovpy9PpY7gyLSn4_QikrrcyeuTi5IH74HjDkJn59M8B5BAMnKcYlczKhYT704ndNfFdBEgwskNkd8ov4tEHjUTtnhTOkZRXCQrOINAnAG0cVrQiYYYZ2spjzRPCMykPUJ9dLHTa-vOkn3VzkESoMCG3eTi4bR2wOLGavs4OnV4O72OoPgTT5DjxeE6jgiJ5hEiQHDyzHTcq21T8iR3-HDVSzjwkKwM4fUV5c9oHN-4LHr"/>
+</div>
+</div>
+<!-- Task Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab active:cursor-grabbing hover:border-blue-500/30 transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px] font-bold uppercase tracking-tight">Technical Debt</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-108</span>
+</div>
+<h4 class="text-body-base font-medium text-on-surface mb-4 leading-tight group-hover:text-blue-400 transition-colors">Optimize SQL queries for dashboard analytics engine</h4>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-on-primary-container">
+<span class="flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-sm" data-icon="forum">forum</span> 5</span>
+</div>
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-[8px] font-bold text-on-surface-variant">UN</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: En Progreso -->
+<div class="flex flex-col w-[350px] min-w-[350px] shrink-0 h-full">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+<h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">En Progreso</h3>
+<span class="px-2 py-0.5 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-400">3</span>
+</div>
+<button class="text-slate-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar pb-12">
+<!-- Task Card - Active -->
+<div class="glass-card p-4 rounded-xl cursor-grab border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-tertiary-container/20 text-tertiary text-[10px] font-bold uppercase tracking-tight">AI Integrated</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-089</span>
+</div>
+<h4 class="text-body-base font-semibold text-white mb-4 leading-tight">Implementation of natural language processing for AI Command Bar</h4>
+<div class="mb-4">
+<div class="flex justify-between items-center text-[10px] text-on-primary-container mb-1">
+<span>Progress</span>
+<span>65%</span>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-blue-500 h-full w-[65%]"></div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-on-primary-container">
+<span class="flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-sm" data-icon="forum">forum</span> 24</span>
+</div>
+<div class="flex -space-x-1">
+<img class="w-6 h-6 rounded-full border border-surface" data-alt="professional programmer in casual wear working on high-tech interface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXGofscMXaAy7RETt433eloFxULJl7PgGqAspeYgwJJf3xgrJtvNo2--W2coBC96ssTi1CoEulONaJn8Y7XHon7BqQ3cPp1JRB9IhOJsvIDJwgVsIU5Nl5YtN-0OBqomwmmc3df58_9LOi5W_jtDSU1Ho_tC12wymm8B95L2_7EGpBF-BDO08ZG2bPofUGM9lqzIlJSWGdjTxd0gR7Zb8TcmQZO3rhebQp8AdufFWWoGIYsijvvbOaycQJ7xh_VrtgXqASUfe17yzJ"/>
+<img class="w-6 h-6 rounded-full border border-surface" data-alt="tech lead focusing on code reviews in a darkened workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUIaKvnVgC6AzID7yvEvFJtvdSI40Xup6uHWOzJtNamV98dMT6TnmGXGJcmKnWVT8cztjin4-FAXpvI-EP2UHsN54jwVYlnx8kmcNOheqkBESdqQWM6GW4EWdsxbb0unKFPFWF4wUqEGB32Noh3II0Wx9wbNcGGNSfQX22dB1S58ZdXgHHYt9CqDttCHM6BSghIsJ1u4NRy_AJkoi-H-igPIrFNCZs8KSQzvtJ9I0bFIENt3vBayb3anWj5UmMONi1UCU9FeEsMkI_"/>
+</div>
+</div>
+</div>
+<!-- Task Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab hover:border-blue-500/30 transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-error-container/10 text-error text-[10px] font-bold uppercase tracking-tight">Critical Bug</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-112</span>
+</div>
+<h4 class="text-body-base font-medium text-on-surface mb-4 leading-tight group-hover:text-blue-400 transition-colors">Fixing memory leak in real-time telemetry component</h4>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-on-primary-container">
+<span class="flex items-center gap-1 text-[11px] font-semibold text-error"><span class="material-symbols-outlined text-sm" data-icon="warning">warning</span> Blocking</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="software engineer in thinking pose against a digital background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAurDs80bK-A5mKdmyUPSZCo70TInrUClCDnWolRPHB94J-qB_OdGaotjYi80LsyzEgJnhzGFLzN2BOm8k5qJQsmo7Kn5xaJXhsIKylyU0aSyHmRbjACAajig7V8zOYb7p9XkITLrzREYqnEdXoQD3JXfRBHE1cHh6rVrTdEpWCKArOXcu8P-iDKSp_-O6wscQUyjT0cDf_AHL4HuJj7JTUxcmVR8g8UwKBAv7qMOKlFf4PrZxglC6bPx2QzYJNQDc5QXdk9TnVzy-m"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Hecho -->
+<div class="flex flex-col w-[350px] min-w-[350px] shrink-0 h-full">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">Hecho</h3>
+<span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-400">12</span>
+</div>
+<button class="text-slate-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar pb-12">
+<!-- Task Card Done -->
+<div class="glass-card p-4 rounded-xl opacity-60 hover:opacity-100 transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-tight">Complete</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-072</span>
+</div>
+<h4 class="text-body-base font-medium text-on-surface mb-4 leading-tight line-through decoration-slate-600">Secure OAuth2 integration for external workspace connections</h4>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-emerald-400">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+<span class="text-[10px] font-bold">Verified</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="headshot of a smiling female engineer after a successful project launch" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVWH9h_Wu5-0aEnRHDHdcrMmm0z-Ewwwm4B60xoYnGGCTlGV96gTtCt1Nn7GPVu7qPZqryBAKA_3juBKHOEDg-3zTJ0ypxQKoZ1Eq8tdd40LJUym7vxDaqGLa1gaRjV9skyk2Ie0cRe9gHLkY0-DPFTq6TSJGbj_Bbg3ZReMZGWE5eC14WKOe2CADn6qSpVkW8bjYeb-EWrgZw_iaXS6-_HWDAADghxLwK3Nb_YCIdHyBxDz9fR9qb1gOdtmmGCADDcmapxqjqSgBe"/>
+</div>
+</div>
+<!-- Task Card Done -->
+<div class="glass-card p-4 rounded-xl opacity-60 hover:opacity-100 transition-all duration-200 group">
+<div class="flex justify-between items-start mb-3">
+<span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-tight">Complete</span>
+<span class="text-on-primary-container text-[10px] font-mono">AE-075</span>
+</div>
+<h4 class="text-body-base font-medium text-on-surface mb-4 leading-tight line-through decoration-slate-600">Beta testing phase for mobile dashboard responsiveness</h4>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3 text-emerald-400">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+<span class="text-[10px] font-bold">Verified</span>
+</div>
+<div class="flex -space-x-1">
+<img class="w-6 h-6 rounded-full border border-surface" data-alt="professional male employee headshot in corporate setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5OegjCpfb5cETNGeK6FSKX5iaWf2HaYz1kFcLWEki0AH_zSEox9mo1qNtQd8ntDK_p3essFW5S80ot6J7bHgdkl_QlYiydKhtEFSFbCCiYCo4ReBZdg_32mO063ewTlNy99088ZcXpuKdDevLPu0l1fEebmZ-DcwWcPPj1fp_0c2WBAWvWjUNAaKhZAOSsM4zdGklm1RDy_uq0Kd-ds6dYgbLkuZaN7P1mzxM_WQVfHOBpNp0bHBM802Zt7QmYUw9EWTcf0xQ_rYY"/>
+<img class="w-6 h-6 rounded-full border border-surface" data-alt="professional woman portrait for business profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0WjzfhT34ShZkL9-2iNo7IuccOpcyr77mPo-HUdppM4FpIYpdbsQ-pmtn6TvEg5pqInzZbQ9FwDOICJNGKxQ1ftFKDAO7dAsc6n3HZeVnvO5VE-1Jc82PVgHkmK2jaBKqvtyiBwACoFK0n4HObEe_DhTZgyu5NvFaeZUAi3kAiLMY19cj2OkrIYlzKw2XP-kXFao8hh773xCWkZmzRTwJdPCr-UGFF-Scci3JMCDmoaqmghUr5OUfJq1C-E_Ta1BbQi3B13_Cd4ky"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State / Add New Column -->
+<div class="flex flex-col w-[350px] min-w-[350px] shrink-0 h-full border-2 border-dashed border-white/5 rounded-2xl items-center justify-center group hover:bg-white/[0.02] transition-colors cursor-pointer">
+<div class="flex flex-col items-center gap-2 text-slate-500 group-hover:text-blue-400 transition-colors">
+<span class="material-symbols-outlined text-3xl" data-icon="add_circle">add_circle</span>
+<span class="font-bold text-sm uppercase tracking-widest">New Column</span>
+</div>
+</div>
+</div>
+<!-- Floating Quick Add -->
+<button class="fixed bottom-10 right-10 w-14 h-14 bg-blue-500 rounded-full shadow-[0_10px_30px_rgba(59,130,246,0.3)] flex items-center justify-center text-white active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+</main>
+</body></html>
