@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Proyecto;
+use App\Models\Task;
+use Illuminate\Http\JsonResponse;
+
+class TareaApiController extends Controller
+{
+    public function index(int $id): JsonResponse
+    {
+        $proyecto = Proyecto::find($id);
+
+        if (! $proyecto) {
+            return response()->json(['message' => 'Proyecto no encontrado.'], 404);
+        }
+
+        $tareas = Task::with(['status', 'sprint', 'assignedTo'])
+            ->where('proyecto_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn(Task $t) => [
+                'id'           => $t->id,
+                'proyecto_id'  => $t->proyecto_id,
+                'titulo'       => $t->titulo,
+                'descripcion'  => $t->descripcion,
+                'estado'       => $t->status?->nombre,
+                'estado_color' => $t->status?->color,
+                'sprint_id'    => $t->sprint_id,
+                'sprint_nombre'=> $t->sprint?->nombre,
+                'asignado_a'   => $t->assignedTo?->name,
+                'fecha_limite' => $t->fecha_limite?->toDateString(),
+                'created_at'   => $t->created_at?->toDateTimeString(),
+            ]);
+
+        return response()->json([
+            'proyecto_id'   => $proyecto->id,
+            'proyecto_nombre' => $proyecto->nombre,
+            'total'         => $tareas->count(),
+            'tareas'        => $tareas,
+        ]);
+    }
+}
