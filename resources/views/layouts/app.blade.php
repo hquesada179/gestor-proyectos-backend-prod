@@ -38,15 +38,16 @@
         <nav class="flex-1 flex flex-col gap-0.5 px-3 overflow-y-auto">
 
             @php
-                $ruta        = request()->route()?->getName() ?? '';
-                $isDashboard = $ruta === 'dashboard';
-                $isReqs      = str_starts_with($ruta, 'proyectos.requirements');
-                $isSprints   = str_starts_with($ruta, 'proyectos.sprints');
-                $isTareas    = str_starts_with($ruta, 'proyectos.tasks');
-                $isInputs    = str_starts_with($ruta, 'proyectos.inputs');
-                $isProyectos = str_starts_with($ruta, 'proyectos.')
+                $ruta         = request()->route()?->getName() ?? '';
+                $isDashboard  = $ruta === 'dashboard';
+                $isReqs       = str_starts_with($ruta, 'proyectos.requirements');
+                $isSprints    = str_starts_with($ruta, 'proyectos.sprints');
+                $isTareas     = str_starts_with($ruta, 'proyectos.tasks');
+                $isInputs     = str_starts_with($ruta, 'proyectos.inputs');
+                $isProyectos  = str_starts_with($ruta, 'proyectos.')
                     && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
-                $isMisTareas = $ruta === 'mis-tareas';
+                $isMisTareas  = $ruta === 'mis-tareas';
+                $isScrumBoard = str_starts_with($ruta, 'scrum-board');
             @endphp
 
             <a href="{{ route('dashboard') }}"
@@ -83,11 +84,18 @@
                 Requerimientos
             </a>
 
+            <a href="{{ route('scrum-board.index') }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isScrumBoard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
+                <span class="material-symbols-outlined" style="font-size: 20px;">view_kanban</span>
+                Scrum Board
+            </a>
+
             <a href="{{ route('modulo.selector', 'sprints') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isSprints ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">view_kanban</span>
-                Scrum Board
+                <span class="material-symbols-outlined" style="font-size: 20px;">sprint</span>
+                Sprints
             </a>
 
             <a href="{{ route('modulo.selector', 'tareas') }}"
@@ -168,5 +176,6 @@
 
 </div>
 
+@stack('scripts')
 </body>
 </html>

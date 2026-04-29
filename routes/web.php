@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectInputController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RequirementController;
+use App\Http\Controllers\ScrumBoardController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserStoryController;
@@ -40,6 +41,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/mis-tareas', [MyTasksController::class, 'index'])->name('mis-tareas');
     Route::get('/modulo/{modulo}', [ModuloSelectorController::class, 'show'])->name('modulo.selector');
+
+    // Scrum Board (Kanban)
+    Route::get('/scrum-board', [ScrumBoardController::class, 'index'])->name('scrum-board.index');
+    Route::get('/scrum-board/{proyecto}', [ScrumBoardController::class, 'show'])->name('scrum-board.show');
+    Route::patch('/scrum-board/tasks/{task}/status', [ScrumBoardController::class, 'updateStatus'])->name('scrum-board.tasks.status');
 
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
