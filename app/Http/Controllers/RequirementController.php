@@ -13,9 +13,42 @@ class RequirementController extends Controller
     {
         abort_if($proyecto->user_id !== Auth::id(), 403);
 
-        $requirements = $proyecto->requirements()->latest()->paginate(15)->withQueryString();
+        // Sprints vigentes ordenados: activo primero, luego planificados
+        $sprints = $proyecto->sprints()
+            ->whereIn('estado', ['en_progreso', 'planificado'])
+            ->orderByRaw("CASE estado WHEN 'en_progreso' THEN 0 WHEN 'planificado' THEN 1 ELSE 2 END")
+            ->orderBy('fecha_inicio')
+            ->get();
 
-        return view('proyectos.requirements.index', compact('proyecto', 'requirements'));
+        // Todos los requerimientos con sus historias y tareas (para detectar sprint)
+        $requirements = $proyecto->requirements()
+            ->with(['userStories.tasks'])
+            ->orderByRaw("CASE prioridad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 WHEN 'baja' THEN 3 END")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Agrupar por sprint: un requerimiento pertenece a un sprint si alguna
+        // de sus historias tiene una tarea asignada a ese sprint.
+        $sprintGroups = [];
+        $assignedIds  = [];
+
+        foreach ($sprints as $sprint) {
+            $items = $requirements->filter(function ($req) use ($sprint) {
+                return $req->userStories
+                    ->flatMap(fn($us) => $us->tasks)
+                    ->contains('sprint_id', $sprint->id);
+            })->values();
+
+            $sprintGroups[] = ['sprint' => $sprint, 'items' => $items];
+            $assignedIds    = array_merge($assignedIds, $items->pluck('id')->toArray());
+        }
+
+        // Backlog: requerimientos sin ninguna asociación a sprint activo/planificado
+        $backlog = $requirements->whereNotIn('id', array_unique($assignedIds))->values();
+
+        return view('proyectos.requirements.index', compact(
+            'proyecto', 'requirements', 'sprints', 'sprintGroups', 'backlog'
+        ));
     }
 
     public function create(Proyecto $proyecto)
