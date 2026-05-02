@@ -15,12 +15,20 @@
                     Desde aquí gestionas tus proyectos y haces seguimiento de tu trabajo.
                 </p>
             </div>
-            <a href="{{ route('proyectos.create') }}"
-               class="flex items-center gap-2 bg-secondary-container text-white px-5 py-2.5 rounded-xl
-                      font-bold text-sm hover:opacity-90 transition-all active:scale-95 flex-shrink-0 w-fit">
-                <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
-                Nuevo proyecto
-            </a>
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <a href="{{ route('chat.index') }}"
+                   class="flex items-center justify-center gap-2 bg-surface text-white px-5 py-2.5 rounded-xl border border-white/10
+                          font-bold text-sm hover:bg-white/5 transition-all active:scale-95 w-full sm:w-auto">
+                    <span class="material-symbols-outlined text-secondary-container" style="font-size: 16px;">smart_toy</span>
+                    Crear con IA
+                </a>
+                <a href="{{ route('proyectos.create') }}"
+                   class="flex items-center justify-center gap-2 bg-secondary-container text-white px-4 py-2.5 rounded-xl
+                          font-bold text-sm hover:opacity-90 transition-all active:scale-95 w-full sm:w-auto">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                    Nuevo proyecto
+                </a>
+            </div>
         </div>
 
         {{-- ── Estadísticas ──────────────────────────────────────────── --}}

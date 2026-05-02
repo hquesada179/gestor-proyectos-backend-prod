@@ -1,83 +1,125 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <p class="text-xs text-gray-500 mb-1">
-                <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="hover:text-indigo-600">
-                    {{ $proyecto->nombre }} › Sprints
+        <div class="flex flex-col">
+            <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="hover:text-secondary-container transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span>
+                    {{ $proyecto->nombre }}
                 </a>
-            </p>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Nuevo sprint
-            </h2>
+                <span>/</span>
+                <span>Sprints</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary-container" style="font-size: 24px;">sprint</span>
+                <h2 class="font-semibold text-xl text-gray-300 leading-tight">
+                    Nuevo sprint
+                </h2>
+            </div>
         </div>
     </x-slot>
 
+    <style>
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e4ec;
+            font-size: 0.875rem;
+            border-radius: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .form-input::placeholder { color: #3f424e; }
+        .form-input:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .form-input:focus {
+            border-color: var(--color-secondary-container, #7c6af7);
+            background: rgba(124, 106, 247, 0.07);
+            box-shadow: 0 0 0 3px rgba(124, 106, 247, 0.15);
+        }
+        select.form-input option { background: #1a1a2e; color: #e2e4ec; }
+        textarea.form-input { resize: none; }
+    </style>
+
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-white/5">
 
-                    <form method="POST" action="{{ route('proyectos.sprints.store', $proyecto) }}">
+                <div class="bg-surface/50 p-6 border-b border-white/10">
+                    <h3 class="text-xl font-bold text-white">Detalles del Sprint</h3>
+                    <p class="text-sm text-on-surface-variant mt-1">Define el alcance y las fechas de este ciclo de trabajo.</p>
+                </div>
+
+                <div class="p-6 sm:p-8">
+                    <form method="POST" action="{{ route('proyectos.sprints.store', $proyecto) }}" class="space-y-6">
                         @csrf
 
-                        <div class="mb-4">
-                            <x-input-label for="nombre" value="Nombre" />
-                            <x-text-input id="nombre" name="nombre" type="text"
-                                class="mt-1 block w-full"
+                        <div>
+                            <label for="nombre" class="block mb-2 text-sm font-medium text-gray-300">
+                                Nombre <span class="text-red-400">*</span>
+                            </label>
+                            <input id="nombre" name="nombre" type="text"
+                                class="form-input"
                                 value="{{ old('nombre') }}"
                                 placeholder="Ej: Sprint 1"
                                 required autofocus />
-                            <x-input-error :messages="$errors->get('nombre')" class="mt-1" />
+                            @error('nombre') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="mb-4">
-                            <x-input-label for="objetivo" value="Objetivo" />
-                            <textarea id="objetivo" name="objetivo"
-                                rows="3"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                        <div>
+                            <label for="objetivo" class="block mb-2 text-sm font-medium text-gray-300">Objetivo</label>
+                            <textarea id="objetivo" name="objetivo" rows="3"
+                                class="form-input"
                                 placeholder="¿Qué se espera lograr en este sprint?">{{ old('objetivo') }}</textarea>
-                            <x-input-error :messages="$errors->get('objetivo')" class="mt-1" />
+                            @error('objetivo') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="mb-4">
-                            <x-input-label for="estado" value="Estado" />
-                            <select id="estado" name="estado"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                        <div>
+                            <label for="estado" class="block mb-2 text-sm font-medium text-gray-300">Estado</label>
+                            <select id="estado" name="estado" class="form-input">
                                 @foreach (['planificado' => 'Planificado', 'en_progreso' => 'En progreso', 'completado' => 'Completado'] as $value => $label)
                                     <option value="{{ $value }}" {{ old('estado', 'planificado') === $value ? 'selected' : '' }}>
                                         {{ $label }}
                                     </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('estado')" class="mt-1" />
+                            @error('estado') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                                <x-input-label for="fecha_inicio" value="Fecha de inicio" />
-                                <x-text-input id="fecha_inicio" name="fecha_inicio" type="date"
-                                    class="mt-1 block w-full"
+                                <label for="fecha_inicio" class="block mb-2 text-sm font-medium text-gray-300">Fecha de inicio</label>
+                                <input id="fecha_inicio" name="fecha_inicio" type="date"
+                                    class="form-input [color-scheme:dark]"
                                     value="{{ old('fecha_inicio') }}" />
-                                <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-1" />
+                                @error('fecha_inicio') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <x-input-label for="fecha_fin" value="Fecha de fin" />
-                                <x-text-input id="fecha_fin" name="fecha_fin" type="date"
-                                    class="mt-1 block w-full"
+                                <label for="fecha_fin" class="block mb-2 text-sm font-medium text-gray-300">Fecha de fin</label>
+                                <input id="fecha_fin" name="fecha_fin" type="date"
+                                    class="form-input [color-scheme:dark]"
                                     value="{{ old('fecha_fin') }}" />
-                                <x-input-error :messages="$errors->get('fecha_fin')" class="mt-1" />
+                                @error('fecha_fin') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-3 mt-6">
-                            <x-primary-button>Guardar sprint</x-primary-button>
-                            <a href="{{ route('proyectos.sprints.index', $proyecto) }}">
-                                <x-secondary-button type="button">Cancelar</x-secondary-button>
+                        <div class="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-8">
+                            <a href="{{ route('proyectos.sprints.index', $proyecto) }}"
+                               class="flex items-center gap-2 bg-surface border border-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-white/5 transition-all active:scale-95">
+                                Cancelar
                             </a>
+                            <button type="submit"
+                               class="flex items-center gap-2 bg-secondary-container text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-secondary-container/20">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+                                Guardar sprint
+                            </button>
                         </div>
-
                     </form>
-
                 </div>
             </div>
         </div>

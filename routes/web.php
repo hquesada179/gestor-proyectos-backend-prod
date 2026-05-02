@@ -10,6 +10,7 @@ use App\Http\Controllers\ScrumBoardController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserStoryController;
+use App\Http\Controllers\ChatController;
 use App\Models\Sprint;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +47,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/scrum-board', [ScrumBoardController::class, 'index'])->name('scrum-board.index');
     Route::get('/scrum-board/{proyecto}', [ScrumBoardController::class, 'show'])->name('scrum-board.show');
     Route::patch('/scrum-board/tasks/{task}/status', [ScrumBoardController::class, 'updateStatus'])->name('scrum-board.tasks.status');
-
+    //Chat
+    Route::get('proyectos/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
     Route::resource('proyectos.requirements', RequirementController::class);
