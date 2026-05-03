@@ -32,7 +32,7 @@
             </div>
 
             {{-- Messages Area --}}
-            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 flex flex-col" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;">
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 flex flex-col" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;">
                 
                 {{-- Date Separator --}}
                 <div class="flex justify-center">
@@ -53,20 +53,10 @@
                     </div>
                 </div>
 
-                {{-- User Message --}}
-                <div class="flex items-end gap-3 flex-row-reverse group">
-                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 border border-white/20 mb-1">
-                        <span class="material-symbols-outlined text-white text-[16px]">person</span>
-                    </div>
-                    <div class="bg-secondary-container rounded-2xl rounded-br-sm p-4 max-w-[85%] sm:max-w-[75%] shadow-md relative">
-                        <p class="text-sm text-white leading-relaxed">
-                            Quiero crear una aplicación web para gestionar las tareas de mi equipo de marketing. Necesito algo con tableros Kanban, roles y notificaciones.
-                        </p>
-                    </div>
-                </div>
+
 
                 {{-- AI Typing Indicator (Animated) --}}
-                <div class="flex items-end gap-3">
+                <div id="typing-indicator" class="hidden items-end gap-3">
                     <div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center flex-shrink-0 border border-secondary-container/30 mb-1">
                         <span class="material-symbols-outlined text-secondary-container text-[16px]">smart_toy</span>
                     </div>
@@ -80,21 +70,24 @@
 
             {{-- Input Area --}}
             <div class="p-3 sm:p-4 bg-surface/50 border-t border-white/10 backdrop-blur-md z-10">
-                <form class="relative flex items-end gap-2 max-w-4xl mx-auto">
+                <form id="chat-form" class="relative flex items-end gap-2 max-w-4xl mx-auto">
                     <button type="button" class="p-2 sm:p-3 text-gray-400 hover:text-white transition-colors flex-shrink-0" title="Adjuntar archivo">
                         <span class="material-symbols-outlined">attach_file</span>
                     </button>
                     
                     <div class="flex-1 bg-black/20 border border-white/10 rounded-xl overflow-hidden focus-within:border-secondary-container/50 focus-within:bg-black/30 transition-all duration-300">
-                        <textarea 
+                        <textarea style="color: black;"
+                            id="chat-input"
+                            name="message"
                             rows="1" 
                             class="w-full bg-transparent text-white text-sm p-3 sm:p-4 focus:outline-none focus:ring-0 border-none resize-none max-h-32 placeholder-gray-500 block"
                             placeholder="Describe tu proyecto aquí..."
                             oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                            onkeydown="if(event.keyCode === 13 && !event.shiftKey) { event.preventDefault(); document.getElementById('chat-form').dispatchEvent(new Event('submit')); }"
                         ></textarea>
                     </div>
                     
-                    <button type="submit" class="p-3 sm:p-4 bg-secondary-container text-white rounded-xl hover:opacity-90 active:scale-95 transition-all flex-shrink-0 shadow-lg shadow-secondary-container/20 flex items-center justify-center group" title="Enviar mensaje">
+                    <button type="submit" id="send-btn" class="p-3 sm:p-4 bg-secondary-container text-white rounded-xl hover:opacity-90 active:scale-95 transition-all flex-shrink-0 shadow-lg shadow-secondary-container/20 flex items-center justify-center group" title="Enviar mensaje">
                         <span class="material-symbols-outlined text-lg group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">send</span>
                     </button>
                 </form>
@@ -105,4 +98,101 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('chat-form');
+            const input = document.getElementById('chat-input');
+            const messagesContainer = document.getElementById('chat-messages');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const sendBtn = document.getElementById('send-btn');
+            
+            function scrollToBottom() {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function appendUserMessage(text) {
+                const html = `
+                    <div class="flex items-end gap-3 flex-row-reverse group">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 border border-white/20 mb-1">
+                            <span class="material-symbols-outlined text-white text-[16px]">person</span>
+                        </div>
+                        <div class="bg-secondary-container rounded-2xl rounded-br-sm p-4 max-w-[85%] sm:max-w-[75%] shadow-md relative">
+                            <p class="text-sm text-white leading-relaxed whitespace-pre-wrap">${text}</p>
+                        </div>
+                    </div>
+                `;
+                typingIndicator.insertAdjacentHTML('beforebegin', html);
+                scrollToBottom();
+            }
+
+            function appendAIMessage(text) {
+                const html = `
+                    <div class="flex items-end gap-3 group">
+                        <div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center flex-shrink-0 border border-secondary-container/30 mb-1">
+                            <span class="material-symbols-outlined text-secondary-container text-[16px]">smart_toy</span>
+                        </div>
+                        <div class="bg-surface/80 border border-white/10 rounded-2xl rounded-bl-sm p-4 max-w-[85%] sm:max-w-[75%] shadow-sm relative">
+                            <p class="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">${text}</p>
+                        </div>
+                    </div>
+                `;
+                typingIndicator.insertAdjacentHTML('beforebegin', html);
+                scrollToBottom();
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const message = input.value.trim();
+                if (!message) return;
+                
+                // 1. Show User message
+                appendUserMessage(message);
+                
+                // 2. Clear input
+                input.value = '';
+                input.style.height = '';
+                sendBtn.disabled = true;
+                
+                // 3. Show typing
+                typingIndicator.classList.remove('hidden');
+                typingIndicator.classList.add('flex');
+                scrollToBottom();
+                
+                try {
+                    // 4. Send to server
+                    const response = await fetch("{{ route('chat.send') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ message })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // 5. Hide typing
+                    typingIndicator.classList.add('hidden');
+                    typingIndicator.classList.remove('flex');
+                    
+                    // 6. Show AI Message
+                    if (data.response) {
+                        appendAIMessage(data.response);
+                    } else {
+                        appendAIMessage("Error: No se recibió respuesta.");
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    typingIndicator.classList.add('hidden');
+                    typingIndicator.classList.remove('flex');
+                    appendAIMessage("Lo siento, ocurrió un error al intentar conectarme.");
+                } finally {
+                    sendBtn.disabled = false;
+                    input.focus();
+                }
+            });
+        });
+    </script>
 </x-app-layout>

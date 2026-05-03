@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/scrum-board/tasks/{task}/status', [ScrumBoardController::class, 'updateStatus'])->name('scrum-board.tasks.status');
     //Chat
     Route::get('proyectos/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('proyectos/chat', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
     Route::resource('proyectos.requirements', RequirementController::class);

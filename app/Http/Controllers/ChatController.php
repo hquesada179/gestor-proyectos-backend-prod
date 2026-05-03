@@ -8,22 +8,20 @@ class ChatController extends Controller
 {
 
 
-    public function __invoke(Request $request)
+    public function sendMessage(Request $request)
     {
-        // ✅ Puedes validar los datos si quieres
-        // $request->validate([...]);
+        set_time_limit(0); // Prevent PHP from timing out while waiting for Ollama
         
-        // ✅ Puedes acceder a cualquier campo del formulario
-        $nombre = $request->input('nombre_proyecto');
-        $descripcion = $request->input('descripcion');
-        
-        // ✅ Aquí guardas en la base de datos
-        // $proyecto = \App\Models\Proyecto::create([...]);
-        
-        // ✅ Aquí llamas a la API de OpenAI
-        // $respuestaIA = \Illuminate\Support\Facades\Http::post('https://api.openai.com/v1/chat/completions', [...]);
-        
+        $request->validate([
+            'message' => 'required|string'
+        ]);
 
+        $ochat = new \App\AI\Ochat();
+        $response = $ochat->send($request->message);
+
+        return response()->json([
+            'response' => $response['response'] ?? 'Sin respuesta de la IA.',
+        ]);
     }
     public function index()
     {
