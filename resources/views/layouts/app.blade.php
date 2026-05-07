@@ -48,6 +48,7 @@
                     && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
                 $isMisTareas  = $ruta === 'mis-tareas';
                 $isScrumBoard = str_starts_with($ruta, 'scrum-board');
+                $isAiAssist   = str_starts_with($ruta, 'asistente-ia');
             @endphp
 
             <a href="{{ route('dashboard') }}"
@@ -109,6 +110,19 @@
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium nav-link-inactive hover:translate-x-0.5 transition-all duration-150">
                 <span class="material-symbols-outlined" style="font-size: 20px;">inventory_2</span>
                 Insumos
+            </a>
+
+            <div class="my-3 mx-1 border-t border-white/5"></div>
+
+            <p class="px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
+                Inteligencia Artificial
+            </p>
+
+            <a href="{{ route('asistente-ia.index') }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isAiAssist ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
+                <span class="material-symbols-outlined" style="font-size: 20px; font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                Asistente IA
             </a>
 
         </nav>
