@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aether Control - Gestor de Proyectos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #051424;
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 20px rgba(167, 75, 254, 0.15);
+            border: 1px solid rgba(167, 75, 254, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-error": "#690005",
+                        "surface": "#051424",
+                        "surface-tint": "#c5c6ce",
+                        "on-background": "#d4e4fa",
+                        "tertiary-fixed": "#f0dbff",
+                        "on-tertiary": "#490080",
+                        "on-primary-fixed": "#191c21",
+                        "on-secondary-fixed-variant": "#3422cc",
+                        "primary": "#c5c6ce",
+                        "primary-fixed": "#e1e2ea",
+                        "surface-variant": "#273647",
+                        "on-secondary": "#1d00a5",
+                        "secondary-fixed": "#e2dfff",
+                        "primary-fixed-dim": "#c5c6ce",
+                        "surface-container-lowest": "#010f1f",
+                        "surface-bright": "#2c3a4c",
+                        "on-primary-container": "#7c7e85",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#44474c",
+                        "on-tertiary-fixed-variant": "#6800b3",
+                        "tertiary-fixed-dim": "#ddb8ff",
+                        "secondary": "#c3c0ff",
+                        "on-secondary-container": "#afadff",
+                        "inverse-primary": "#5c5e65",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#2c0051",
+                        "surface-dim": "#051424",
+                        "background": "#051424",
+                        "on-secondary-fixed": "#0f0069",
+                        "tertiary": "#ddb8ff",
+                        "surface-container-high": "#1c2b3c",
+                        "surface-container-highest": "#273647",
+                        "inverse-on-surface": "#233143",
+                        "primary-container": "#111319",
+                        "secondary-container": "#3422cc",
+                        "surface-container": "#122131",
+                        "surface-container-low": "#0d1c2d",
+                        "on-primary-fixed-variant": "#44474d",
+                        "error-container": "#93000a",
+                        "on-surface": "#d4e4fa",
+                        "outline": "#8e9197",
+                        "inverse-surface": "#d4e4fa",
+                        "on-tertiary-container": "#a84dff",
+                        "on-surface-variant": "#c4c6cd",
+                        "tertiary-container": "#20003e",
+                        "on-primary": "#2e3037"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-50 border-r border-white/10 bg-[#0F1117]/90 backdrop-blur-[20px] flex flex-col h-full py-6">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl">deployed_code</span>
+</div>
+<div class="flex flex-col">
+<span class="text-lg font-black text-white">Project Alpha</span>
+<span class="text-[11px] text-slate-500 uppercase tracking-widest font-bold">Engineering Team</span>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Workspace -->
+<a class="text-slate-400 flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">space_dashboard</span>
+<span class="font-body-sm text-body-sm">Workspace</span>
+</a>
+<!-- Active Sprints - ACTIVE STATE -->
+<a class="bg-white/5 text-blue-400 border-r-2 border-blue-500 flex items-center gap-3 px-6 py-3" href="#">
+<span class="material-symbols-outlined">view_kanban</span>
+<span class="font-body-sm text-body-sm">Active Sprints</span>
+</a>
+<a class="text-slate-400 flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">task_alt</span>
+<span class="font-body-sm text-body-sm">My Assignments</span>
+</a>
+<a class="text-slate-400 flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-body-sm text-body-sm">Project Files</span>
+</a>
+<a class="text-slate-400 flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-sm text-body-sm">Team Directory</span>
+</a>
+</nav>
+<div class="mt-auto px-6 space-y-4">
+<button class="w-full flex items-center justify-center gap-2 bg-secondary-container text-white py-2.5 rounded-xl font-medium hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+                AI Command
+            </button>
+<div class="space-y-1">
+<a class="text-slate-400 flex items-center gap-3 py-2 hover:text-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">menu_book</span>
+<span class="font-body-sm text-body-sm">Documentation</span>
+</a>
+<a class="text-slate-400 flex items-center gap-3 py-2 hover:text-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 w-full z-40 border-b border-white/10 bg-[#0F1117]/60 backdrop-blur-[20px] shadow-[0_4px_30px_rgba(0,0,0,0.1)] flex justify-between items-center h-16 px-8 ml-[280px]">
+<div class="flex items-center gap-12">
+<span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Aether Control</span>
+<nav class="flex items-center gap-8">
+<a class="text-slate-400 hover:text-slate-100 transition-colors font-inter text-sm font-medium tracking-tight" href="#">Board</a>
+<a class="text-blue-400 border-b-2 border-blue-500 pb-4 mt-4 font-inter text-sm font-medium tracking-tight" href="#">Timeline</a>
+<a class="text-slate-400 hover:text-slate-100 transition-colors font-inter text-sm font-medium tracking-tight" href="#">Backlog</a>
+<a class="text-slate-400 hover:text-slate-100 transition-colors font-inter text-sm font-medium tracking-tight" href="#">Insights</a>
+</nav>
+</div>
+<div class="flex items-center gap-6 pr-[280px]">
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:bg-white/5 rounded-lg transition-all"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-slate-400 hover:bg-white/5 rounded-lg transition-all"><span class="material-symbols-outlined">history</span></button>
+</div>
+<button class="px-4 py-1.5 bg-blue-500 text-white rounded-lg font-medium text-sm hover:bg-blue-600 transition-colors">Create Task</button>
+<div class="relative group">
+<div class="w-8 h-8 rounded-full border border-white/20 cursor-pointer overflow-hidden active:scale-95 transition-transform ring-2 ring-blue-500 ring-offset-2 ring-offset-surface">
+<img class="w-full h-full object-cover" data-alt="Close up studio portrait of a professional man with sharp features and a confident expression, set against a dark architectural background with subtle violet accent lighting. The photography style is high-contrast, professional, and cinematic, maintaining the futuristic corporate aesthetic of the Efficiency AI brand with deep blue and purple undertones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiu-6n202KyRrK2MrqZpAd2F4knUPLCZFjGIkXp0finMHWhK1JO8tQwTN3_FbVpsI2FDE04ZX92Z-MkzKvfA75VAFoaov1DepmpySjfIal74jy__NX7H3JJr1GsWDT0yRUWRqne1dZn1O4BOya6JdvuOF8ielWqtYx6ETOyl44fQVse0iv4sd0cxGGrOSNp7Dm9tv_0DtiqU5BsEQGPqbTo7upcsNfiD3FL4Svsbc-lxyYA4hOByyTFBm-blgZU4fu9dd1FYS-mG_s"/>
+</div>
+<!-- User Profile Dropdown (Primary Task Focus) -->
+<div class="absolute right-0 mt-3 w-[360px] bg-surface-container-highest glass-panel rounded-2xl shadow-2xl z-[60] py-2 overflow-hidden ai-glow">
+<!-- Profile Header -->
+<div class="px-6 py-6 border-b border-white/5 flex flex-col items-center text-center">
+<div class="relative mb-3">
+<div class="w-24 h-24 rounded-full border-2 border-blue-500/50 p-1">
+<div class="w-full h-full rounded-full overflow-hidden relative group/avatar">
+<img class="w-full h-full object-cover" data-alt="A high-fidelity close-up profile picture of a male executive in a sleek dark blazer, positioned in a high-tech corporate office at night. The lighting is dominated by soft glowing screens and ambient purple LED strips, creating a professional yet futuristic atmosphere. The image is crisp, detailed, and perfectly aligned with the dark mode glassmorphism UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCl4eaP_syFo1Db-sapAbaJgsaeQtMG4TbvbbF2fCHe5wxFcVUYpMquRXv6k13Evxr-IbmVHoxEGVnF1XlFTIyyu8tGrNSLVsjRqk4YBuSiEeFs5BuhKvp_vdEokYGHTonrnvS0uX0ezKGRHFEuo8SYpP2cnSOAKoakm1qRVstmXRQnEkDiYUt5Fjai9RQHtmmE5PSIfXfrQh6U_Y0kqY86fwKlvFXwBC6ib1fNvUHnSUU1Z036WXBVQjZypEFZHTbHMl7jfEtUcP"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+</div>
+<div class="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-4 border-surface-container-highest rounded-full"></div>
+</div>
+<h3 class="font-headline-md text-headline-md text-white mb-1">Adrian Sterling</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">adrian.sterling@efficiency.ai</p>
+<span class="mt-3 px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] uppercase font-bold tracking-widest rounded-full border border-blue-500/20">Active Session</span>
+</div>
+<!-- Photo Action -->
+<div class="px-6 py-4 border-b border-white/5">
+<button class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all text-left">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">upload_file</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-white">Change profile photo</p>
+<p class="text-[11px] text-on-surface-variant">Upload JPG or PNG (max 5MB)</p>
+</div>
+</button>
+</div>
+<!-- Main Options -->
+<div class="px-3 py-2 border-b border-white/5">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-blue-400">person</span>
+<span class="text-sm font-medium">My Profile</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-blue-400">manage_accounts</span>
+<span class="text-sm font-medium">Account Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-blue-400">tune</span>
+<span class="text-sm font-medium">Preferences</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-blue-400">security</span>
+<span class="text-sm font-medium">Security</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-blue-400">notifications_active</span>
+<span class="text-sm font-medium">Notifications</span>
+<span class="ml-auto w-5 h-5 flex items-center justify-center bg-blue-500 text-white text-[10px] rounded-full">3</span>
+</a>
+</div>
+<!-- Visual Preferences -->
+<div class="px-3 py-4 space-y-1 border-b border-white/5">
+<div class="flex items-center justify-between px-3 py-1">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl text-blue-400">dark_mode</span>
+<span class="text-sm text-on-surface-variant">Dark Mode</span>
+</div>
+<div class="w-10 h-5 bg-blue-500 rounded-full relative cursor-pointer">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between px-3 py-1 cursor-pointer hover:bg-white/5 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl text-on-surface-variant">language</span>
+<span class="text-sm text-on-surface-variant">Language</span>
+</div>
+<span class="text-sm text-blue-400">Spanish</span>
+</div>
+<div class="flex items-center justify-between px-3 py-1 cursor-pointer hover:bg-white/5 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl text-on-surface-variant">palette</span>
+<span class="text-sm text-on-surface-variant">Theme</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-3 h-3 rounded-full bg-blue-500"></div>
+<div class="w-3 h-3 rounded-full bg-purple-500"></div>
+<span class="text-[10px] text-on-surface-variant ml-1">Blue/Violet</span>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="px-3 py-2">
+<button class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-500/10 transition-all text-red-400 group">
+<span class="material-symbols-outlined text-xl">logout</span>
+<span class="text-sm font-bold">Sign Out</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-24 px-8 pb-40 h-screen overflow-y-auto custom-scrollbar">
+<!-- Dashboard Content Preview (Faded background style) -->
+<div class="max-w-container-max mx-auto opacity-40 select-none pointer-events-none">
+<header class="mb-12">
+<h1 class="font-display-lg text-display-lg text-white mb-2">Project Performance</h1>
+<p class="text-on-surface-variant">Real-time engineering metrics for Sprint #24</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<!-- Large Metric Card -->
+<div class="col-span-8 h-[360px] glass-panel rounded-2xl p-8 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xl font-bold text-white">Velocity Trend</h2>
+<span class="material-symbols-outlined text-blue-400">trending_up</span>
+</div>
+<div class="flex items-end gap-2 h-40 mt-8">
+<div class="flex-1 bg-blue-500/20 rounded-t-lg relative" style="height: 60%">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]"></div>
+</div>
+<div class="flex-1 bg-blue-500/20 rounded-t-lg relative" style="height: 45%">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]"></div>
+</div>
+<div class="flex-1 bg-blue-500/20 rounded-t-lg relative" style="height: 80%">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]"></div>
+</div>
+<div class="flex-1 bg-indigo-500/40 rounded-t-lg relative" style="height: 95%">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]"></div>
+</div>
+<div class="flex-1 bg-blue-500/20 rounded-t-lg relative" style="height: 70%">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Metric -->
+<div class="col-span-4 h-[360px] glass-panel rounded-2xl p-8 ai-glow flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-purple-400" data-weight="fill">auto_awesome</span>
+<h3 class="font-bold text-white uppercase tracking-widest text-xs">AI Health Score</h3>
+</div>
+<div class="text-center py-4">
+<span class="text-7xl font-black text-white">94</span>
+<span class="text-2xl font-bold text-purple-400">%</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase">
+<span>Efficiency</span>
+<span>Optimal</span>
+</div>
+<div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-purple-500 w-[94%]"></div>
+</div>
+</div>
+</div>
+<!-- Three Bottom Cards -->
+<div class="col-span-4 glass-panel rounded-2xl p-6 h-[200px]">
+<span class="material-symbols-outlined text-on-surface-variant mb-4">task</span>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Open Tasks</p>
+<p class="text-3xl font-bold text-white">42 <span class="text-xs text-blue-400 font-normal">(-12%)</span></p>
+</div>
+<div class="col-span-4 glass-panel rounded-2xl p-6 h-[200px]">
+<span class="material-symbols-outlined text-on-surface-variant mb-4">timer</span>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Avg. Cycle Time</p>
+<p class="text-3xl font-bold text-white">3.2d <span class="text-xs text-emerald-400 font-normal">(Improved)</span></p>
+</div>
+<div class="col-span-4 glass-panel rounded-2xl p-6 h-[200px]">
+<span class="material-symbols-outlined text-on-surface-variant mb-4">bug_report</span>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Active Bugs</p>
+<p class="text-3xl font-bold text-white">08 <span class="text-xs text-red-400 font-normal">(High Priority)</span></p>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Command Bar -->
+<div class="fixed bottom-12 left-1/2 -translate-x-1/2 ml-[140px] w-full max-w-2xl px-4 z-50">
+<div class="bg-surface-container-highest glass-panel rounded-2xl p-2 ai-glow flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant pl-4">search</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/50 font-body-base" placeholder="Command + K to search or ask AI..." type="text"/>
+<div class="flex items-center gap-2 pr-2">
+<kbd class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-on-surface-variant font-bold">⌘ K</kbd>
+<button class="w-10 h-10 rounded-xl bg-secondary-container text-white flex items-center justify-center hover:shadow-[0_0_15px_rgba(52,34,204,0.4)] transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>
