@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AiAssistantController;
+use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\ModuloSelectorController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\ProfileController;
@@ -43,6 +44,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/mis-tareas', [MyTasksController::class, 'index'])->name('mis-tareas');
     Route::get('/modulo/{modulo}', [ModuloSelectorController::class, 'show'])->name('modulo.selector');
+
+    // Calendario
+    Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario.index');
 
     // Scrum Board (Kanban)
     Route::get('/scrum-board', [ScrumBoardController::class, 'index'])->name('scrum-board.index');

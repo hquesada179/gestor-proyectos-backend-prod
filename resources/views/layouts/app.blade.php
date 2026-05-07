@@ -47,8 +47,9 @@
                 $isProyectos  = str_starts_with($ruta, 'proyectos.')
                     && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
                 $isMisTareas  = $ruta === 'mis-tareas';
-                $isScrumBoard = str_starts_with($ruta, 'scrum-board');
-                $isAiAssist   = str_starts_with($ruta, 'asistente-ia');
+                $isScrumBoard  = str_starts_with($ruta, 'scrum-board');
+                $isCalendario  = $ruta === 'calendario.index';
+                $isAiAssist    = str_starts_with($ruta, 'asistente-ia');
             @endphp
 
             <a href="{{ route('dashboard') }}"
@@ -110,6 +111,13 @@
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium nav-link-inactive hover:translate-x-0.5 transition-all duration-150">
                 <span class="material-symbols-outlined" style="font-size: 20px;">inventory_2</span>
                 Insumos
+            </a>
+
+            <a href="{{ route('calendario.index') }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isCalendario ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
+                <span class="material-symbols-outlined" style="font-size: 20px;">calendar_month</span>
+                Calendario
             </a>
 
             <div class="my-3 mx-1 border-t border-white/5"></div>

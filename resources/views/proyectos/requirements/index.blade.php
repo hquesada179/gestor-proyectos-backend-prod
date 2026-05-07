@@ -65,6 +65,39 @@
         <div class="flex-1 min-h-0 overflow-y-auto" id="req-board">
             <div class="px-4 sm:px-6 py-4 space-y-2 max-w-screen-xl mx-auto">
 
+                {{-- ── HERO HEADER ─────────────────────────────────────── --}}
+                <div class="flex items-start justify-between gap-4 mb-3 pb-3 border-b border-white/[0.05]">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="material-symbols-outlined text-indigo-400/80 flex-shrink-0"
+                                  style="font-size: 18px;">layers</span>
+                            <h1 class="text-sm font-bold text-white truncate">{{ $proyecto->nombre }}</h1>
+                        </div>
+                        <p class="text-xs text-gray-500 pl-7">
+                            Backlog del proyecto
+                            <span class="text-gray-700 mx-1">·</span>
+                            Requerimientos → Historias de usuario → Sprint
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="text-center px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl
+                                    min-w-[56px]">
+                            <div class="text-base font-bold text-white tabular-nums leading-tight">
+                                {{ $requirements->count() }}
+                            </div>
+                            <div class="text-[10px] text-gray-500">Total</div>
+                        </div>
+                        <div class="text-center px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl
+                                    min-w-[56px]">
+                            <div class="text-base font-bold text-gray-400 tabular-nums leading-tight">
+                                {{ $backlog->count() }}
+                            </div>
+                            <div class="text-[10px] text-gray-500">Sin sprint</div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Flash success --}}
                 @if(session('success'))
                 <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl
@@ -145,8 +178,9 @@
                         {{-- Section body --}}
                         <div class="section-body mt-0.5 ml-2 pl-1 border-l border-white/5 space-y-0.5 py-0.5">
                             @include('proyectos.requirements.partials.req-rows', [
-                                'items'    => $group['items'],
-                                'proyecto' => $proyecto,
+                                'items'         => $group['items'],
+                                'proyecto'      => $proyecto,
+                                'currentSprint' => $group['sprint'],
                             ])
                         </div>
 
@@ -184,8 +218,9 @@
                     {{-- Backlog body --}}
                     <div class="section-body mt-0.5 ml-2 pl-1 border-l border-white/5 space-y-0.5 py-0.5">
                         @include('proyectos.requirements.partials.req-rows', [
-                            'items'    => $backlog,
-                            'proyecto' => $proyecto,
+                            'items'         => $backlog,
+                            'proyecto'      => $proyecto,
+                            'currentSprint' => null,
                         ])
                     </div>
 
@@ -212,16 +247,17 @@
 
     @push('scripts')
     <style>
+        /* ── Filter chips ──────────────────────────────────────────── */
         .filter-btn {
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.625rem;
-            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
             font-size: 0.7rem;
             font-weight: 500;
             border: 1px solid rgba(255,255,255,0.1);
             color: rgba(156,163,175,1);
-            transition: all 0.1s;
+            transition: all 0.15s;
             cursor: pointer;
             background: transparent;
             white-space: nowrap;
@@ -229,11 +265,71 @@
         .filter-btn:hover {
             border-color: rgba(255,255,255,0.2);
             color: #fff;
+            background: rgba(255,255,255,0.04);
         }
         .filter-btn.filter-active {
-            border-color: rgba(99,102,241,0.4);
-            background: rgba(99,102,241,0.12);
+            border-color: rgba(99,102,241,0.5);
+            background: rgba(99,102,241,0.15);
             color: rgb(165,180,252);
+        }
+        [data-filter="funcional"].filter-active {
+            border-color: rgba(59,130,246,0.5);
+            background: rgba(59,130,246,0.12);
+            color: rgb(147,197,253);
+        }
+        [data-filter="no_funcional"].filter-active {
+            border-color: rgba(139,92,246,0.5);
+            background: rgba(139,92,246,0.12);
+            color: rgb(196,181,253);
+        }
+        [data-filter="alta"].filter-active {
+            border-color: rgba(244,63,94,0.5);
+            background: rgba(244,63,94,0.12);
+            color: rgb(251,182,206);
+        }
+        [data-filter="media"].filter-active {
+            border-color: rgba(245,158,11,0.5);
+            background: rgba(245,158,11,0.10);
+            color: rgb(252,211,77);
+        }
+        [data-filter="baja"].filter-active {
+            border-color: rgba(100,116,139,0.4);
+            background: rgba(100,116,139,0.10);
+            color: rgb(148,163,184);
+        }
+        /* ── Req detail panel helpers ──────────────────────────────── */
+        .req-section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgb(75,85,99);
+            font-weight: 600;
+            margin-bottom: 0.375rem;
+        }
+        .req-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            color: rgba(156,163,175,1);
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .req-action-btn:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.06);
+        }
+        .req-action-danger:hover {
+            color: rgb(252,165,165);
+            background: rgba(239,68,68,0.08);
+            border-color: rgba(239,68,68,0.2);
         }
     </style>
 
