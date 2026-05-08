@@ -36,8 +36,17 @@
     };
 
     $sprintCount = (int)($proyecto->sprints_count ?? 0);
-    $userName    = auth()->user()->name ?? 'U';
-    $userInitial = mb_strtoupper(mb_substr($userName, 0, 1));
+
+    // Avatar palette (same 8 gradients as banner, assigned per user id)
+    $avPalette = [
+        ['#6d28d9','#818cf8'], ['#1e40af','#38bdf8'], ['#065f46','#34d399'],
+        ['#9f1239','#f472b6'], ['#92400e','#fb923c'], ['#6b21a8','#c084fc'],
+        ['#0c4a6e','#60a5fa'], ['#14532d','#86efac'],
+    ];
+
+    $displayMembers = $proyecto->displayMembers();
+    $visibleMembers = $displayMembers->take(3);
+    $extraCount     = max(0, $displayMembers->count() - 3);
 @endphp
 
 {{-- ─────────────────────────────────────────────────────────────────────────
@@ -174,22 +183,52 @@
             flex-shrink: 0;
          ">
 
-        {{-- Owner avatar + name --}}
-        <div style="display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden;">
-            <div style="
-                    width: 28px; height: 28px;
-                    border-radius: 999px;
-                    background: linear-gradient(135deg, {{ $c1 }}, {{ $c2 }});
-                    border: 1.5px solid rgba(255,255,255,0.15);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 11px;
-                    font-weight: 900;
-                    color: white;
-                    flex-shrink: 0;
-                 ">{{ $userInitial }}</div>
-            <span style="font-size: 10px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $userName }}</span>
+        {{-- Stacked member avatars ──────────────────────────────────────── --}}
+        <div style="display:flex; align-items:center;">
+            @forelse($visibleMembers as $member)
+            @php
+                $ac  = $avPalette[$member->id % 8];
+                $ml  = $loop->first ? '0' : '-10px';
+                $zi  = 4 - $loop->index;
+                $ini = mb_strtoupper(mb_substr($member->name, 0, 1));
+            @endphp
+            <div title="{{ $member->name }}"
+                 style="
+                    width:32px; height:32px; border-radius:50%;
+                    border:2px solid #16213a;
+                    margin-left:{{ $ml }};
+                    position:relative; z-index:{{ $zi }};
+                    overflow:hidden; flex-shrink:0;
+                    background:linear-gradient(135deg,{{ $ac[0] }},{{ $ac[1] }});
+                 ">
+                @if($member->profile_photo_path)
+                <img src="{{ asset('storage/' . $member->profile_photo_path) }}"
+                     alt="{{ $member->name }}"
+                     style="width:100%;height:100%;object-fit:cover;display:block;">
+                @else
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+                            font-size:11px;font-weight:900;color:rgba(255,255,255,.95);user-select:none;">{{ $ini }}</div>
+                @endif
+            </div>
+            @empty
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#475569;">
+                <span class="material-symbols-outlined" style="font-size:13px;">person_outline</span>
+                <span>Sin equipo</span>
+            </div>
+            @endforelse
+
+            @if($extraCount > 0)
+            <div title="{{ $extraCount }} miembro{{ $extraCount !== 1 ? 's' : '' }} más"
+                 style="
+                    width:32px; height:32px; border-radius:50%;
+                    border:2px solid rgba(99,102,241,0.5);
+                    margin-left:-10px; position:relative; z-index:0;
+                    background:rgba(99,102,241,0.2);
+                    display:flex; align-items:center; justify-content:center;
+                    font-size:10px; font-weight:800; color:#a5b4fc;
+                    flex-shrink:0; cursor:default;
+                 ">+{{ $extraCount }}</div>
+            @endif
         </div>
 
         {{-- Action button --}}

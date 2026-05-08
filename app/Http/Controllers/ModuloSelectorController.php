@@ -45,6 +45,12 @@ class ModuloSelectorController extends Controller
         $info = $this->modulos[$modulo];
 
         $proyectos = Proyecto::accessibleBy(Auth::id())
+            ->with([
+                'user',
+                'members' => fn ($q) => $q->where('status', 'activo')
+                                          ->whereNotNull('user_id')
+                                          ->with('user'),
+            ])
             ->withCount([
                 'sprints',
                 'tasks',

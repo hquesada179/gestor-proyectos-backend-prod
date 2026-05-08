@@ -21,6 +21,12 @@ class TeamController extends Controller
     public function index(): View
     {
         $proyectos = Proyecto::accessibleBy(Auth::id())
+            ->with([
+                'user',
+                'members' => fn ($q) => $q->where('status', 'activo')
+                                          ->whereNotNull('user_id')
+                                          ->with('user'),
+            ])
             ->withCount('members')
             ->latest()
             ->get();

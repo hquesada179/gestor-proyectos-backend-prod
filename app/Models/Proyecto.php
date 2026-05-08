@@ -76,6 +76,35 @@ class Proyecto extends Model
     }
 
     /**
+     * Returns a deduplicated collection of User objects to display as avatars:
+     * project owner first, then active members with accounts (excluding owner).
+     * Relies on 'user' and 'members.user' being already eager-loaded.
+     */
+    public function displayMembers(): \Illuminate\Support\Collection
+    {
+        $users   = collect();
+        $ownerId = $this->user_id;
+
+        if ($this->relationLoaded('user') && $this->user) {
+            $users->push($this->user);
+        }
+
+        if ($this->relationLoaded('members')) {
+            foreach ($this->members as $member) {
+                if ($member->status === 'activo'
+                    && $member->user_id
+                    && $member->user_id !== $ownerId
+                    && $member->relationLoaded('user')
+                    && $member->user) {
+                    $users->push($member->user);
+                }
+            }
+        }
+
+        return $users;
+    }
+
+    /**
      * Scope: projects owned by $userId OR where $userId is an active member.
      */
     public function scopeAccessibleBy(Builder $query, int $userId): Builder

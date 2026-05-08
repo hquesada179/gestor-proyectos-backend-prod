@@ -34,8 +34,14 @@
         default       => ['Activo',      'rgba(99,102,241,.12)', '#a5b4fc', 'rgba(99,102,241,.3)',  '#6366f1'],
     };
 
-    $userName    = auth()->user()->name ?? 'U';
-    $userInitial = mb_strtoupper(mb_substr($userName, 0, 1));
+    $avPalette = [
+        ['#6d28d9','#818cf8'], ['#1e40af','#38bdf8'], ['#065f46','#34d399'],
+        ['#9f1239','#f472b6'], ['#92400e','#fb923c'], ['#6b21a8','#c084fc'],
+        ['#0c4a6e','#60a5fa'], ['#14532d','#86efac'],
+    ];
+    $displayMembers = $proyecto->displayMembers();
+    $visibleMembers = $displayMembers->take(3);
+    $extraCount     = max(0, $displayMembers->count() - 3);
 @endphp
 
 <div class="project-list-item"
@@ -113,15 +119,30 @@
     </div>
     @endif
 
-    {{-- Owner --}}
-    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 6px;">
-        <div style="
-                width: 26px; height: 26px; border-radius: 999px;
-                background: linear-gradient(135deg, {{ $c1 }}, {{ $c2 }});
-                border: 1.5px solid rgba(255,255,255,0.12);
-                display: flex; align-items: center; justify-content: center;
-                font-size: 10px; font-weight: 900; color: white;
-             ">{{ $userInitial }}</div>
+    {{-- Stacked member avatars --}}
+    <div style="flex-shrink:0; display:flex; align-items:center;">
+        @forelse($visibleMembers as $member)
+        @php $ac=$avPalette[$member->id%8]; @endphp
+        <div title="{{ $member->name }}"
+             style="width:28px;height:28px;border-radius:50%;border:2px solid #16213a;margin-left:{{ $loop->first?'0':'-8px' }};position:relative;z-index:{{ 4-$loop->index }};overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,{{ $ac[0] }},{{ $ac[1] }});">
+            @if($member->profile_photo_path)
+            <img src="{{ asset('storage/'.$member->profile_photo_path) }}" alt="{{ $member->name }}"
+                 style="width:100%;height:100%;object-fit:cover;display:block;">
+            @else
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:rgba(255,255,255,.95);user-select:none;">{{ mb_strtoupper(mb_substr($member->name,0,1)) }}</div>
+            @endif
+        </div>
+        @empty
+        <div style="width:28px;height:28px;border-radius:50%;border:2px solid #16213a;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:13px;color:#475569;">person_outline</span>
+        </div>
+        @endforelse
+        @if($extraCount > 0)
+        <div title="{{ $extraCount }} más"
+             style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(99,102,241,.5);margin-left:-8px;position:relative;z-index:0;background:rgba(99,102,241,.2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#a5b4fc;flex-shrink:0;">
+            +{{ $extraCount }}
+        </div>
+        @endif
     </div>
 
     {{-- Action button --}}
