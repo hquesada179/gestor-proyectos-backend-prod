@@ -11,24 +11,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'firebase_uid', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'firebase_uid', 'email_verified_at', 'profile_photo_path'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
+    }
+
+    /** Returns the public URL of the profile photo, or empty string if not set. */
+    public function profilePhotoUrl(): string
+    {
+        return $this->profile_photo_path
+            ? asset('storage/' . $this->profile_photo_path)
+            : '';
     }
 
     public function proyectos(): HasMany

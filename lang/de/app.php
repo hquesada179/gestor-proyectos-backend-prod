@@ -31,6 +31,9 @@ return [
         'dark_mode'        => 'Dunkelmodus',
         'language'         => 'Sprache',
         'theme'            => 'Thema',
+        'photo_updated'    => 'Profilfoto erfolgreich aktualisiert.',
+        'photo_error'      => 'Das Bild muss JPG, PNG oder WEBP sein und maximal 5 MB wiegen.',
+        'photo_required'   => 'Bitte wählen Sie ein Bild zum Hochladen aus.',
     ],
 
     'actions' => [

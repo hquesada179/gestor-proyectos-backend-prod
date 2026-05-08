@@ -31,6 +31,9 @@ return [
         'dark_mode'        => '深色模式',
         'language'         => '语言',
         'theme'            => '主题',
+        'photo_updated'    => '头像已成功更新。',
+        'photo_error'      => '图片必须为 JPG、PNG 或 WEBP，且不超过 5MB。',
+        'photo_required'   => '请选择要上传的图片。',
     ],
 
     'actions' => [

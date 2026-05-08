@@ -366,11 +366,19 @@
                         <p class="text-xs font-bold text-white leading-none">{{ Auth::user()->name }}</p>
                         <p class="text-[10px] text-on-primary-container mt-0.5">{{ Auth::user()->email }}</p>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center
-                                text-white text-sm font-black border border-white/10 flex-shrink-0 select-none
-                                ring-2 ring-transparent group-hover:ring-blue-500/50 transition-all duration-150">
-                        {{ strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
-                    </div>
+                    {{-- Small avatar: photo or initial --}}
+                    @if(Auth::user()->profile_photo_path)
+                        <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}"
+                             alt="{{ Auth::user()->name }}"
+                             class="w-9 h-9 rounded-full object-cover border border-white/10 flex-shrink-0
+                                    ring-2 ring-transparent group-hover:ring-blue-500/50 transition-all duration-150">
+                    @else
+                        <div class="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center
+                                    text-white text-sm font-black border border-white/10 flex-shrink-0 select-none
+                                    ring-2 ring-transparent group-hover:ring-blue-500/50 transition-all duration-150">
+                            {{ strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                 </button>
 
                 {{-- Dropdown panel --}}
@@ -388,10 +396,17 @@
                     {{-- ── Cabecera de perfil ─────────────────────── --}}
                     <div class="px-6 py-5 border-b border-white/5 flex flex-col items-center text-center">
                         <div class="relative mb-3">
-                            <div class="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center
-                                        text-white text-3xl font-black border-2 border-blue-500/40 select-none">
-                                {{ strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
-                            </div>
+                            {{-- Large avatar: photo or initial --}}
+                            @if(Auth::user()->profile_photo_path)
+                                <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}"
+                                     alt="{{ Auth::user()->name }}"
+                                     class="w-20 h-20 rounded-full object-cover border-2 border-blue-500/40 select-none">
+                            @else
+                                <div class="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center
+                                            text-white text-3xl font-black border-2 border-blue-500/40 select-none">
+                                    {{ strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                            @endif
                             <div class="absolute bottom-0.5 right-0.5 w-4 h-4 bg-emerald-500 border-4 border-[#1c2b3c] rounded-full"></div>
                         </div>
                         <h3 class="text-sm font-bold text-white mb-0.5">{{ Auth::user()->name }}</h3>
@@ -401,18 +416,38 @@
                         </span>
                     </div>
 
-                    {{-- ── Cambiar foto (visual) ──────────────────── --}}
+                    {{-- ── Cambiar foto (formulario real) ────────────────── --}}
                     <div class="px-4 py-3 border-b border-white/5">
-                        <button type="button"
-                                class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all text-left cursor-pointer">
-                            <div class="w-10 h-10 rounded-lg bg-[#273647] flex items-center justify-center text-on-surface-variant flex-shrink-0">
-                                <span class="material-symbols-outlined" style="font-size:20px;">upload_file</span>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold text-white">{{ __('app.profile.change_photo') }}</p>
-                                <p class="text-[11px] text-on-surface-variant">{{ __('app.profile.upload_hint') }}</p>
-                            </div>
-                        </button>
+                        <form method="POST"
+                              action="{{ route('profile.photo.update') }}"
+                              enctype="multipart/form-data"
+                              id="profile-photo-form">
+                            @csrf
+                            <input id="profile_photo_input"
+                                   type="file"
+                                   name="profile_photo"
+                                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                                   class="hidden"
+                                   onchange="document.getElementById('profile-photo-form').submit()">
+                            <button type="button"
+                                    onclick="document.getElementById('profile_photo_input').click()"
+                                    class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all text-left cursor-pointer">
+                                <div class="w-10 h-10 rounded-lg bg-[#273647] flex items-center justify-center text-on-surface-variant flex-shrink-0">
+                                    <span class="material-symbols-outlined" style="font-size:20px;">upload_file</span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-white">{{ __('app.profile.change_photo') }}</p>
+                                    <p class="text-[11px] text-on-surface-variant">{{ __('app.profile.upload_hint') }}</p>
+                                </div>
+                            </button>
+                        </form>
+                        {{-- Error de validación --}}
+                        @error('profile_photo')
+                            <p class="mt-1 px-3 text-[11px] text-red-400 flex items-center gap-1">
+                                <span class="material-symbols-outlined" style="font-size:13px">error</span>
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
                     {{-- ── Opciones principales ───────────────────── --}}
@@ -533,6 +568,20 @@
             {{-- ─────────────────────────────────────────────────────── --}}
 
         </header>
+
+        {{-- Flash: profile photo success --}}
+        @if(session('profile_photo_success'))
+        <div id="flash-photo"
+             style="background:rgba(16,185,129,0.12); border-bottom:1px solid rgba(16,185,129,0.2);
+                    padding:10px 32px; display:flex; align-items:center; gap:8px; flex-shrink:0;">
+            <span class="material-symbols-outlined" style="font-size:16px;color:#34d399;">check_circle</span>
+            <span style="font-size:13px;color:#34d399;flex:1;">{{ session('profile_photo_success') }}</span>
+            <button onclick="document.getElementById('flash-photo').remove()"
+                    style="background:none;border:none;cursor:pointer;color:#64748b;display:flex;align-items:center;">
+                <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+            </button>
+        </div>
+        @endif
 
         {{-- Page content --}}
         <main class="flex-1 overflow-y-auto">

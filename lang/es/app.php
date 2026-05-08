@@ -24,7 +24,7 @@ return [
     'profile' => [
         'active'           => 'Activo',
         'change_photo'     => 'Cambiar foto de perfil',
-        'upload_hint'      => 'Sube JPG o PNG',
+        'upload_hint'      => 'JPG, PNG o WEBP · máx. 5MB',
         'my_profile'       => 'Mi perfil',
         'account_settings' => 'Configuración de cuenta',
         'preferences'      => 'Preferencias',
@@ -33,6 +33,9 @@ return [
         'dark_mode'        => 'Modo oscuro',
         'language'         => 'Idioma',
         'theme'            => 'Tema',
+        'photo_updated'    => 'Foto de perfil actualizada correctamente.',
+        'photo_error'      => 'La imagen debe ser JPG, PNG o WEBP y pesar máximo 5 MB.',
+        'photo_required'   => 'Selecciona una imagen para subir.',
     ],
 
     // ── Acciones / Botones ─────────────────────────────────────────────

@@ -31,6 +31,9 @@ return [
         'dark_mode'        => 'Mode sombre',
         'language'         => 'Langue',
         'theme'            => 'Thème',
+        'photo_updated'    => 'Photo de profil mise à jour correctement.',
+        'photo_error'      => 'L\'image doit être JPG, PNG ou WEBP et peser au maximum 5 Mo.',
+        'photo_required'   => 'Veuillez sélectionner une image à télécharger.',
     ],
 
     'actions' => [

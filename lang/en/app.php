@@ -22,7 +22,7 @@ return [
     'profile' => [
         'active'           => 'Active',
         'change_photo'     => 'Change profile photo',
-        'upload_hint'      => 'Upload JPG or PNG',
+        'upload_hint'      => 'JPG, PNG or WEBP · max 5MB',
         'my_profile'       => 'My profile',
         'account_settings' => 'Account settings',
         'preferences'      => 'Preferences',
@@ -31,6 +31,9 @@ return [
         'dark_mode'        => 'Dark mode',
         'language'         => 'Language',
         'theme'            => 'Theme',
+        'photo_updated'    => 'Profile photo updated successfully.',
+        'photo_error'      => 'The image must be JPG, PNG or WEBP and weigh at most 5 MB.',
+        'photo_required'   => 'Please select an image to upload.',
     ],
 
     'actions' => [
