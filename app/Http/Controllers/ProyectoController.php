@@ -11,7 +11,7 @@ class ProyectoController extends Controller
 {
     public function index()
     {
-        $proyectos = Auth::user()->proyectos()
+        $proyectos = Proyecto::accessibleBy(Auth::id())
             ->withCount(['tasks', 'sprints', 'requirements'])
             ->latest()
             ->get();
@@ -39,7 +39,7 @@ class ProyectoController extends Controller
 
     public function show(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $stats = [
             'inputs'       => $proyecto->inputs()->count(),

@@ -199,17 +199,21 @@
         <nav class="flex-1 flex flex-col gap-0.5 px-3 overflow-y-auto">
 
             @php
-                $ruta        = request()->route()?->getName() ?? '';
-                $isDashboard = $ruta === 'dashboard';
-                $isReqs      = str_starts_with($ruta, 'proyectos.requirements');
-                $isSprints   = str_starts_with($ruta, 'proyectos.sprints');
-                $isTareas    = str_starts_with($ruta, 'proyectos.tasks');
-                $isInputs    = str_starts_with($ruta, 'proyectos.inputs');
-                $isProyectos = str_starts_with($ruta, 'proyectos.') && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
-                $isMisTareas = $ruta === 'mis-tareas';
-                $isScrumBoard= str_starts_with($ruta, 'scrum-board');
-                $isCalendario= $ruta === 'calendario.index';
-                $isAiAssist  = str_starts_with($ruta, 'asistente-ia');
+                $ruta           = request()->route()?->getName() ?? '';
+                $isDashboard    = $ruta === 'dashboard';
+                $isReqs         = str_starts_with($ruta, 'proyectos.requirements');
+                $isSprints      = str_starts_with($ruta, 'proyectos.sprints');
+                $isTareas       = str_starts_with($ruta, 'proyectos.tasks');
+                $isInputs       = str_starts_with($ruta, 'proyectos.inputs');
+                $isProyectos    = str_starts_with($ruta, 'proyectos.') && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
+                $isMisTareas    = $ruta === 'mis-tareas';
+                $isScrumBoard   = str_starts_with($ruta, 'scrum-board');
+                $isCalendario   = $ruta === 'calendario.index';
+                $isAiAssist     = str_starts_with($ruta, 'asistente-ia');
+                $isTeam         = str_starts_with($ruta, 'team');
+                $isRoles        = str_starts_with($ruta, 'roles');
+                $isInvitations  = str_starts_with($ruta, 'invitations');
+                $sbInvCount     = \App\Models\ProjectInvitation::where('invited_user_id', Auth::id())->where('status','pending')->count();
             @endphp
 
             <a href="{{ route('dashboard') }}"
@@ -303,6 +307,50 @@
                 <span class="sb-text">{{ __('app.nav.ai_assistant') }}</span>
             </a>
 
+            <div class="sb-separator my-3 mx-1 border-t border-white/5"></div>
+
+            <p class="sb-section-label px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
+                Equipo
+            </p>
+
+            <a href="{{ route('team.index') }}"
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isTeam ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="Equipo">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">group</span>
+                <span class="sb-text">Equipo</span>
+            </a>
+
+            <a href="{{ route('roles.index') }}"
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isRoles ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="Roles y Permisos">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">admin_panel_settings</span>
+                <span class="sb-text">Roles y Permisos</span>
+            </a>
+
+            <a href="{{ route('invitations.index') }}"
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isInvitations ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="Mis Invitaciones">
+                <span class="relative">
+                    <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">mail</span>
+                    @if($sbInvCount > 0)
+                    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-[#0d1c2d] leading-none">
+                        {{ min($sbInvCount, 9) }}
+                    </span>
+                    @endif
+                </span>
+                <span class="sb-text">
+                    Mis Invitaciones
+                    @if($sbInvCount > 0)
+                    <span style="margin-left:4px; padding:1px 6px; border-radius:999px; background:rgba(239,68,68,.15); color:#f87171; font-size:10px; font-weight:700; border:1px solid rgba(239,68,68,.25);">
+                        {{ $sbInvCount }}
+                    </span>
+                    @endif
+                </span>
+            </a>
+
         </nav>
 
         {{-- ── Bottom: CTA + user actions ──────────────────────────────── --}}
@@ -350,6 +398,122 @@
                     {{ $header }}
                 @endisset
             </div>
+
+            {{-- ─── NOTIFICATION BELL ───────────────────────────────── --}}
+            @php
+                $pendingInvitationCount = \App\Models\ProjectInvitation::where('invited_user_id', Auth::id())
+                    ->where('status', 'pending')
+                    ->count();
+                $pendingInvitations = $pendingInvitationCount > 0
+                    ? \App\Models\ProjectInvitation::where('invited_user_id', Auth::id())
+                        ->where('status', 'pending')
+                        ->with(['proyecto', 'invitedBy', 'role'])
+                        ->latest()
+                        ->get()
+                    : collect();
+            @endphp
+
+            <div class="relative flex-shrink-0"
+                 x-data="{ bellOpen: false }"
+                 @click.outside="bellOpen = false"
+                 @keydown.escape.window="bellOpen = false">
+
+                {{-- Bell button --}}
+                <button @click="bellOpen = !bellOpen"
+                        class="relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-white/5 transition-all duration-150 outline-none focus:ring-2 focus:ring-blue-500/40"
+                        title="Invitaciones">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">notifications</span>
+                    @if($pendingInvitationCount > 0)
+                    <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center
+                                 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-[#0F1117]
+                                 leading-none">
+                        {{ $pendingInvitationCount > 9 ? '9+' : $pendingInvitationCount }}
+                    </span>
+                    @endif
+                </button>
+
+                {{-- Bell dropdown --}}
+                <div x-show="bellOpen"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                     class="absolute right-0 top-full mt-3 w-[380px] z-[60] rounded-2xl overflow-hidden
+                            bg-[#1c2b3c] border border-white/10 shadow-2xl shadow-black/60"
+                     style="display:none; box-shadow: 0 0 30px rgba(99,102,241,0.12), 0 25px 50px rgba(0,0,0,0.5);">
+
+                    <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-400" style="font-size:18px;">mail</span>
+                            <h3 class="text-sm font-bold text-white">Invitaciones</h3>
+                            @if($pendingInvitationCount > 0)
+                            <span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] font-bold rounded-full border border-indigo-500/30">
+                                {{ $pendingInvitationCount }} pendiente{{ $pendingInvitationCount !== 1 ? 's' : '' }}
+                            </span>
+                            @endif
+                        </div>
+                        <a href="{{ route('invitations.index') }}"
+                           class="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+                            Ver todas
+                        </a>
+                    </div>
+
+                    @if($pendingInvitations->isEmpty())
+                    <div class="px-5 py-8 text-center">
+                        <span class="material-symbols-outlined text-gray-600 block mb-2" style="font-size:32px;">notifications_off</span>
+                        <p class="text-[12px] text-gray-500">Sin invitaciones pendientes</p>
+                    </div>
+                    @else
+                    <div class="max-h-[360px] overflow-y-auto">
+                        @foreach($pendingInvitations as $inv)
+                        <div class="px-4 py-4 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-all">
+                            <div class="flex items-start gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600
+                                            flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+                                    {{ strtoupper(mb_substr($inv->proyecto->nombre ?? '?', 0, 1)) }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-semibold text-white truncate">{{ $inv->proyecto->nombre ?? '—' }}</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">
+                                        Invitado por <span class="text-gray-300">{{ $inv->invitedBy->name ?? '—' }}</span>
+                                    </p>
+                                    @if($inv->role)
+                                    <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md
+                                                 bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-400 font-semibold">
+                                        {{ $inv->role->name }}
+                                    </span>
+                                    @endif
+                                    <p class="text-[10px] text-gray-600 mt-1">{{ $inv->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 ml-12">
+                                <form method="POST" action="{{ route('invitations.accept', $inv) }}" class="flex-1">
+                                    @csrf
+                                    <button type="submit"
+                                            class="w-full py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30
+                                                   text-emerald-400 text-[11px] font-bold transition-all">
+                                        Aceptar
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('invitations.reject', $inv) }}" class="flex-1">
+                                    @csrf
+                                    <button type="submit"
+                                            class="w-full py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20
+                                                   text-red-400 text-[11px] font-bold transition-all">
+                                        Rechazar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                </div>
+            </div>
+            {{-- ─────────────────────────────────────────────────────────── --}}
 
             {{-- ─── PROFILE DROPDOWN ────────────────────────────────── --}}
             <div class="relative flex-shrink-0"

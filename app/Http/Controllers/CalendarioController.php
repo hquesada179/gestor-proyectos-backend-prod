@@ -14,7 +14,7 @@ class CalendarioController extends Controller
     public function index(Request $request)
     {
         $user      = Auth::user();
-        $proyectos = $user->proyectos()->orderBy('nombre')->get();
+        $proyectos = Proyecto::accessibleBy($user->id)->orderBy('nombre')->get();
 
         // Project filter (validate ownership)
         $proyectoId = $request->query('proyecto_id') ?: null;

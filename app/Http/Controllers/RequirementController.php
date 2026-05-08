@@ -11,7 +11,7 @@ class RequirementController extends Controller
 {
     public function index(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         // Sprints vigentes ordenados: activo primero, luego planificados
         $sprints = $proyecto->sprints()
@@ -53,14 +53,14 @@ class RequirementController extends Controller
 
     public function create(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         return view('proyectos.requirements.create', compact('proyecto'));
     }
 
     public function store(Request $request, Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $validated = $request->validate(
             $this->rules(),
@@ -75,7 +75,7 @@ class RequirementController extends Controller
 
     public function show(Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         return view('proyectos.requirements.show', compact('proyecto', 'requirement'));
@@ -83,7 +83,7 @@ class RequirementController extends Controller
 
     public function edit(Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         return view('proyectos.requirements.edit', compact('proyecto', 'requirement'));
@@ -91,7 +91,7 @@ class RequirementController extends Controller
 
     public function update(Request $request, Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         $validated = $request->validate(
@@ -107,7 +107,7 @@ class RequirementController extends Controller
 
     public function destroy(Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         $requirement->delete();

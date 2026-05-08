@@ -11,7 +11,7 @@ class SprintController extends Controller
 {
     public function index(Request $request, Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $query = $proyecto->sprints()->withCount('tasks')->latest();
 
@@ -26,14 +26,14 @@ class SprintController extends Controller
 
     public function create(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         return view('proyectos.sprints.create', compact('proyecto'));
     }
 
     public function store(Request $request, Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $validated = $request->validate(
             $this->rules(),
@@ -48,7 +48,7 @@ class SprintController extends Controller
 
     public function show(Proyecto $proyecto, Sprint $sprint)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($sprint->proyecto_id !== $proyecto->id, 404);
 
         $tasks = $sprint->tasks()->with('status', 'assignedTo')->orderBy('created_at')->get();
@@ -63,7 +63,7 @@ class SprintController extends Controller
 
     public function edit(Proyecto $proyecto, Sprint $sprint)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($sprint->proyecto_id !== $proyecto->id, 404);
 
         return view('proyectos.sprints.edit', compact('proyecto', 'sprint'));
@@ -71,7 +71,7 @@ class SprintController extends Controller
 
     public function update(Request $request, Proyecto $proyecto, Sprint $sprint)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($sprint->proyecto_id !== $proyecto->id, 404);
 
         $validated = $request->validate(
@@ -87,7 +87,7 @@ class SprintController extends Controller
 
     public function destroy(Proyecto $proyecto, Sprint $sprint)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($sprint->proyecto_id !== $proyecto->id, 404);
 
         $sprint->delete();

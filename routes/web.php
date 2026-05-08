@@ -7,13 +7,17 @@ use App\Http\Controllers\ModuloSelectorController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectInputController;
+use App\Http\Controllers\ProjectInvitationController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RequirementController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScrumBoardController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserStoryController;
 use App\Http\Controllers\ChatController;
+use App\Models\Proyecto;
 use App\Models\Sprint;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
@@ -26,13 +30,15 @@ Route::get('/', function () {
 Route::post('/language', [LanguageController::class, 'change'])->name('language.change');
 
 Route::get('/dashboard', function () {
-    $totalProyectos    = Auth::user()->proyectos()->count();
-    $sprintsActivos    = Sprint::whereHas('proyecto', fn($q) => $q->where('user_id', Auth::id()))
+    $userId = Auth::id();
+
+    $totalProyectos    = Proyecto::accessibleBy($userId)->count();
+    $sprintsActivos    = Sprint::whereHas('proyecto', fn($q) => $q->accessibleBy($userId))
                              ->where('estado', 'en_progreso')->count();
-    $tareasPendientes  = Task::where('assigned_to', Auth::id())
+    $tareasPendientes  = Task::where('assigned_to', $userId)
                              ->whereHas('status', fn($q) => $q->where('nombre', '!=', 'Completado'))
                              ->count();
-    $proyectosRecientes = Auth::user()->proyectos()
+    $proyectosRecientes = Proyecto::accessibleBy($userId)
                              ->withCount(['tasks', 'sprints'])
                              ->latest()
                              ->take(4)
@@ -88,6 +94,26 @@ Route::middleware('auth')->group(function () {
     Route::get('proyectos/{proyecto}/tasks/export', [TaskController::class, 'export'])->name('proyectos.tasks.export');
     Route::resource('proyectos.tasks', TaskController::class);
     Route::resource('proyectos.sprints', SprintController::class);
+
+    // ── Equipo (Team) ─────────────────────────────────────────────────────
+    Route::get('/equipo', [TeamController::class, 'index'])->name('team.index');
+    Route::get('/equipo/{proyecto}', [TeamController::class, 'show'])->name('team.show');
+    Route::post('/equipo/{proyecto}/miembros', [TeamController::class, 'storeMember'])->name('team.members.store');
+    Route::put('/equipo/miembros/{member}', [TeamController::class, 'updateMember'])->name('team.members.update');
+    Route::delete('/equipo/miembros/{member}', [TeamController::class, 'destroyMember'])->name('team.members.destroy');
+
+    // ── Roles & Permisos ─────────────────────────────────────────────────
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::get('/roles/{role}', [RoleController::class, 'show'])->name('roles.show');
+    Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+    Route::put('/roles/{role}/permisos', [RoleController::class, 'updatePermissions'])->name('roles.permissions.update');
+
+    // ── Invitaciones ─────────────────────────────────────────────────────
+    Route::get('/invitaciones', [ProjectInvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/invitaciones/{invitation}/aceptar', [ProjectInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::post('/invitaciones/{invitation}/rechazar', [ProjectInvitationController::class, 'reject'])->name('invitations.reject');
 });
 
 require __DIR__.'/auth.php';

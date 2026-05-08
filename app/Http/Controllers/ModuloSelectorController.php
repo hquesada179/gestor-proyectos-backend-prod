@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Proyecto;
 use Illuminate\Support\Facades\Auth;
 
 class ModuloSelectorController extends Controller
@@ -43,7 +44,7 @@ class ModuloSelectorController extends Controller
 
         $info = $this->modulos[$modulo];
 
-        $proyectos = Auth::user()->proyectos()
+        $proyectos = Proyecto::accessibleBy(Auth::id())
             ->withCount([
                 'sprints',
                 'tasks',

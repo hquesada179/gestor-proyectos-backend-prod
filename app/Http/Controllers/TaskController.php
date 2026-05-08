@@ -14,7 +14,7 @@ class TaskController extends Controller
 {
     public function index(Proyecto $proyecto, Request $request)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $tasks    = $this->filteredQuery($proyecto, $request)->with('status', 'assignedTo')->latest()->paginate(15)->withQueryString();
         $statuses = TaskStatus::orderBy('orden')->get();
@@ -28,7 +28,7 @@ class TaskController extends Controller
 
     public function export(Proyecto $proyecto, Request $request)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $tasks = $this->filteredQuery($proyecto, $request)
             ->with('status', 'sprint', 'userStory', 'assignedTo')
@@ -101,7 +101,7 @@ class TaskController extends Controller
 
     public function create(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $statuses    = TaskStatus::orderBy('orden')->get();
         $userStories = $this->userStoriesForProject($proyecto);
@@ -113,7 +113,7 @@ class TaskController extends Controller
 
     public function store(Request $request, Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $validated = $request->validate(
             $this->rules($proyecto, $request),
@@ -128,7 +128,7 @@ class TaskController extends Controller
 
     public function show(Proyecto $proyecto, Task $task)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $task->load('status', 'userStory', 'sprint', 'assignedTo');
@@ -138,7 +138,7 @@ class TaskController extends Controller
 
     public function edit(Proyecto $proyecto, Task $task)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $statuses    = TaskStatus::orderBy('orden')->get();
@@ -151,7 +151,7 @@ class TaskController extends Controller
 
     public function update(Request $request, Proyecto $proyecto, Task $task)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $validated = $request->validate(
@@ -167,7 +167,7 @@ class TaskController extends Controller
 
     public function destroy(Proyecto $proyecto, Task $task)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $task->delete();

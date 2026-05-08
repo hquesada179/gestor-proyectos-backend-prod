@@ -11,7 +11,7 @@ class ProjectInputController extends Controller
 {
     public function index(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $inputs = $proyecto->inputs()->latest()->paginate(15)->withQueryString();
 
@@ -20,14 +20,14 @@ class ProjectInputController extends Controller
 
     public function create(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         return view('proyectos.inputs.create', compact('proyecto'));
     }
 
     public function store(Request $request, Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $validated = $request->validate(
             $this->rules(),
@@ -42,7 +42,7 @@ class ProjectInputController extends Controller
 
     public function show(Proyecto $proyecto, ProjectInput $input)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($input->proyecto_id !== $proyecto->id, 404);
 
         return view('proyectos.inputs.show', compact('proyecto', 'input'));
@@ -50,7 +50,7 @@ class ProjectInputController extends Controller
 
     public function edit(Proyecto $proyecto, ProjectInput $input)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($input->proyecto_id !== $proyecto->id, 404);
 
         return view('proyectos.inputs.edit', compact('proyecto', 'input'));
@@ -58,7 +58,7 @@ class ProjectInputController extends Controller
 
     public function update(Request $request, Proyecto $proyecto, ProjectInput $input)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($input->proyecto_id !== $proyecto->id, 404);
 
         $validated = $request->validate(
@@ -74,7 +74,7 @@ class ProjectInputController extends Controller
 
     public function destroy(Proyecto $proyecto, ProjectInput $input)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($input->proyecto_id !== $proyecto->id, 404);
 
         $input->delete();

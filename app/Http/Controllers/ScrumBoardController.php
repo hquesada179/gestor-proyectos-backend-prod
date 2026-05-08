@@ -8,11 +8,12 @@ use App\Models\TaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class ScrumBoardController extends Controller
 {
     public function index()
     {
-        $proyectos = Auth::user()->proyectos()
+        $proyectos = Proyecto::accessibleBy(Auth::id())
             ->withCount([
                 'tasks',
                 'sprints',
@@ -30,7 +31,7 @@ class ScrumBoardController extends Controller
 
     public function show(Proyecto $proyecto)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $statuses = TaskStatus::orderBy('orden')->get();
 
@@ -46,7 +47,7 @@ class ScrumBoardController extends Controller
     {
         $task->loadMissing('proyecto');
 
-        if (!$task->proyecto || $task->proyecto->user_id !== Auth::id()) {
+        if (!$task->proyecto || !$task->proyecto->isAccessibleBy(Auth::id())) {
             return response()->json(['ok' => false, 'error' => 'Sin permiso.'], 403);
         }
 
