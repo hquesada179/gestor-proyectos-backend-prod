@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Proyecto;
 use App\Models\TaskStatus;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,6 +33,10 @@ class ProyectoController extends Controller
         );
 
         $proyecto = Auth::user()->proyectos()->create($validated);
+
+        ProjectActivityLogger::log($proyecto, 'created', 'proyectos',
+            "Proyecto creado: «{$proyecto->nombre}»", null, $proyecto
+        );
 
         return redirect()->route('proyectos.show', $proyecto)
             ->with('success', 'Proyecto creado correctamente.');
@@ -100,7 +105,13 @@ class ProyectoController extends Controller
             $this->messages()
         );
 
+        $oldValues = $proyecto->only(['nombre', 'estado', 'descripcion', 'fecha_inicio', 'fecha_fin_estimada']);
         $proyecto->update($validated);
+        $newValues = $proyecto->fresh()->only(['nombre', 'estado', 'descripcion', 'fecha_inicio', 'fecha_fin_estimada']);
+
+        ProjectActivityLogger::log($proyecto, 'updated', 'proyectos',
+            "Proyecto editado: «{$proyecto->nombre}»", null, $proyecto, $oldValues, $newValues
+        );
 
         return redirect()->route('proyectos.show', $proyecto)
             ->with('success', 'Proyecto actualizado correctamente.');
@@ -109,6 +120,12 @@ class ProyectoController extends Controller
     public function destroy(Proyecto $proyecto)
     {
         abort_if($proyecto->user_id !== Auth::id(), 403);
+
+        $nombre = $proyecto->nombre;
+
+        ProjectActivityLogger::log($proyecto, 'deleted', 'proyectos',
+            "Proyecto eliminado: «{$nombre}»"
+        );
 
         $proyecto->delete();
 

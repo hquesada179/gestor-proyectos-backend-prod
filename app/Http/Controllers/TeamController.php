@@ -7,6 +7,7 @@ use App\Models\ProjectMember;
 use App\Models\Proyecto;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -134,6 +135,10 @@ class TeamController extends Controller
                 ]
             );
 
+            ProjectActivityLogger::log($proyecto, 'invited', 'equipo',
+                "Invitación enviada a {$invitedUser->name} ({$email})", null, null
+            );
+
             return back()->with('success', "Invitación enviada a {$email}. Estará pendiente hasta que el usuario acepte.");
         }
 
@@ -158,6 +163,10 @@ class TeamController extends Controller
             'status'    => 'invitado',
             'user_id'   => null,
         ]);
+
+        ProjectActivityLogger::log($proyecto, 'added_member', 'equipo',
+            "Miembro externo agregado: {$request->name} ({$email})"
+        );
 
         return back()->with('success', 'Miembro externo agregado. No tiene cuenta en el sistema todavía.');
     }
@@ -190,6 +199,9 @@ class TeamController extends Controller
     {
         abort_if(!$member->proyecto->isOwnedBy(Auth::id()), 403);
 
+        $proyecto = $member->proyecto;
+        $memberName = $member->name;
+
         // Cancel any pending invitation for this email
         ProjectInvitation::where('proyecto_id', $member->proyecto_id)
             ->where('email', $member->email)
@@ -197,6 +209,10 @@ class TeamController extends Controller
             ->update(['status' => 'cancelled']);
 
         $member->delete();
+
+        ProjectActivityLogger::log($proyecto, 'removed_member', 'equipo',
+            "Miembro eliminado del equipo: {$memberName}"
+        );
 
         if (request()->wantsJson()) {
             return response()->json(['ok' => true]);

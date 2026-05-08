@@ -6,6 +6,7 @@ use App\Models\Proyecto;
 use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\User;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -120,7 +121,11 @@ class TaskController extends Controller
             $this->messages()
         );
 
-        $proyecto->tasks()->create($validated);
+        $task = $proyecto->tasks()->create($validated);
+
+        ProjectActivityLogger::log($proyecto, 'created', 'tareas',
+            "Tarea creada: «{$task->titulo}»", null, $task
+        );
 
         return redirect()->route('proyectos.tasks.index', $proyecto)
             ->with('success', 'Tarea creada correctamente.');
@@ -159,7 +164,13 @@ class TaskController extends Controller
             $this->messages()
         );
 
+        $oldValues = $task->only(['titulo', 'task_status_id', 'sprint_id', 'assigned_to', 'fecha_limite']);
         $task->update($validated);
+        $newValues = $task->fresh()->only(['titulo', 'task_status_id', 'sprint_id', 'assigned_to', 'fecha_limite']);
+
+        ProjectActivityLogger::log($proyecto, 'updated', 'tareas',
+            "Tarea editada: «{$task->titulo}»", null, $task, $oldValues, $newValues
+        );
 
         return redirect()->route('proyectos.tasks.show', [$proyecto, $task])
             ->with('success', 'Tarea actualizada correctamente.');
@@ -169,6 +180,11 @@ class TaskController extends Controller
     {
         abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
+
+        $titulo = $task->titulo;
+        ProjectActivityLogger::log($proyecto, 'deleted', 'tareas',
+            "Tarea eliminada: «{$titulo}»"
+        );
 
         $task->delete();
 

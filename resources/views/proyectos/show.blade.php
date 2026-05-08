@@ -5,6 +5,12 @@
                 {{ $proyecto->nombre }}
             </h2>
             <div class="flex items-center gap-3">
+                <a href="{{ route('proyectos.actividad', $proyecto) }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                   style="background:rgba(99,102,241,.15); border:1px solid rgba(99,102,241,.3); color:#a5b4fc;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">history</span>
+                    Actividad
+                </a>
                 <a href="{{ route('proyectos.edit', $proyecto) }}">
                     <x-secondary-button>{{ __('app.actions.edit') }}</x-secondary-button>
                 </a>

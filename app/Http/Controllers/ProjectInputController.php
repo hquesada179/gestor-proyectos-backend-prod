@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProjectInput;
 use App\Models\Proyecto;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,7 +35,11 @@ class ProjectInputController extends Controller
             $this->messages()
         );
 
-        $proyecto->inputs()->create($validated);
+        $input = $proyecto->inputs()->create($validated);
+
+        ProjectActivityLogger::log($proyecto, 'created', 'insumos',
+            "Insumo creado: «{$input->titulo}»", null, $input
+        );
 
         return redirect()->route('proyectos.inputs.index', $proyecto)
             ->with('success', 'Insumo agregado correctamente.');
@@ -66,7 +71,13 @@ class ProjectInputController extends Controller
             $this->messages()
         );
 
+        $oldValues = $input->only(['titulo', 'tipo']);
         $input->update($validated);
+        $newValues = $input->fresh()->only(['titulo', 'tipo']);
+
+        ProjectActivityLogger::log($proyecto, 'updated', 'insumos',
+            "Insumo editado: «{$input->titulo}»", null, $input, $oldValues, $newValues
+        );
 
         return redirect()->route('proyectos.inputs.show', [$proyecto, $input])
             ->with('success', 'Insumo actualizado correctamente.');
@@ -76,6 +87,11 @@ class ProjectInputController extends Controller
     {
         abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($input->proyecto_id !== $proyecto->id, 404);
+
+        $titulo = $input->titulo;
+        ProjectActivityLogger::log($proyecto, 'deleted', 'insumos',
+            "Insumo eliminado: «{$titulo}»"
+        );
 
         $input->delete();
 

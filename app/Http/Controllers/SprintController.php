@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Proyecto;
 use App\Models\Sprint;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,7 +41,11 @@ class SprintController extends Controller
             $this->messages()
         );
 
-        $proyecto->sprints()->create($validated);
+        $sprint = $proyecto->sprints()->create($validated);
+
+        ProjectActivityLogger::log($proyecto, 'created', 'sprints',
+            "Sprint creado: «{$sprint->nombre}»", null, $sprint
+        );
 
         return redirect()->route('proyectos.sprints.index', $proyecto)
             ->with('success', 'Sprint creado correctamente.');
@@ -79,7 +84,19 @@ class SprintController extends Controller
             $this->messages()
         );
 
+        $oldValues = $sprint->only(['nombre', 'estado', 'fecha_inicio', 'fecha_fin']);
         $sprint->update($validated);
+        $newValues = $sprint->fresh()->only(['nombre', 'estado', 'fecha_inicio', 'fecha_fin']);
+
+        $action = ($newValues['estado'] === 'completado' && $oldValues['estado'] !== 'completado')
+            ? 'changed_status' : 'updated';
+        $title = $action === 'changed_status'
+            ? "Sprint finalizado: «{$sprint->nombre}»"
+            : "Sprint editado: «{$sprint->nombre}»";
+
+        ProjectActivityLogger::log($proyecto, $action, 'sprints',
+            $title, null, $sprint, $oldValues, $newValues
+        );
 
         return redirect()->route('proyectos.sprints.show', [$proyecto, $sprint])
             ->with('success', 'Sprint actualizado correctamente.');
@@ -89,6 +106,11 @@ class SprintController extends Controller
     {
         abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($sprint->proyecto_id !== $proyecto->id, 404);
+
+        $nombre = $sprint->nombre;
+        ProjectActivityLogger::log($proyecto, 'deleted', 'sprints',
+            "Sprint eliminado: «{$nombre}»"
+        );
 
         $sprint->delete();
 

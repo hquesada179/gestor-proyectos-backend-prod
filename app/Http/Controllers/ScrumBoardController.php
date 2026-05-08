@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Proyecto;
 use App\Models\Task;
 use App\Models\TaskStatus;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
 
 class ScrumBoardController extends Controller
 {
@@ -55,7 +55,20 @@ class ScrumBoardController extends Controller
             'task_status_id' => ['required', 'integer', 'exists:task_statuses,id'],
         ]);
 
+        $oldStatus = TaskStatus::find($task->task_status_id)?->nombre ?? 'Sin estado';
         $task->update(['task_status_id' => $request->task_status_id]);
+        $newStatus = TaskStatus::find($request->task_status_id)?->nombre ?? 'Sin estado';
+
+        ProjectActivityLogger::log(
+            $task->proyecto,
+            'changed_status',
+            'tareas',
+            "Tarea «{$task->titulo}» movida de «{$oldStatus}» a «{$newStatus}»",
+            null,
+            $task,
+            ['estado' => $oldStatus],
+            ['estado' => $newStatus]
+        );
 
         return response()->json(['ok' => true]);
     }

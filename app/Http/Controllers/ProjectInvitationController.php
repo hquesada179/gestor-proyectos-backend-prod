@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProjectInvitation;
 use App\Models\ProjectMember;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +50,13 @@ class ProjectInvitationController extends Controller
                 'status'       => 'accepted',
                 'responded_at' => now(),
             ]);
+
+            ProjectActivityLogger::log(
+                $invitation->proyecto,
+                'accepted_invitation',
+                'invitaciones',
+                "{$user->name} aceptó la invitación al proyecto"
+            );
         });
 
         return redirect()->route('proyectos.index')
@@ -61,7 +69,8 @@ class ProjectInvitationController extends Controller
         abort_if($invitation->invited_user_id !== Auth::id(), 403);
         abort_if(!$invitation->isPending(), 400);
 
-        DB::transaction(function () use ($invitation) {
+        $user = Auth::user();
+        DB::transaction(function () use ($invitation, $user) {
             // Mark invitation as rejected
             $invitation->update([
                 'status'       => 'rejected',
@@ -74,6 +83,13 @@ class ProjectInvitationController extends Controller
                 ->where('status', 'invitado')
                 ->whereNull('user_id')
                 ->delete();
+
+            ProjectActivityLogger::log(
+                $invitation->proyecto,
+                'rejected_invitation',
+                'invitaciones',
+                "{$user->name} rechazó la invitación al proyecto"
+            );
         });
 
         return back()->with('info', 'Invitación rechazada.');

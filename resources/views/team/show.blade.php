@@ -215,10 +215,14 @@
         </div>
         @endif
 
-        <div style="margin-top:1rem;">
+        <div style="margin-top:1rem; display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap;">
             <a href="{{ route('roles.index') }}" style="font-size:12px; color:#818cf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                 <span class="material-symbols-outlined" style="font-size:14px;">admin_panel_settings</span>
                 Gestionar roles y permisos
+            </a>
+            <a href="{{ route('proyectos.actividad', $proyecto) }}" style="font-size:12px; color:#818cf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                <span class="material-symbols-outlined" style="font-size:14px;">history</span>
+                Ver auditoría del proyecto
             </a>
         </div>
     </div>

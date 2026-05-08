@@ -70,6 +70,11 @@ class Proyecto extends Model
         return $this->hasMany(ProjectInvitation::class);
     }
 
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectActivityLog::class, 'project_id');
+    }
+
     /**
      * Scope: projects owned by $userId OR where $userId is an active member.
      */

@@ -38,4 +38,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Proyecto::class);
     }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectActivityLog::class);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Proyecto;
 use App\Models\Requirement;
 use App\Models\UserStory;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,7 +39,12 @@ class UserStoryController extends Controller
             $this->messages()
         );
 
-        $requirement->userStories()->create($validated);
+        $story = $requirement->userStories()->create($validated);
+
+        ProjectActivityLogger::log($proyecto, 'created', 'historias',
+            "Historia de usuario creada: «{$story->titulo}» en requerimiento «{$requirement->titulo}»",
+            null, $story
+        );
 
         return redirect()->route('proyectos.requirements.user-stories.index', [$proyecto, $requirement])
             ->with('success', 'Historia de usuario agregada correctamente.');
@@ -84,6 +90,11 @@ class UserStoryController extends Controller
         abort_if($proyecto->user_id !== Auth::id(), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
         abort_if($userStory->requirement_id !== $requirement->id, 404);
+
+        $titulo = $userStory->titulo;
+        ProjectActivityLogger::log($proyecto, 'deleted', 'historias',
+            "Historia de usuario eliminada: «{$titulo}» del requerimiento «{$requirement->titulo}»"
+        );
 
         $userStory->delete();
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Proyecto;
 use App\Models\Requirement;
+use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,7 +68,11 @@ class RequirementController extends Controller
             $this->messages()
         );
 
-        $proyecto->requirements()->create($validated);
+        $requirement = $proyecto->requirements()->create($validated);
+
+        ProjectActivityLogger::log($proyecto, 'created', 'requerimientos',
+            "Requerimiento creado: «{$requirement->titulo}»", null, $requirement
+        );
 
         return redirect()->route('proyectos.requirements.index', $proyecto)
             ->with('success', 'Requerimiento agregado correctamente.');
@@ -99,7 +104,13 @@ class RequirementController extends Controller
             $this->messages()
         );
 
+        $oldValues = $requirement->only(['titulo', 'tipo', 'prioridad', 'descripcion']);
         $requirement->update($validated);
+        $newValues = $requirement->fresh()->only(['titulo', 'tipo', 'prioridad', 'descripcion']);
+
+        ProjectActivityLogger::log($proyecto, 'updated', 'requerimientos',
+            "Requerimiento editado: «{$requirement->titulo}»", null, $requirement, $oldValues, $newValues
+        );
 
         return redirect()->route('proyectos.requirements.show', [$proyecto, $requirement])
             ->with('success', 'Requerimiento actualizado correctamente.');
@@ -109,6 +120,11 @@ class RequirementController extends Controller
     {
         abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
+
+        $titulo = $requirement->titulo;
+        ProjectActivityLogger::log($proyecto, 'deleted', 'requerimientos',
+            "Requerimiento eliminado: «{$titulo}»"
+        );
 
         $requirement->delete();
 

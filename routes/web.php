@@ -7,6 +7,7 @@ use App\Http\Controllers\ModuloSelectorController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectInputController;
+use App\Http\Controllers\ProjectActivityController;
 use App\Http\Controllers\ProjectInvitationController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RequirementController;
@@ -109,6 +110,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
     Route::put('/roles/{role}/permisos', [RoleController::class, 'updatePermissions'])->name('roles.permissions.update');
+
+    // ── Actividad / Auditoría ─────────────────────────────────────────────
+    Route::get('/proyectos/{proyecto}/actividad', [ProjectActivityController::class, 'index'])->name('proyectos.actividad');
 
     // ── Invitaciones ─────────────────────────────────────────────────────
     Route::get('/invitaciones', [ProjectInvitationController::class, 'index'])->name('invitations.index');
