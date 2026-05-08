@@ -8,11 +8,11 @@
                     </a>
                 </p>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Insumos del proyecto
+                    {{ __('app.inputs_mod.project_inputs') }}
                 </h2>
             </div>
             <a href="{{ route('proyectos.inputs.create', $proyecto) }}">
-                <x-primary-button>Nuevo insumo</x-primary-button>
+                <x-primary-button>{{ __('app.actions.new_input') }}</x-primary-button>
             </a>
         </div>
     </x-slot>
@@ -29,8 +29,8 @@
             @if ($inputs->isEmpty())
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-500 text-sm">
-                        Este proyecto no tiene insumos registrados todavía.
-                        <a href="{{ route('proyectos.inputs.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Agregar el primero</a>.
+                        {{ __('app.empty.no_inputs') }}
+                        <a href="{{ route('proyectos.inputs.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">{{ __('app.empty.add_first') }}</a>.
                     </div>
                 </div>
             @else
@@ -38,9 +38,9 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Registrado</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.inputs_mod.title_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.inputs_mod.type_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.inputs_mod.registered_col') }}</th>
                                 <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
@@ -55,14 +55,14 @@
                                     <td class="px-6 py-4 text-gray-600 capitalize">{{ $input->tipo }}</td>
                                     <td class="px-6 py-4 text-gray-600">{{ $input->created_at->format('d/m/Y') }}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('proyectos.inputs.edit', [$proyecto, $input]) }}" class="text-indigo-600 hover:underline text-xs mr-3">Editar</a>
+                                        <a href="{{ route('proyectos.inputs.edit', [$proyecto, $input]) }}" class="text-indigo-600 hover:underline text-xs mr-3">{{ __('app.actions.edit') }}</a>
                                         <form method="POST" action="{{ route('proyectos.inputs.destroy', [$proyecto, $input]) }}" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                 class="text-red-500 hover:underline text-xs"
                                                 onclick="return confirm('¿Eliminar este insumo?')">
-                                                Eliminar
+                                                {{ __('app.actions.delete') }}
                                             </button>
                                         </form>
                                     </td>
@@ -81,7 +81,7 @@
 
             <div class="mt-4 text-sm">
                 <a href="{{ route('proyectos.show', $proyecto) }}" class="text-indigo-600 hover:underline">
-                    ← Volver al proyecto
+                    {{ __('app.actions.back_project') }}
                 </a>
             </div>
 

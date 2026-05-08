@@ -44,7 +44,15 @@ class ModuloSelectorController extends Controller
         $info = $this->modulos[$modulo];
 
         $proyectos = Auth::user()->proyectos()
-            ->withCount(['sprints', 'tasks', 'requirements', 'inputs'])
+            ->withCount([
+                'sprints',
+                'tasks',
+                'requirements',
+                'inputs',
+                'tasks as completed_tasks_count' => fn ($q) => $q->whereHas(
+                    'status', fn ($s) => $s->where('nombre', 'Completado')
+                ),
+            ])
             ->latest()
             ->get();
 

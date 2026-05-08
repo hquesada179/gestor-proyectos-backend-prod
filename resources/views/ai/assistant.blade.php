@@ -3,14 +3,14 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-indigo-400" style="font-size:20px;font-variation-settings:'FILL' 1">auto_awesome</span>
-                <span class="text-sm font-bold text-white">Asistente IA</span>
+                <span class="text-sm font-bold text-white">{{ __('app.ai.title') }}</span>
                 <span class="text-gray-600 text-sm mx-1">·</span>
-                <span class="text-xs text-gray-500">Crea o mejora proyectos con inteligencia artificial.</span>
+                <span class="text-xs text-gray-500">{{ __('app.ai.subtitle') }}</span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full animate-pulse {{ $ollamaOnline ? 'bg-emerald-400' : 'bg-red-400' }}"></span>
                 <span class="text-xs {{ $ollamaOnline ? 'text-emerald-400' : 'text-red-400' }}">
-                    Ollama {{ $ollamaOnline ? 'en línea' : 'desconectado' }}
+                    Ollama {{ $ollamaOnline ? __('app.ai.ollama_online') : __('app.ai.ollama_offline') }}
                 </span>
             </div>
         </div>
@@ -29,7 +29,7 @@
                     @unless($ollamaOnline)
                     <div class="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
                         <p class="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
-                            <span class="material-symbols-outlined" style="font-size:15px">warning</span>Ollama no está corriendo
+                            <span class="material-symbols-outlined" style="font-size:15px">warning</span>{{ __('app.ai.ollama_not_running') }}
                         </p>
                         <p class="text-[11px] text-amber-200/70 mt-1">
                             Ejecuta <code class="bg-black/30 px-1 rounded font-mono">ollama serve</code>
@@ -43,7 +43,7 @@
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <p class="text-[10px] font-bold text-violet-300 uppercase tracking-widest mb-0.5">
-                                    Continuando historial
+                                    {{ __('app.ai.ctx_continuing') }}
                                     <span class="text-violet-400" id="ctx-badge-id"></span>
                                 </p>
                                 <p class="text-xs text-gray-300 truncate" id="ctx-badge-proyecto"></p>
@@ -51,7 +51,7 @@
                             </div>
                             <button onclick="clearContext()"
                                     class="flex-shrink-0 text-gray-600 hover:text-red-400 transition-colors mt-0.5"
-                                    title="Cancelar continuación">
+                                    title="{{ __('app.ai.ctx_cancel_title') }}">
                                 <span class="material-symbols-outlined" style="font-size:16px">close</span>
                             </button>
                         </div>
@@ -59,19 +59,19 @@
 
                     {{-- ── MODE ────────────────────────────────────────────────────── --}}
                     <div>
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Modo</p>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{{ __('app.ai.mode_label') }}</p>
                         <div class="grid grid-cols-2 gap-2">
                             <button id="mode-crear" onclick="setMode('crear')"
                                     class="mode-btn active text-left rounded-xl border px-3 py-2.5 transition-all">
                                 <span class="material-symbols-outlined block mb-1" style="font-size:17px">add_circle</span>
-                                <span class="text-xs font-semibold block">Crear proyecto</span>
-                                <span class="text-[10px] block" style="color:#64748b">nuevo</span>
+                                <span class="text-xs font-semibold block">{{ __('app.ai.create_project') }}</span>
+                                <span class="text-[10px] block" style="color:#64748b">{{ __('app.ai.create_new') }}</span>
                             </button>
                             <button id="mode-mejorar" onclick="setMode('mejorar')"
                                     class="mode-btn text-left rounded-xl border px-3 py-2.5 transition-all">
                                 <span class="material-symbols-outlined block mb-1" style="font-size:17px">edit_note</span>
-                                <span class="text-xs font-semibold block">Mejorar proyecto</span>
-                                <span class="text-[10px] block" style="color:#64748b">existente</span>
+                                <span class="text-xs font-semibold block">{{ __('app.ai.improve_project') }}</span>
+                                <span class="text-[10px] block" style="color:#64748b">{{ __('app.ai.improve_existing') }}</span>
                             </button>
                         </div>
                     </div>
@@ -79,16 +79,16 @@
                     {{-- ── PROJECT SELECTOR ─────────────────────────────────────────── --}}
                     <div id="project-selector-wrap" class="hidden">
                         <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                            Proyecto a mejorar
+                            {{ __('app.ai.project_to_improve') }}
                         </label>
                         @if($proyectos->isEmpty())
-                            <p class="text-xs text-gray-600 italic">Sin proyectos creados.</p>
+                            <p class="text-xs text-gray-600 italic">{{ __('app.ai.no_projects') }}</p>
                         @else
                             <select id="proyecto-select"
                                     class="w-full rounded-xl border border-white/10 px-3 py-2 text-sm text-white
                                            focus:outline-none focus:border-indigo-500/50 transition-colors"
                                     style="background:#111827">
-                                <option value="">— Selecciona un proyecto —</option>
+                                <option value="">{{ __('app.ai.select_project') }}</option>
                                 @foreach($proyectos as $p)
                                 <option value="{{ $p->id }}" data-nombre="{{ $p->nombre }}">
                                     {{ $p->nombre }}
@@ -96,7 +96,7 @@
                                 @endforeach
                             </select>
                             <p id="project-hint" class="text-[10px] text-amber-400/80 mt-1 hidden">
-                                Selecciona un proyecto para continuar.
+                                {{ __('app.ai.select_hint') }}
                             </p>
                         @endif
                     </div>
@@ -104,7 +104,7 @@
                     {{-- ── MODEL ────────────────────────────────────────────────────── --}}
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                            Modelo de IA
+                            {{ __('app.ai.ai_model') }}
                         </label>
                         @if(count($models) > 0)
                         <select id="model-select"
@@ -129,13 +129,13 @@
                     {{-- ── PROMPT TEXTAREA ──────────────────────────────────────────── --}}
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                            <span id="textarea-label">Descripción del proyecto</span>
+                            <span id="textarea-label">{{ __('app.ai.project_desc_label') }}</span>
                         </label>
                         <textarea id="prompt-input" rows="8"
                                   class="w-full rounded-xl border border-white/10 px-4 py-3 text-sm resize-none
                                          leading-relaxed focus:outline-none focus:border-indigo-500/50 transition-colors"
                                   style="background:#111827;color:#f1f5f9;caret-color:#818cf8;"
-                                  placeholder="Ej: Quiero crear una aplicación web para gestionar proyectos académicos…"
+                                  placeholder="{{ __('app.ai.ph_create') }}"
                         ></textarea>
                         <div class="flex justify-between mt-1">
                             <span id="prompt-hint" class="text-[10px] text-red-400/80"></span>
@@ -146,16 +146,16 @@
                     {{-- ── ERROR BOX ────────────────────────────────────────────────── --}}
                     <div id="error-box" class="hidden rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 space-y-1">
                         <p class="text-xs font-semibold text-red-300 flex items-center gap-1.5">
-                            <span class="material-symbols-outlined" style="font-size:15px">error</span>Error al generar
+                            <span class="material-symbols-outlined" style="font-size:15px">error</span>{{ __('app.ai.error_title') }}
                         </p>
                         <p id="error-msg" class="text-xs text-red-200/80 leading-relaxed"></p>
                         <details id="raw-details" class="hidden">
                             <summary class="text-[10px] text-red-300/50 cursor-pointer hover:text-red-300 select-none">
-                                Ver respuesta cruda
+                                {{ __('app.ai.error_raw_view') }}
                             </summary>
                             <pre id="raw-content" class="mt-1.5 text-[10px] text-gray-400 bg-black/30 rounded-lg p-2
                                                           overflow-x-auto whitespace-pre-wrap max-h-28 font-mono"></pre>
-                            <button onclick="copyRaw()" class="text-[10px] text-indigo-400 hover:text-indigo-300">Copiar</button>
+                            <button onclick="copyRaw()" class="text-[10px] text-indigo-400 hover:text-indigo-300">{{ __('app.ai.error_copy') }}</button>
                         </details>
                     </div>
 
@@ -167,11 +167,11 @@
                                    active:scale-95 transition-all text-white text-sm font-bold rounded-xl
                                    disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100">
                         <span class="material-symbols-outlined" id="btn-icon" style="font-size:18px">auto_awesome</span>
-                        <span id="btn-label">Generar borrador de proyecto</span>
+                        <span id="btn-label">{{ __('app.ai.btn_gen_create') }}</span>
                     </button>
 
                     <p class="text-[10px] leading-relaxed" style="color:#374151">
-                        Los resultados son una propuesta generada por IA. No se guardan hasta que confirmes.
+                        {{ __('app.ai.disclaimer') }}
                     </p>
                 </div>
             </div>
@@ -186,10 +186,9 @@
                                 flex items-center justify-center mb-4">
                         <span class="material-symbols-outlined text-indigo-400" style="font-size:28px;font-variation-settings:'FILL' 1">auto_awesome</span>
                     </div>
-                    <p class="text-sm font-semibold text-white mb-1">Listo para generar</p>
+                    <p class="text-sm font-semibold text-white mb-1">{{ __('app.ai.ready_title') }}</p>
                     <p class="text-xs max-w-xs leading-relaxed" style="color:#475569">
-                        Selecciona un modo, escribe tu instrucción y pulsa <strong class="text-gray-400">Generar</strong>.
-                        La propuesta aparecerá aquí antes de guardarse.
+                        {{ __('app.ai.ready_hint') }}
                     </p>
                 </div>
 
@@ -200,8 +199,8 @@
                         <span class="w-2 h-2 rounded-full bg-violet-500 animate-bounce" style="animation-delay:130ms"></span>
                         <span class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style="animation-delay:260ms"></span>
                     </div>
-                    <p class="text-sm font-semibold text-white mb-1">Analizando tu solicitud…</p>
-                    <p class="text-xs" style="color:#475569">Esto puede tardar hasta 2 minutos según el modelo.</p>
+                    <p class="text-sm font-semibold text-white mb-1">{{ __('app.ai.analyzing') }}</p>
+                    <p class="text-xs" style="color:#475569">{{ __('app.ai.analyzing_hint') }}</p>
                 </div>
 
                 {{-- Context panel (shown after "Reutilizar") --}}
@@ -210,36 +209,35 @@
                         <div class="flex items-center gap-2 mb-3">
                             <span class="material-symbols-outlined text-violet-400" style="font-size:15px;font-variation-settings:'FILL' 1">history</span>
                             <span class="text-[10px] font-bold text-violet-300 uppercase tracking-widest">
-                                Continuando historial <span id="ctx-id" class="text-violet-400"></span>
+                                {{ __('app.ai.ctx_continuing') }} <span id="ctx-id" class="text-violet-400"></span>
                             </span>
                         </div>
                         <div class="grid grid-cols-2 gap-3 text-xs mb-3">
                             <div>
-                                <p style="color:#64748b" class="mb-0.5">Modo anterior</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.ctx_prev_mode') }}</p>
                                 <p class="font-semibold text-white" id="ctx-modo-label"></p>
                             </div>
                             <div>
-                                <p style="color:#64748b" class="mb-0.5">Estado</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.ctx_status') }}</p>
                                 <p class="font-semibold" id="ctx-estado-label"></p>
                             </div>
                             <div class="col-span-2" id="ctx-proyecto-wrap">
-                                <p style="color:#64748b" class="mb-0.5">Proyecto asociado</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.ctx_project') }}</p>
                                 <a id="ctx-proyecto-link" href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold" id="ctx-proyecto-label"></a>
                             </div>
                         </div>
                         <div>
-                            <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">Prompt anterior</p>
+                            <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">{{ __('app.ai.ctx_prev_prompt') }}</p>
                             <p class="text-sm text-gray-300 leading-relaxed bg-black/20 rounded-lg px-3 py-2" id="ctx-prompt-text"></p>
                         </div>
                         <div id="ctx-response-wrap" class="hidden mt-3">
-                            <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">Resumen de la respuesta anterior</p>
+                            <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">{{ __('app.ai.ctx_prev_resp') }}</p>
                             <p class="text-sm text-gray-400 leading-relaxed bg-black/20 rounded-lg px-3 py-2 italic" id="ctx-response-text"></p>
                         </div>
                     </div>
                     <div class="rounded-xl border border-white/6 px-4 py-3" style="background:rgba(255,255,255,0.02)">
                         <p class="text-xs text-gray-400 leading-relaxed">
-                            <span class="text-indigo-300 font-semibold">↓ Escribe una nueva instrucción</span> en el panel izquierdo para continuar desde este punto.
-                            La IA recibirá el contexto del proyecto y el historial anterior.
+                            {{ __('app.ai.ctx_write_hint') }}
                         </p>
                     </div>
                 </div>
@@ -250,40 +248,40 @@
                         <button onclick="closeDetail()"
                                 class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors">
                             <span class="material-symbols-outlined" style="font-size:15px">arrow_back</span>
-                            Volver
+                            {{ __('app.ai.btn_back') }}
                         </button>
                         <span style="color:#334155">|</span>
-                        <span class="text-xs font-semibold text-gray-400">Detalle del registro IA</span>
+                        <span class="text-xs font-semibold text-gray-400">{{ __('app.ai.detail_title') }}</span>
                     </div>
 
                     {{-- Detail header --}}
                     <div class="rounded-2xl border border-white/8 px-5 py-4" style="background:rgba(255,255,255,0.03)">
                         <div class="grid grid-cols-2 gap-3 text-xs mb-4">
                             <div>
-                                <p style="color:#64748b" class="mb-0.5">Modo</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.det_mode') }}</p>
                                 <p class="font-semibold text-white" id="det-modo"></p>
                             </div>
                             <div>
-                                <p style="color:#64748b" class="mb-0.5">Estado</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.det_status') }}</p>
                                 <p class="font-semibold" id="det-estado"></p>
                             </div>
                             <div>
-                                <p style="color:#64748b" class="mb-0.5">Fecha</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.det_date') }}</p>
                                 <p style="color:#94a3b8" id="det-fecha"></p>
                             </div>
                             <div id="det-proyecto-wrap">
-                                <p style="color:#64748b" class="mb-0.5">Proyecto</p>
+                                <p style="color:#64748b" class="mb-0.5">{{ __('app.ai.det_project') }}</p>
                                 <a id="det-proyecto-link" href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold truncate block"></a>
                             </div>
                         </div>
 
                         <div class="space-y-3">
                             <div>
-                                <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">Prompt del usuario</p>
+                                <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">{{ __('app.ai.det_prompt') }}</p>
                                 <p class="text-sm text-gray-200 leading-relaxed bg-black/20 rounded-lg px-3 py-2" id="det-prompt"></p>
                             </div>
                             <div id="det-response-wrap" class="hidden">
-                                <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">Resumen de la propuesta IA</p>
+                                <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">{{ __('app.ai.det_response') }}</p>
                                 <p class="text-sm text-gray-400 leading-relaxed bg-black/20 rounded-lg px-3 py-2 italic" id="det-response"></p>
                             </div>
                         </div>
@@ -295,13 +293,13 @@
                                 class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold
                                        bg-violet-600 hover:bg-violet-500 text-white active:scale-95 transition-all">
                             <span class="material-symbols-outlined" style="font-size:15px">replay</span>
-                            Reutilizar este historial
+                            {{ __('app.ai.btn_reuse') }}
                         </button>
                         <button id="det-aplicar-btn"
                                 class="hidden flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold
                                        bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95 transition-all">
                             <span class="material-symbols-outlined" style="font-size:15px">check</span>
-                            Aplicar esta propuesta
+                            {{ __('app.ai.btn_apply_hist') }}
                         </button>
                     </div>
                 </div>
@@ -313,14 +311,14 @@
                          style="background:rgba(16,185,129,0.06)">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="material-symbols-outlined text-emerald-400" style="font-size:15px;font-variation-settings:'FILL' 1">check_circle</span>
-                            <span class="text-[10px] uppercase tracking-widest font-bold text-emerald-400">Propuesta generada</span>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-emerald-400">{{ __('app.ai.proposal_generated') }}</span>
                             <span id="prop-type-badge" class="text-[10px]" style="color:#64748b"></span>
                         </div>
                         <p class="text-xl font-black text-white leading-tight" id="prop-nombre"></p>
                         <div id="prop-nombre-sep" class="hidden"></div>
                         <p id="prop-descripcion" class="text-sm leading-relaxed mt-1" style="color:#94a3b8"></p>
                         <div id="prop-resumen-wrap" class="hidden mt-3 pt-3 border-t border-white/6">
-                            <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">Resumen de cambios</p>
+                            <p style="color:#64748b;font-size:10px" class="mb-1 uppercase tracking-widest font-bold">{{ __('app.ai.changes_summary') }}</p>
                             <p id="prop-resumen" class="text-sm text-gray-300 leading-relaxed"></p>
                         </div>
                     </div>
@@ -328,7 +326,7 @@
                     <div id="prop-sections" class="space-y-3"></div>
 
                     <div id="prop-warnings" class="hidden rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
-                        <p class="text-xs font-semibold text-amber-300 mb-1">Advertencias</p>
+                        <p class="text-xs font-semibold text-amber-300 mb-1">{{ __('app.ai.warnings_title') }}</p>
                         <div id="prop-warnings-list" class="space-y-0.5 text-xs text-amber-200/80"></div>
                     </div>
 
@@ -338,19 +336,19 @@
                                        bg-emerald-600 hover:bg-emerald-500 active:scale-95
                                        text-white text-sm font-bold transition-all">
                             <span class="material-symbols-outlined" style="font-size:17px">check</span>
-                            Confirmar y guardar
+                            {{ __('app.ai.btn_confirm') }}
                         </button>
                         <button id="btn-cancel"
                                 class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/12
                                        hover:border-white/25 text-gray-400 hover:text-white text-sm font-medium transition-all">
                             <span class="material-symbols-outlined" style="font-size:17px">close</span>
-                            Cancelar
+                            {{ __('app.ai.btn_cancel') }}
                         </button>
                         <button id="btn-edit"
                                 class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/8
                                        hover:border-indigo-500/40 text-gray-500 hover:text-indigo-300 text-sm font-medium transition-all ml-auto">
                             <span class="material-symbols-outlined" style="font-size:16px">edit</span>
-                            Editar instrucción
+                            {{ __('app.ai.btn_edit_instr') }}
                         </button>
                     </div>
 
@@ -358,7 +356,7 @@
                         <p class="text-sm font-bold text-emerald-300" id="success-msg"></p>
                         <div id="success-counts" class="text-xs mt-2 space-y-0.5" style="color:#94a3b8"></div>
                         <a id="success-link" href="#" class="hidden mt-3 inline-block text-xs font-bold text-indigo-400 hover:text-indigo-300">
-                            Ver proyecto →
+                            {{ __('app.ai.view_project') }}
                         </a>
                     </div>
                 </div>
@@ -375,7 +373,7 @@
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined" id="history-chevron"
                           style="font-size:16px;color:#4b5563;transition:transform 0.2s">expand_less</span>
-                    <span class="text-xs font-semibold" style="color:#6b7280">Historial IA</span>
+                    <span class="text-xs font-semibold" style="color:#6b7280">{{ __('app.ai.history_title') }}</span>
                     <span id="history-badge"
                           class="hidden text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded-full"></span>
                 </div>
@@ -383,11 +381,11 @@
                     <button id="btn-clear-project"
                             class="text-[10px] hidden hover:text-amber-400 transition-colors"
                             style="color:#4b5563" onclick="clearHistory('project')">
-                        Limpiar proyecto
+                        {{ __('app.ai.btn_clear_project') }}
                     </button>
                     <button class="text-[10px] hover:text-red-400 transition-colors"
                             style="color:#4b5563" onclick="clearHistory('all')">
-                        Limpiar todo
+                        {{ __('app.ai.btn_clear_all') }}
                     </button>
                 </div>
             </div>
@@ -397,13 +395,13 @@
 
                 {{-- Filter + search row --}}
                 <div class="flex items-center gap-2 px-4 py-2 border-t border-white/5">
-                    <button class="hist-filter-btn active" data-f="all" onclick="setHistoryFilter('all')">Todos</button>
+                    <button class="hist-filter-btn active" data-f="all" onclick="setHistoryFilter('all')">{{ __('app.ai.history_filter_all') }}</button>
                     <button class="hist-filter-btn" data-f="project" onclick="setHistoryFilter('project')" id="filter-project-btn">
-                        Este proyecto
+                        {{ __('app.ai.history_filter_proj') }}
                     </button>
                     <div class="flex-1 relative">
                         <input type="text" id="history-search"
-                               placeholder="Buscar en historial…"
+                               placeholder="{{ __('app.ai.history_search_ph') }}"
                                class="w-full rounded-lg px-3 py-1 text-[11px] transition-colors focus:outline-none"
                                style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#f1f5f9;"
                                oninput="filterHistoryItems()" />
@@ -414,7 +412,7 @@
                 <div id="history-list"
                      style="max-height:200px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent">
                     <div class="text-center py-4">
-                        <span class="text-[11px]" style="color:#374151">Haz clic en "Historial IA" para cargar registros.</span>
+                        <span class="text-[11px]" style="color:#374151">{{ __('app.ai.history_click_hint') }}</span>
                     </div>
                 </div>
 
@@ -463,6 +461,62 @@
         .h-error      { background:rgba(239,68,68,.12);  color:rgb(252,165,165); border-color:rgba(239,68,68,.2);  }
     </style>
 
+    {{-- Pass PHP translations to JavaScript --}}
+    @php
+    $_aiT = [
+        'btn_gen_create'      => __('app.ai.btn_gen_create'),
+        'btn_gen_improve'     => __('app.ai.btn_gen_improve'),
+        'btn_generating'      => __('app.ai.btn_generating'),
+        'btn_confirm'         => __('app.ai.btn_confirm'),
+        'btn_saving'          => __('app.ai.btn_saving'),
+        'btn_cancel'          => __('app.ai.btn_cancel'),
+        'btn_edit_instr'      => __('app.ai.btn_edit_instr'),
+        'btn_clear_project'   => __('app.ai.btn_clear_project'),
+        'btn_clear_all'       => __('app.ai.btn_clear_all'),
+        'btn_view'            => __('app.ai.btn_view'),
+        'btn_reuse_short'     => __('app.ai.btn_reuse_short'),
+        'btn_apply_short'     => __('app.ai.btn_apply_short'),
+        'project_desc_label'  => __('app.ai.project_desc_label'),
+        'improve_instr_label' => __('app.ai.improve_instr_label'),
+        'ph_create'           => __('app.ai.ph_create'),
+        'ph_improve'          => __('app.ai.ph_improve'),
+        'history_empty'       => __('app.ai.history_empty'),
+        'history_loading'     => __('app.ai.history_loading'),
+        'history_error'       => __('app.ai.history_error'),
+        'new_project_badge'   => __('app.ai.new_project_badge'),
+        'improve_badge'       => __('app.ai.improve_badge'),
+        'no_concrete'         => __('app.ai.no_concrete'),
+        'no_concrete_improve' => __('app.ai.no_concrete_improve'),
+        'changes_saved'       => __('app.ai.changes_saved'),
+        'view_project'        => __('app.ai.view_project'),
+        'error_connection'    => __('app.ai.error_connection'),
+        'error_prompt_min'    => __('app.ai.error_prompt_min'),
+        'error_no_model'      => __('app.ai.error_no_model'),
+        'error_no_project'    => __('app.ai.error_no_project'),
+        'error_processing'    => __('app.ai.error_processing'),
+        'error_load'          => __('app.ai.error_load'),
+        'error_delete'        => __('app.ai.error_delete'),
+        'confirm_apply'       => __('app.ai.confirm_apply'),
+        'confirm_delete'      => __('app.ai.confirm_delete'),
+        'confirm_clear_proj'  => __('app.ai.confirm_clear_proj'),
+        'confirm_clear_all'   => __('app.ai.confirm_clear_all'),
+        'applied_ok'          => __('app.ai.applied_ok'),
+        'applied_err'         => __('app.ai.applied_err'),
+        'char_min_hint'       => __('app.ai.char_min_hint'),
+        'ctx_no_project'      => __('app.ai.ctx_no_project'),
+        'count_reqs'          => __('app.ai.count_reqs'),
+        'count_tasks'         => __('app.ai.count_tasks'),
+        'count_reqs_new'      => __('app.ai.count_reqs_new'),
+        'count_tasks_new'     => __('app.ai.count_tasks_new'),
+        'count_tasks_upd'     => __('app.ai.count_tasks_upd'),
+        'count_sprints'       => __('app.ai.count_sprints'),
+        'count_inputs'        => __('app.ai.count_inputs'),
+    ];
+    @endphp
+    <script>
+    const _ai = @json($_aiT);
+    </script>
+
     <script>
     (function () {
         'use strict';
@@ -498,7 +552,7 @@
         promptInput.addEventListener('input', function () {
             const len = this.value.length;
             promptCount.textContent = len + ' / 3000';
-            promptHint.textContent  = len > 0 && len < 10 ? 'Mínimo 10 caracteres' : '';
+            promptHint.textContent  = len > 0 && len < 10 ? _ai.char_min_hint : '';
         });
 
         // ── Mode selector ──────────────────────────────────────────────────────
@@ -511,16 +565,16 @@
             if (pw) pw.classList.toggle('hidden', mode === 'crear');
 
             document.getElementById('btn-label').textContent = mode === 'crear'
-                ? 'Generar borrador de proyecto'
-                : 'Generar propuesta de mejora';
+                ? _ai.btn_gen_create
+                : _ai.btn_gen_improve;
 
             document.getElementById('textarea-label').textContent = mode === 'crear'
-                ? 'Descripción del proyecto'
-                : 'Instrucción para mejorar';
+                ? _ai.project_desc_label
+                : _ai.improve_instr_label;
 
             promptInput.placeholder = mode === 'crear'
-                ? 'Ej: Quiero crear una aplicación web para gestionar proyectos académicos, requerimientos, tareas, sprints e insumos…'
-                : 'Ej: Agrega autenticación con Google, mejora los nombres de las tareas y crea un sprint inicial…';
+                ? _ai.ph_create
+                : _ai.ph_improve;
 
             const cpBtn = document.getElementById('btn-clear-project');
             if (cpBtn) cpBtn.classList.toggle('hidden', mode === 'crear' || !S.proyectoId);
@@ -544,11 +598,11 @@
             const prompt  = promptInput.value.trim();
             const modelo  = document.getElementById('model-select').value.trim();
 
-            if (prompt.length < 10) { showError('El prompt debe tener al menos 10 caracteres.'); return; }
-            if (!modelo)             { showError('Selecciona o escribe un modelo.'); return; }
+            if (prompt.length < 10) { showError(_ai.error_prompt_min); return; }
+            if (!modelo)             { showError(_ai.error_no_model); return; }
             if (S.mode === 'mejorar' && !S.proyectoId) {
                 document.getElementById('project-hint')?.classList.remove('hidden');
-                showError('Selecciona un proyecto para mejorar.');
+                showError(_ai.error_no_project);
                 return;
             }
 
@@ -570,7 +624,7 @@
             .then(data => {
                 setLoading(false);
                 if (!data.ok) {
-                    showError(data.error || 'Error al procesar.', data.raw || null);
+                    showError(data.error || _ai.error_processing, data.raw || null);
                     return;
                 }
                 // Clear parent context after successful submission (context was used)
@@ -583,14 +637,14 @@
 
                 if (S.historyOpen) loadHistory();
             })
-            .catch(() => { setLoading(false); showError('Error de conexión.'); });
+            .catch(() => { setLoading(false); showError(_ai.error_connection); });
         });
 
         // ── Confirm ───────────────────────────────────────────────────────────
         document.getElementById('btn-confirm').addEventListener('click', function () {
             if (!S.pendingId) return;
             this.disabled = true;
-            this.textContent = 'Guardando…';
+            this.textContent = _ai.btn_saving;
 
             fetch('{{ route("asistente-ia.apply") }}', {
                 method: 'POST',
@@ -600,13 +654,13 @@
             .then(r => r.json())
             .then(data => {
                 document.getElementById('btn-confirm').disabled = false;
-                document.getElementById('btn-confirm').innerHTML = '<span class="material-symbols-outlined" style="font-size:17px">check</span> Confirmar y guardar';
-                if (!data.ok) { showError(data.error || 'Error al aplicar.'); return; }
+                document.getElementById('btn-confirm').innerHTML = '<span class="material-symbols-outlined" style="font-size:17px">check</span> ' + _ai.btn_confirm;
+                if (!data.ok) { showError(data.error || _ai.error_processing); return; }
                 showSuccess(data);
                 S.pendingId = null;
                 if (S.historyOpen) loadHistory();
             })
-            .catch(() => { showError('Error de conexión.'); });
+            .catch(() => { showError(_ai.error_connection); });
         });
 
         // ── Cancel ────────────────────────────────────────────────────────────
@@ -665,8 +719,8 @@
         function setLoading(on) {
             submitBtn.disabled = on;
             document.getElementById('btn-icon').textContent = on ? 'hourglass_top' : 'auto_awesome';
-            document.getElementById('btn-label').textContent = on ? 'Generando…'
-                : (S.mode === 'crear' ? 'Generar borrador de proyecto' : 'Generar propuesta de mejora');
+            document.getElementById('btn-label').textContent = on ? _ai.btn_generating
+                : (S.mode === 'crear' ? _ai.btn_gen_create : _ai.btn_gen_improve);
             if (on) showPanel('loading');
         }
 
@@ -713,7 +767,7 @@
             showPanel('proposal');
             document.getElementById('prop-nombre').textContent = d.nombre || '—';
             document.getElementById('prop-descripcion').textContent = d.descripcion || '';
-            document.getElementById('prop-type-badge').textContent = '· Nuevo proyecto';
+            document.getElementById('prop-type-badge').textContent = _ai.new_project_badge;
             document.getElementById('prop-resumen-wrap').classList.add('hidden');
             document.getElementById('prop-warnings').classList.add('hidden');
             document.getElementById('success-box').classList.add('hidden');
@@ -728,7 +782,7 @@
             showPanel('proposal');
             document.getElementById('prop-nombre').textContent = '';
             document.getElementById('prop-descripcion').textContent = '';
-            document.getElementById('prop-type-badge').textContent = '· Mejora de «' + esc(res.proyecto_nombre) + '»';
+            document.getElementById('prop-type-badge').textContent = _ai.improve_badge + ' «' + esc(res.proyecto_nombre) + '»';
             document.getElementById('prop-resumen-wrap').classList.remove('hidden');
             document.getElementById('prop-resumen').textContent = d.resumen || '—';
             document.getElementById('prop-warnings').classList.add('hidden');
@@ -780,7 +834,7 @@
                         ${(i.contenido||i.descripcion)?`<p style="font-size:11px;color:#64748b;margin-top:1px">${esc(i.contenido||i.descripcion)}</p>`:''}
                     </div>`).join(''));
             }
-            return html || '<p style="font-size:12px;color:#475569;padding:8px 0">Sin propuestas concretas.</p>';
+            return html || `<p style="font-size:12px;color:#475569;padding:8px 0">${_ai.no_concrete}</p>`;
         }
 
         function buildImproveSections(d) {
@@ -839,7 +893,7 @@
                         ${(i.contenido||i.descripcion)?`<p style="font-size:11px;color:#64748b;margin-top:1px">${esc(i.contenido||i.descripcion)}</p>`:''}
                     </div>`).join(''));
             }
-            return html || '<p style="font-size:12px;color:#475569;padding:8px 0">La IA no propuso cambios concretos. Sé más específico.</p>';
+            return html || `<p style="font-size:12px;color:#475569;padding:8px 0">${_ai.no_concrete_improve}</p>`;
         }
 
         function showSuccess(data) {
@@ -847,16 +901,16 @@
             document.getElementById('btn-cancel').style.display  = 'none';
             const sb = document.getElementById('success-box');
             sb.classList.remove('hidden');
-            document.getElementById('success-msg').textContent = data.message || 'Cambios guardados.';
+            document.getElementById('success-msg').textContent = data.message || _ai.changes_saved;
             const c = data.counts || {};
             let html = '';
-            if (c.requerimientos)  html += `<p>📋 ${c.requerimientos} requerimiento(s)</p>`;
-            if (c.tareas)          html += `<p>✅ ${c.tareas} tarea(s) — visibles en Scrum Board</p>`;
-            if (c.reqs_new)        html += `<p>📋 ${c.reqs_new} requerimiento(s) nuevo(s)</p>`;
-            if (c.tasks_new)       html += `<p>✅ ${c.tasks_new} tarea(s) nueva(s)</p>`;
-            if (c.tasks_updated)   html += `<p>🔄 ${c.tasks_updated} tarea(s) actualizada(s)</p>`;
-            if (c.sprints)         html += `<p>🏃 ${c.sprints} sprint(s)</p>`;
-            if (c.insumos)         html += `<p>📦 ${c.insumos} insumo(s)</p>`;
+            if (c.requerimientos)  html += `<p>📋 ${c.requerimientos} ${_ai.count_reqs}</p>`;
+            if (c.tareas)          html += `<p>✅ ${c.tareas} ${_ai.count_tasks}</p>`;
+            if (c.reqs_new)        html += `<p>📋 ${c.reqs_new} ${_ai.count_reqs_new}</p>`;
+            if (c.tasks_new)       html += `<p>✅ ${c.tasks_new} ${_ai.count_tasks_new}</p>`;
+            if (c.tasks_updated)   html += `<p>🔄 ${c.tasks_updated} ${_ai.count_tasks_upd}</p>`;
+            if (c.sprints)         html += `<p>🏃 ${c.sprints} ${_ai.count_sprints}</p>`;
+            if (c.insumos)         html += `<p>📦 ${c.insumos} ${_ai.count_inputs}</p>`;
             document.getElementById('success-counts').innerHTML = html;
             const link = document.getElementById('success-link');
             if (data.url) { link.href = data.url; link.classList.remove('hidden'); }
@@ -882,7 +936,7 @@
 
         function loadHistory() {
             const list = document.getElementById('history-list');
-            list.innerHTML = '<div class="text-center py-4"><span style="font-size:11px;color:#374151">Cargando…</span></div>';
+            list.innerHTML = `<div class="text-center py-4"><span style="font-size:11px;color:#374151">${_ai.history_loading}</span></div>`;
 
             fetch('{{ route("asistente-ia.historial") }}', { headers: { 'X-CSRF-TOKEN': csrf } })
             .then(r => r.json())
@@ -891,7 +945,7 @@
                 filterHistoryItems();
             })
             .catch(() => {
-                document.getElementById('history-list').innerHTML = '<p style="font-size:11px;color:#ef4444;text-align:center;padding:12px">Error al cargar historial.</p>';
+                document.getElementById('history-list').innerHTML = `<p style="font-size:11px;color:#ef4444;text-align:center;padding:12px">${_ai.history_error}</p>`;
             });
         }
 
@@ -924,7 +978,7 @@
             badge.classList.toggle('hidden', S.allItems.length === 0);
 
             if (items.length === 0) {
-                list.innerHTML = '<p style="font-size:11px;color:#374151;text-align:center;padding:16px">Sin registros.</p>';
+                list.innerHTML = `<p style="font-size:11px;color:#374151;text-align:center;padding:16px">${_ai.history_empty}</p>`;
                 return;
             }
 
@@ -946,16 +1000,16 @@
                     <div class="flex items-center gap-2 flex-shrink-0 mt-0.5">
                         <button onclick="viewHistoryItem(${h.id})"
                                 style="font-size:10px;color:#6366f1" class="hover:underline hover:text-indigo-400">
-                            Ver
+                            ${_ai.btn_view}
                         </button>
                         <button onclick="reuseHistoryItem(${h.id})"
                                 style="font-size:10px;color:#a855f7" class="hover:underline hover:text-violet-400">
-                            Reutilizar
+                            ${_ai.btn_reuse_short}
                         </button>
                         ${h.estado === 'borrador' ? `
                         <button onclick="applyHistoryItem(${h.id})"
                                 style="font-size:10px;color:#10b981" class="hover:underline hover:text-emerald-400">
-                            Aplicar
+                            ${_ai.btn_apply_short}
                         </button>` : ''}
                         <button onclick="deleteHistoryItem(${h.id})"
                                 style="font-size:10px;color:#475569" class="hover:text-red-400 transition-colors">
@@ -970,7 +1024,7 @@
         window.viewHistoryItem = async function (id) {
             const r = await fetch('{{ url("asistente-ia/historial") }}/' + id, { headers: { 'X-CSRF-TOKEN': csrf } });
             const data = await r.json();
-            if (!data.ok) { alert('Error al cargar el registro.'); return; }
+            if (!data.ok) { alert(_ai.error_load); return; }
 
             const rec = data.record;
             S.detailChatId = rec.id;
@@ -1027,7 +1081,7 @@
         window.reuseHistoryItem = async function (id) {
             const r = await fetch('{{ url("asistente-ia/historial") }}/' + id, { headers: { 'X-CSRF-TOKEN': csrf } });
             const data = await r.json();
-            if (!data.ok) { alert('Error al cargar el registro.'); return; }
+            if (!data.ok) { alert(_ai.error_load); return; }
 
             const rec = data.record;
 
@@ -1053,7 +1107,7 @@
             document.getElementById('ctx-badge-id').textContent = '#' + rec.id;
             document.getElementById('ctx-badge-proyecto').textContent = rec.proyecto_nombre
                 ? '📁 ' + rec.proyecto_nombre
-                : '(sin proyecto)';
+                : _ai.ctx_no_project;
             document.getElementById('ctx-badge-prompt').textContent = rec.prompt_usuario;
             document.getElementById('context-badge').classList.remove('hidden');
 
@@ -1096,7 +1150,7 @@
 
         // ── APPLY a borrador record from history ──────────────────────────────
         window.applyHistoryItem = async function (id) {
-            if (!confirm('¿Aplicar esta propuesta guardada? Se guardarán cambios en la base de datos.')) return;
+            if (!confirm(_ai.confirm_apply)) return;
             const r = await fetch('{{ route("asistente-ia.apply") }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
@@ -1104,16 +1158,16 @@
             });
             const data = await r.json();
             if (data.ok) {
-                alert(data.message || 'Cambios aplicados correctamente.');
+                alert(data.message || _ai.applied_ok);
                 loadHistory();
             } else {
-                alert(data.error || 'Error al aplicar la propuesta.');
+                alert(data.error || _ai.applied_err);
             }
         };
 
         // ── DELETE a history record ────────────────────────────────────────────
         window.deleteHistoryItem = async function (id) {
-            if (!confirm('¿Seguro que deseas borrar este registro del historial?\n\nEsto NO eliminará datos del proyecto (tareas, requerimientos, sprints, insumos).')) return;
+            if (!confirm(_ai.confirm_delete)) return;
             const r = await fetch('{{ url("asistente-ia/historial") }}/' + id, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': csrf },
@@ -1126,13 +1180,13 @@
                 S.allItems = S.allItems.filter(h => h.id !== id);
                 filterHistoryItems();
             } else {
-                alert('No se pudo borrar el registro.');
+                alert(_ai.error_delete);
             }
         };
 
         window.clearHistory = async function (scope) {
-            const label = scope === 'project' && S.proyectoId ? 'del proyecto actual' : 'completo';
-            if (!confirm(`¿Limpiar el historial ${label}?\n\nEsto NO elimina proyectos, tareas, requerimientos, sprints ni insumos.`)) return;
+            const confirmMsg = scope === 'project' && S.proyectoId ? _ai.confirm_clear_proj : _ai.confirm_clear_all;
+            if (!confirm(confirmMsg)) return;
             const payload = {};
             if (scope === 'project' && S.proyectoId) payload.proyecto_id = S.proyectoId;
             const r = await fetch('{{ route("asistente-ia.historial.clear") }}', {

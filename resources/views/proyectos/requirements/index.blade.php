@@ -3,7 +3,7 @@
         <div class="flex items-center gap-2 text-sm min-w-0">
             <a href="{{ route('modulo.selector', 'requerimientos') }}"
                class="text-gray-500 hover:text-gray-300 transition-colors flex-shrink-0">
-                Requerimientos
+                {{ __('app.nav.requirements') }}
             </a>
             <span class="text-gray-600 flex-shrink-0">›</span>
             <span class="text-white font-semibold truncate">{{ $proyecto->nombre }}</span>
@@ -21,7 +21,7 @@
                 <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
                       style="font-size: 17px;">search</span>
                 <input type="text" id="req-search"
-                       placeholder="Buscar por código o título…"
+                       placeholder="{{ __('app.req.search_ph') }}"
                        autocomplete="off"
                        class="w-56 bg-white/5 border border-white/10 rounded-lg pl-8 pr-3 py-1.5
                               text-sm text-white placeholder-gray-500
@@ -31,21 +31,21 @@
             {{-- Filters --}}
             <div class="flex items-center gap-1.5 flex-wrap" id="req-filters">
                 {{-- Tipo --}}
-                <button class="filter-btn filter-active" data-filter="all">Todos</button>
-                <button class="filter-btn" data-filter="funcional">Funcional</button>
-                <button class="filter-btn" data-filter="no_funcional">No funcional</button>
+                <button class="filter-btn filter-active" data-filter="all">{{ __('app.form.all') }}</button>
+                <button class="filter-btn" data-filter="funcional">{{ __('app.form.functional') }}</button>
+                <button class="filter-btn" data-filter="no_funcional">{{ __('app.form.non_functional') }}</button>
 
                 <span class="w-px h-4 bg-white/10 flex-shrink-0"></span>
 
                 {{-- Prioridad --}}
                 <button class="filter-btn" data-filter="alta">
-                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block mr-1"></span>Alta
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block mr-1"></span>{{ __('app.form.high') }}
                 </button>
                 <button class="filter-btn" data-filter="media">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block mr-1"></span>Media
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block mr-1"></span>{{ __('app.form.medium') }}
                 </button>
                 <button class="filter-btn" data-filter="baja">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block mr-1"></span>Baja
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block mr-1"></span>{{ __('app.form.low') }}
                 </button>
             </div>
 
@@ -57,7 +57,7 @@
                class="flex items-center gap-1.5 px-4 py-1.5 bg-secondary-container text-white
                       text-xs font-bold rounded-xl hover:opacity-90 transition-all active:scale-95 flex-shrink-0">
                 <span class="material-symbols-outlined" style="font-size: 14px;">add</span>
-                Nuevo requerimiento
+                {{ __('app.actions.new_req') }}
             </a>
         </div>
 
@@ -74,9 +74,9 @@
                             <h1 class="text-sm font-bold text-white truncate">{{ $proyecto->nombre }}</h1>
                         </div>
                         <p class="text-xs text-gray-500 pl-7">
-                            Backlog del proyecto
+                            {{ __('app.req.backlog_title') }}
                             <span class="text-gray-700 mx-1">·</span>
-                            Requerimientos → Historias de usuario → Sprint
+                            {{ __('app.req.flow') }}
                         </p>
                     </div>
 
@@ -86,14 +86,14 @@
                             <div class="text-base font-bold text-white tabular-nums leading-tight">
                                 {{ $requirements->count() }}
                             </div>
-                            <div class="text-[10px] text-gray-500">Total</div>
+                            <div class="text-[10px] text-gray-500">{{ __('app.req.total') }}</div>
                         </div>
                         <div class="text-center px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl
                                     min-w-[56px]">
                             <div class="text-base font-bold text-gray-400 tabular-nums leading-tight">
                                 {{ $backlog->count() }}
                             </div>
-                            <div class="text-[10px] text-gray-500">Sin sprint</div>
+                            <div class="text-[10px] text-gray-500">{{ __('app.req.no_sprint') }}</div>
                         </div>
                     </div>
                 </div>
@@ -112,15 +112,15 @@
                 <div class="glass-panel rounded-2xl p-16 text-center mt-4">
                     <span class="material-symbols-outlined text-gray-600 block mb-3"
                           style="font-size: 52px;">assignment</span>
-                    <p class="text-sm font-semibold text-white mb-1">Sin requerimientos todavía</p>
+                    <p class="text-sm font-semibold text-white mb-1">{{ __('app.empty.no_requirements') }}</p>
                     <p class="text-xs text-gray-500 mb-5 max-w-xs mx-auto">
-                        Documenta los requerimientos funcionales y no funcionales de tu proyecto.
+                        {{ __('app.req.document_desc') }}
                     </p>
                     <a href="{{ route('proyectos.requirements.create', $proyecto) }}"
                        class="inline-flex items-center gap-1.5 px-5 py-2 bg-secondary-container
                               text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all active:scale-95">
                         <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
-                        Nuevo requerimiento
+                        {{ __('app.actions.new_req') }}
                     </a>
                 </div>
 
@@ -155,7 +155,7 @@
                                 {{ $group['sprint']->estado === 'en_progreso'
                                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20'
                                     : 'bg-blue-500/15 text-blue-300 border-blue-500/20' }}">
-                                {{ $group['sprint']->estado === 'en_progreso' ? 'Activo' : 'Planificado' }}
+                                {{ $group['sprint']->estado === 'en_progreso' ? __('app.req.active_badge') : __('app.req.planned_badge') }}
                             </span>
 
                             @if($group['sprint']->fecha_inicio || $group['sprint']->fecha_fin)
@@ -202,11 +202,11 @@
 
                         <span class="w-2 h-2 rounded-full bg-gray-500 flex-shrink-0"></span>
 
-                        <span class="text-sm font-semibold text-white">Backlog</span>
+                        <span class="text-sm font-semibold text-white">{{ __('app.req.backlog') }}</span>
 
                         <span class="text-[10px] px-2 py-0.5 rounded-full font-medium border flex-shrink-0
                                      bg-gray-500/10 text-gray-400 border-gray-500/20">
-                            Sin sprint
+                            {{ __('app.req.no_sprint') }}
                         </span>
 
                         <span class="section-count text-xs text-gray-400 bg-white/5 px-2 py-0.5
@@ -233,10 +233,10 @@
                 <div id="no-results" class="hidden text-center py-14">
                     <span class="material-symbols-outlined text-gray-600 block mb-2"
                           style="font-size: 36px;">search_off</span>
-                    <p class="text-sm text-gray-500">Sin resultados para este filtro o búsqueda.</p>
+                    <p class="text-sm text-gray-500">{{ __('app.empty.no_results') }}</p>
                     <button id="clear-filters"
                             class="mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                        Limpiar filtros
+                        {{ __('app.actions.clear_filters') }}
                     </button>
                 </div>
 

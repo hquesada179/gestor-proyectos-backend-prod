@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scrum Board - Gestor de Proyectos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 10px;
+    }
+  </style>
+<style data-purpose="custom-colors">
+    .bg-main-dark { background-color: #0d121f; }
+    .bg-sidebar { background-color: #0f172a; }
+    .bg-card { background-color: #1e293b; }
+    .border-card { border-color: #334155; }
+    .text-dim { color: #94a3b8; }
+    .accent-blue { background-color: #2563eb; }
+    .status-progreso { color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); }
+    .status-completado { color: #10b981; background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-proximo { color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); }
+  </style>
+</head>
+<body class="h-full bg-main-dark text-white overflow-hidden flex">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-sidebar border-r border-slate-800 flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<span class="font-bold text-lg tracking-tight">Gestor de Proyectos</span>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Proyectos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Mis Tareas</span>
+</a>
+</div>
+<div class="pt-6 pb-2">
+<p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Módulos</p>
+</div>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Requerimientos</span>
+</a>
+<!-- Active Link -->
+<a class="flex items-center gap-3 px-3 py-2 text-white bg-blue-600/20 border-l-2 border-blue-500 rounded-r-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Scrum Board</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Sprints</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Tablero Tareas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Insumos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Calendario</span>
+</a>
+</div>
+<div class="pt-6 pb-2">
+<p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Inteligencia Artificial</p>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Asistente IA</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-800 space-y-3">
+<button class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Nuevo proyecto
+      </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-white rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Perfil</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-dim hover:text-red-400 rounded-lg transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Cerrar sesión</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full bg-main-dark overflow-hidden">
+<!-- BEGIN: Top Header -->
+<header class="h-16 border-b border-slate-800 flex items-center justify-between px-8 bg-main-dark shrink-0">
+<div class="flex items-center text-xs font-medium">
+<span class="text-slate-500">Dashboard</span>
+<svg class="w-4 h-4 text-slate-600 mx-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-slate-300">Scrum Board</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<p class="text-sm font-semibold text-white">helbert mauricio</p>
+<p class="text-xs text-slate-500">rockoper09@gmail.com</p>
+</div>
+<div class="w-10 h-10 bg-blue-700 text-white rounded-lg flex items-center justify-center font-bold text-lg">
+          H
+        </div>
+</div>
+</header>
+<!-- END: Top Header -->
+<!-- BEGIN: Content Container -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8">
+<!-- BEGIN: Content Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div data-purpose="page-title">
+<h1 class="text-3xl font-bold text-white mb-1">Scrum Board</h1>
+<p class="text-slate-400 text-sm max-w-2xl">Vista general de proyectos ágiles. Gestiona el estado, progreso y colaboración de tus equipos.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<input class="bg-slate-800 border-slate-700 text-white text-sm rounded-lg pl-10 pr-12 py-2 w-64 focus:ring-blue-500 focus:border-blue-500 transition-all" placeholder="Buscar proyecto..." type="text"/>
+<span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500 text-[10px] font-bold">⌘ K</span>
+</div>
+<button class="bg-slate-800 border border-slate-700 text-slate-300 text-sm px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Filtros
+          </button>
+<div class="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700">
+<button class="p-1.5 rounded bg-blue-600 text-white">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"></path></svg>
+</button>
+<button class="p-1.5 rounded text-slate-500 hover:text-white transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<!-- END: Content Header -->
+<!-- BEGIN: Projects Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Project 1 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Smart Kitchen" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhqrCkmSZcDv40Vl5aMVAJhnCDD-Dl47XbLZ3kMxAJ1HUGRlWb1TcsLH2KVV06Brl-_jKOBEjF166slw5h8SYJMLC0O6kwMJPoZK3buEdef1zRuSfWqvXpMM7UsjI0jQt2LLzJM6FefnwHLsT-qHE4ie0JNvMHUkyzzGtF-bg-sM6fFYOkbnAn4zIgt8UNkDVw5_W2KzngEaJ_B-dcVDgG7s9l4uDT1OZicHkWGA7Q33ASLaBvEkcYfNWdCSJOJZAwSC5nJmSC5eQn"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Gestión de la cocina inteligente</h3>
+<span class="status-progreso text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">En progreso</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Optimiza funciones y operaciones para mejorar eficiencia energética.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">66%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-blue-500 h-1.5 rounded-full" style="width: 66%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 03 Jun 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 28 Ago 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>5 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 2 de 4</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcH3m4VmHsyjmn2w_p8Y420nvfgqOFCDqRwZopcvpUI0qpc56vD0wYRScKCEVTaunJUdHcjTlJHCkZczm_mAXeqvS9Tm44Gy1_kuHtuSO2fMpchyp_894tAaymwVDmzPSmspeoBYgwjJU2ziWClwGU89-gtjCCVWqgLdBwn5nAPLluhIJj6iybhw8qsJczOVdMywHXpA9oWSMc739axNVTSTNpIsiT0VsGzivLKrLl8uT7Omz4Hkpi9Nmpa_vLflbPdscBPtWMA2jG"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRV3EhN_UStXJl4jhTb41twgkk86GyXeHYLEY2DcdSKR02mvhPIBAvJCqKi8GusI7eKnNYmKIR5db9H5YBErwzS4UjKnuldFqQWSgdE5pznDdmJ2Ta2gUkIGd4u-BLVlbJK_PVnLXjZ8t6OIxkW6hU8K7VlRcSon2hLGlsYw1YE58S5abN_eyRFhEcuyrhEjQ0y-xmpO66xT3hdZbZ8VsWRYwyNJDgWEaK1U87Gnmie7xSX9YCmHR7bO7oGBFLQ5v_l9eX05Mi3o8d"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMih_2_e0eVfmR6prQqiAM9V68pU1k-dFO-BFprIPALfSteyNKA3o8RSGsNClrFIWR7h3kcilbd2ZBdqOo6bmeqCIf5jKj6EHunoQdIVwkcTb7ACMuvzt6Oio4EkKx0lSFItDAh73ljTm-lZ1vIdgC9WCjYSk4U4aSR05V8NYH0DoGLY2Q84mW2TpuPL-5_MUZJtb0mE7XV7JbohT2xE1Mc0pWnyZRPNn69bGw3Csigf-V3Crf9MA-LtUn36OO1jGxJR0aN5l5CbdW"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+3</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>2</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 2 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Pens" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaGLars24x2DT8vczIsuySlvJ2VIEN3awtYjttF1gDpFBDqA_LK1GuRbHgQCf5rCqQMOMZW1qzijYlUf5sgy1MAGmRJGY_mrf3Rwr5hBjfUzW5XWral0CP1sRFOZeZs1Vvxel1BgrLgUQpS_67dAAAAN_-qiv_wxVy9kpFMWppcAAfwKnOgHL9Mly6ZFJAbnA9vyDkZGH_LUOqMNfgTZczTqNAG72g1TAqq4QlKrIJaMrXJC4LyDLWgTex8QtKNmJA0u4Xh3dPjNnr"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Gestión de lapiceros digitales</h3>
+<span class="status-completado text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Completado</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Entorno colaborativo para autores usando herramientas digitales.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">100%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 15 May 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 20 Jul 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>6 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 3 de 3</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT7QcWnD2cRCHwBuyj8DBIUgLGqlT9YIPZ49dXW2GWUpHH6zJ9htWWQSstLvGTObbC_z0o4oZyVNIYYCfht9FOzimtbGCL7qNzQB-0_Kq96QvDGg5vK_ehqX_035GIgQnYQMYrn4gUxyjPG0Fb0OKv9VMkQ77nNdDFGuCDAcQmTpQtLeeyCBpDrsmDqRIEYfG3TLiS0D7fDlcC0G-vZz6qLpOlgprhGPqgCzSDkn2VxBufrkGaUm0VGny6v0zZI-psj-TARc8VkS3N"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA90sZdFB5sER8i_vF1ggPJSPE8mPTPkWfmf1VsPnGktmpsOlRQURgyjZ2A_oDd0LBZsJuTSaoVa8fpFv2PJD4SXSYQpQp7Il9QJU2wSUvZEduNnYg1y-Eu9GWYp4F_xNlWtBkvgwEk9oNbReSJ4kaapEAz1nQYjXRC0x-y7tdzwYZEf-6VdZfgWWJJPi8P8IPYPmQCMjgSZDGqGZjEc2HopMn8NznI4i-hJJgJoiEKluZHNdgPycenFKUelHw9BzORV3wPipifcCG6"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+2</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>3</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 3 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Agile Systems" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDF7Xe734OskkhSJwhqu3BmAXk-tCC_Up0GuDPIGAhBdGr2UCvkGAs6IJ9tP1vyTQzwa3TH4DL707o2M94moSDiHJdt0eGejYFidNVb7h3qxUEGhpl6hFItkujFdcym8Tpg_4WcYed_In5k6sLIqbkybD90Qz2U8X7zYRvtBAOLr45I2jQ_6r0dqzQJB4EDSBlbzFML78rzvGSQn-bfaIr_0ijUl8R2HVh98vI54FpjCBd3dSd_uEeEh3mKe2y0H3xIvRumrGuOyiSW"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Sistema de Proyectos Ágiles</h3>
+<span class="status-proximo text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Próximo</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Seguimiento, planificación y asignación de proyectos ágiles.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">20%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 20%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 10 Jun 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 12 Sep 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>8 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 1 de 4</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDdIKDd0E3UKph90wNI1LXLxbEpSJDI_qDK5tJPvKAIotyQ8co8cLZYywXLkokQkZNdxPk71P-w32b8Bg3JPj2Dc_FqKXRv6M-u1K-xXPG8vBIxX21VXzy0Llz-FQJMLHRIqm9VVwpMIzXGBq-1cqUit05arnheZp7fvpYEh4m417tykxDKnsUucPc_DZR3KUrlsTWvwwQrOACmxIRnIAJhWBTqufxJHnfO3eQfrFs0OWE7ZYrPaFFwfph7bVdBk8yluR4EnAtfE27"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWsGitRRrzMU88sxR26GBNPGzoynJ5jjBG9we-1BbK-7upI0i_nxYSmbDqxTcgG19shvkb57BuOnQgoER3LeM2vCm4Hsld7CnVTeUrATFLcvi974NxAv4SX-WUwGkkjil2K_sTSasIM9iw881XBOntoxdnN1tc6d7kWEIeSdQ2srUBiXDiV_pMafThTOt4Sg_TO0XvhNAPQRX_Zk7xWQNTzPC-rUQ4dkpq_h3yQQNo_BQ2NC8u7tR4sth2SyxFoVsdekrynJAb2KyV"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6J0iW0K5RByuEU9NlcyVwf18L1xPg9XMmfYCwbBt65hwXvBFsTY5_9PICJqFsNKKNRtUSKhsioyw-G-kQeO7Daq1nmypImsKJavYIdYOVDPHPCCj7CChT06rLmx56q9FY8tcqBT4XjKRX01iD13arq5uP6jLj2apIEaMuZ1NY0AvNW_c-FFJO4UwGZvOsApziuBkgNeoYyWY25T2SQ2MTx1n8w6MiBrdjHi1yBmEwFrsW1LOGdQvzwSH5kw6JbhROFCow894sgY9r"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+4</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>2</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 4 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Rocket" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-nt9oR5NPkm9oXZ6Iq1nWT_0DcfQSm6Ca0NwMuJGqF_hEzSII-wnGuCFvt7_fgRpfsV0Sempda-dIQXLyAnLxZp7qdHYkoujMuR4xYs2LNnkfDmm6Lwc5IBCYVH6ZHuSatid0ek93c_uL3oFcQTdJTpBB004PkMYkiwH_iTe30BC_ctRYPKUfG_bZmkt1fTL_FvkDZmCh5ZfhsA-eR5wwmyrOH0UZZsjp1I01OprkGkm2FWYB4yEsU8P3lOYTuas7BXWwtGM8DdVT"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Ensamblador espacial reutilizable</h3>
+<span class="status-progreso text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">En progreso</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Plataforma ágil para construcción, pruebas y diseño iterativo.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">45%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-blue-500 h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 28 May 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 05 Sep 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>7 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 2 de 5</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCroiRD-CVblk49vmgOHWBNV9e6F94qiMhvJEHm2VGXDLfkdWmHwdaIQEcSGiFsAVa82i7rXgjyJa1zI3HANeRSHJ8c8m06z-afRIxQR26aoTFhRJzYBMgnSkytytd9Blb7nsmh3UJjrbmPi6flcBQoz3PfvMUTcoLKdF4K2p7pTjGTnTor4VniInhRkd3hu8hHKVQcl-nVwnzwqKccHJpLxnbzZ8L51oW0jI-pcA0BxqBoKAMB5dMJwfVyJ2-MiLDJ-4fpSbmou-BG"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd2pepZK3EZSBiL63bJqPF2hSxlaInOqf7HcsvPC4uarZozAsIq5r0eDbm1sflpDbYUmqYIZwTXeglKalFimXuxXK0DB6QSnQmvJ-tOh4KSYawXcDah57iQX-48vPco1RJgUIW0BrL66krhqPVV2toCl5LR49VydKb8CsUelODIp6-Ec-0yNvIvNwvFMp1SeBL5ivCnan9NOAm664Z9lYuaM1C--fhRwnv-zHbeOHb7COhhE0DM7AArpWSsU544x-UmEVIo4qjbj-V"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdc79PSuzZE2Npf0mpr2DdtWJIsxrlOQD6y9S7-V_ytBshP2-GlMdxvJxoS7wG8lHGgGrto044ycjoWuqLtRgNtJHbO2kW8XQaRmz_ThMh5V9014zcOn33vEnefot8dwp77nzrmoXv-L_2ZqYBLt7R5f-a-UiFYSw_LdJaTom_vLGH87_a02xQzcJ3sm0PehnlFcB3KJupU0yFHwZ1Bm1h7P4-nf_I4rT7csx8F5AT2FO052YoF-PK4WSbH37tfuj-D_B-OrU-fQGd"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+3</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>2</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 5 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Smart Cars" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnz5F3oz9xRkwHMtd85XbSiGUNT0-frejrQzREuU-iXPclWknp6ij1K0queqyV744nTz7QVeNuJUtHgwpdFvnhPM9w5wS6YTgtSSQeAF4SM-j2RzLVWuxmPYu3bijXL8Wp-3PVbbUL0Wj_S2AARVq4_q0bHufh504mqp-ddJUjO2m1CfxgjjTgza5VJ5gm669XdzD1RwJ65GN-pMbAW8Cr_c4fgPPbu010olHPkFq_s3eGsD4rcndpd8EA6WmPQnLB7Svg3gAXcP3X"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Carros inteligentes movilidad urbana</h3>
+<span class="status-progreso text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">En progreso</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Optimiza rutas y reduce tráfico con IA y datos en tiempo real.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">70%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-blue-500 h-1.5 rounded-full" style="width: 70%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 07 May 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 18 Sep 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>5 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 3 de 4</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO6EqfAca4UF7lRBq87FM3tPluFPJ5ANtU4nF4S6h8T6FjvN0JsYrk0D6q3K2qP52C0qjS-12hQwhNvtv7mmYoUIBhuhYfStYNlZRV3tqvWqTzQ1odzU5wCQuXwa71pIMVdoYc85uaMP9tyg-lQVgsm2C-0b5si_J19w9e4npb3y--vfOWsFxJR59t8cz0R7D2h7wRklwVYOuktLaajERTKX4uxn-_u1A3OJR-Uk-x89prcbgvEwLg35WWPKaTtczVL9vDg4x6LCSG"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8xdyJCCuQdxpnnmNG6RKtMHcEvEmAIe6wqlimi-2-flfMEtGGtsZX_qRoQDko535YQVjz55nkBYsL62Ph-7MDSE9ySENAdU1J5FXkDZlXOKiy5kaUvAvs1e5xMLYRqbK45Pn-JWqtsCDpDL1TQkzpB-ts17ouWov3V8Jz39N3R5JpPuQHm33MIpx3KnPo7FfA7I8F8R0fyQc6hQ-AGCpPAJSfzT4Wqarfzq4fNOJjRL06vLGKW5Vq_JdKLila8lO3YNw6yas5SQi6"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+2</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>3</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 6 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Bakery" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAguwXpGoU3-L_xzZemS7kg590f77Y3_hYgKmXP9tAdeC224Up7osb4XhSy-7ioDwBUFAOCGFecH1LjfeFJMvo_UCyDHfH-OY7R65p4hLINon2qDU9jr_8v9jzB3s54sP0JaFeIUYug44sKDNWvlL3Ehih_BAKhcyT8caF_SUgEt-q1KzMYnleAvX7qOjjOlCadXdyy1i_fhUefVfbWTMTjkbzlF3j__nUPRrlS1_KMATWry7HkCqhmb4YxNSAJ5PROL-5nyIzgFl3e"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Panadería Digital</h3>
+<span class="status-proximo text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Próximo</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Gestión de inventario y pedidos para panaderías y reposterías.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">15%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 15%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 01 Jul 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 22 Oct 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>3 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 1 de 3</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv8G-OoTlZK9nakWrGfK0uR0gaB9i3Gtzj8yO733y1RI0pTOiuH9aM3MxWX6lsaLUMWuieYSee01CI4VnF3jJlNay2M5RTZfjHBKtBb3UTJHQU-emp5Za-kFmA25BYkbhUJHNR12coSVqmpSVtjYXmm_UXfRKgosdCDSrZxNCfT2I8Q_BX-bbGajv4GXRnTPE-UPqQV6NB5h_d7PxCthHR1RzjSQwlsUChilW4FvUS8EcLmDNIFLUm6sRAE4Q2gm0ye4I21t_7V6qI"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo4EDLFUkRh6f12aCbWxHgYwDGySe4fqfn1JPVRtwa15TC8K0CNuZJ0Zf5g9ClnZk86pej07iOAYa7KkOhc335oy292p1P11GCT_L1pvxbSQPbogDktrl0Qftsls3H6qNUlSMT5AIgJz-JACWsSF9Ddi9h_TuKSRrUmoh2Rye-i7qv9F88nKjOmUHeAlCSIXbzrSpgw1r8choww3Xxe7UDcwJlUkpsAUCGj4TLVnmsPGmNjkpqTIHR5kPtl2I3jVJbJ2TA15dieGfc"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+1</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>1</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 7 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Logistics" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxFfv4fWhEtBBDhi9ugcXQ53izrOY8WYbloERtwgxdgFlpmmZR1N1UivNrYqxeYntwcX1ffGP-FA9vsCkXKDxwtIduSaxBYbq4mLjxJnMVoDhz-_S-6IU1p6QVeoMZKm_DgUt0MYBVVPD2ACZD7nbNoaE3bVjePj4_SyBdqY4nu-eALz5AKNz17G9V8mDTnKUV-g88SA8y8ZZ4PFAPB_aEoeK7QO7XilWRyBxmbV-WXO9DyLpJE9yH1GrTNIPnO43xmLsmWOtwclUB"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Logística Avanzada Transporte</h3>
+<span class="status-progreso text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">En progreso</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Automatiza rutas y operaciones con IA para mayor eficiencia.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">80%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-blue-500 h-1.5 rounded-full" style="width: 80%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 05 May 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 30 Oct 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>6 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 4 de 5</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtJ9YbBQ_uNwYF-uUynVl9etp-T8UrPOMu80Wp1MC4yKg8KW6U59Jst2Q7t3fdeO2z6RuAA2YcnAJHvDcDbNyQknyvK6ry1sLRfMrwKJsDjCJO_zXcBOmxAHRmxJgUh_smJ1aYwkMjI_yYZobRLuMQY6zyLShMK5g0zlequfdMjnUz0H8N6f-ZsoyGDfCSnw7wb0Yi7_dQPlrArY9vov45PXQOzmk4tIoDWUkZpfDLrtkKAFyCibdtPkbJ9XnIESuw4BpzeEpdZ_TD"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDui7WtKvG1oEu-uV9K_cjj2cI8LLGrjVsZhgBayb_KYx_PnsDtDiuosC90nKJqF-N5IBTUIZ3isV79Kv8rstjQR17VbayNdDeY_TqNuJpHfJ8IKOTplww-lGbN_BJ4ebI4ba8rkRzffAQow7N3yT_BzkV5O5--9w-1CzUrKjw9UsGvhL2Il_i3LS3a8kRKQm6ZksJ-Mo6A-z7O5eI0rQcJw8ujvPjH_jMgHP2fN60IqX2g_JTnvsMmAqKnATM62z7secj7gJINURbs"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+4</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>2</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 8 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Robot" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrT37hoQ_7IebSFhFGyK8dyBebRS93dHVOlPFnDBYF5vYTshvCPCjY0eifp98E8NqpcB5u1DH9blGh-lMtGQqUdobWulJd1-pQcEqndrs5A7WMW6XQycVMo-Pd5-4UZtjmWuY18xSUngc7NnO4bAlnQqtFhPn9DdZrRQ2-8YemqFLKMcn0nxAtGgNkqOyZDR2mW2wI5P4kuStll8K1NiXRUQ9cSW6SCrC8EEjp5d2yamOgzMdG-LJAwIaQF9Csbm37_PnzUQ2SElXr"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Ciclo de Vida del Equipo Robótico</h3>
+<span class="status-completado text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Completado</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Rastrea y optimiza la gestión operativa de equipos robóticos.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">100%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 18 Mar 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 30 Jun 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>6 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 3 de 3</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDf9wGoIE5PFWyc-WeviVscKcwEyRQZ0hYMHsGKciOrQeExljjCSFkKRPCfjlByT61QjNVtwsipwk4Tt3vXt1CVnF-qbZYZQts1CqVcFrmg1IpBe9OD0vcUimsF0MbwpmYWAyYAt0glLIERbytyGPX-mR-7s8ehVxzoWNt1GzhBw21accxWqVKOgvgWP0zjhhGJbt0m-XZyUjNOWV2seRUYIMV2dB6T64Wxy2PO-LwNPDtfaJMLVElak5aPtfpEe70snH2Lmd3m_75p"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM8czcLVuHkE_Zds1WWzH6Gd3BrkMimqw-nyjXasesXtlnqjS4Qoj6omrFadtnCdd-34fnAFHR_JW8In8fPYa_7fu86LgVZM-33QS3YvZtyTEVGHwRg1vq8hZeW4_f4ZGc6EIycZIZkA4KQNDHg0SNAes1IzMLdsXxnV0iJzg2eeZdDhECo0LgRwnogic1klE7d2B-MM-i8qgMqnjM86LOzQw_0nAiAWFfXc8FFENXc_3UwmOMiIR_Qswcr5IwQ_bxfo_LNoYcMb_F"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+3</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>3</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Project 9 -->
+<article class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-xl hover:border-slate-500 transition-all flex flex-col h-full">
+<div class="p-5 flex gap-4 h-full">
+<div class="w-32 h-32 rounded-lg overflow-hidden shrink-0">
+<img alt="Library" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLfFlyeAeJyrDxZ55nXBhT862vkZVkRYN20ti0_qbp1BnXzePegy_Q9IwkwncnhsF2FZWlCbmGxeb1eqEueBLCgocxB63D9LwKGHG7kUQmli6-yRjY__1C13AhTp1fClTcUqgHj-pP9qXp7c4X72d9kbeI3RzjkBCWuwEt9-DZa9BTyo8JNVcb2pxWLxoOSfOchuXX4Rlvf9u-pI8ma8BIedtPfo9vnxvVFGZx7JtiBP5iLUK7QnPMioNiqvUmUZ72iu6us4odS8SV"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-base font-bold truncate pr-2">Librería Virtual</h3>
+<span class="status-proximo text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Próximo</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 mb-3">Sistema de inventario y pedidos en línea para librerías independientes.</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-300">10%</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full mb-4">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 10%"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio: 12 Jul 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Fin: 15 Nov 2025</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>6 tareas</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sprint 1 de 4</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 py-3 bg-slate-800/50 border-t border-slate-700 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp6Z7gPLd5QkY_yYJpx7CZGB1QvE1dSC-T7h7s0D96kfbpAgO1YMYuzsAxnj0I35FFrudvim0f6jXt9e7MwD3psbHV0F_Kcn4qBIykuF_UyA3KborJgefbSji9jnYMsmL0QOfG_LclemP-uyzPEeJSK7vOlqoraw_HxWwa-dNiQ5U49BGzYgjth2tI74yWEYowxV58jrFhhO4JS6FgNAZICBPbHJYwVlrHhdzi9f-OT33EBFHUjHF-yfG_Id0egDGmN1voDSNqd9No"/>
+<img alt="" class="w-7 h-7 rounded-full border-2 border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANhWL60Udu_lEvLgA0OGQo_7ouz2GEt86mJ67fSiILRRVTofpCWhMKd63gZ_eZpgHJzWnw3nixeyPEeJrDCKlVGnYjvNxJjGrlrjRkSc0eEB1ePSDhvzbE5HEZ2HqjNTx9nHrp_GCI2nyxSc9GuvsN-MLgB4NH7lvnQvZkPkkpyq8mKXkUAp1MafRcEFZVEw-K1qb9LWqyiuzU3zieLClXCmL-VNRaxA906tniE_JPWX3Zz11WpDxuPNRk5rkoP3MyG_TPrOqpLDge"/>
+<div class="w-7 h-7 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-[10px] font-bold">+2</div>
+</div>
+<div class="flex items-center gap-1 ml-2 text-slate-400 text-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>2</span>
+</div>
+</div>
+<button class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+              Abrir tablero
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+</div>
+<!-- END: Projects Grid -->
+</div>
+<!-- END: Content Container -->
+</main>
+</body></html>

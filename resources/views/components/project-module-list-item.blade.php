@@ -1,0 +1,144 @@
+@props([
+    'proyecto',
+    'countValue'  => 0,
+    'countLabel'  => '',
+    'countIcon'   => 'tag',
+    'actionLabel' => 'Entrar',
+    'actionUrl'   => '#',
+])
+@php
+    $colors = [
+        ['#6d28d9','#818cf8'],
+        ['#1e40af','#38bdf8'],
+        ['#065f46','#34d399'],
+        ['#9f1239','#f472b6'],
+        ['#92400e','#fb923c'],
+        ['#6b21a8','#c084fc'],
+        ['#0c4a6e','#60a5fa'],
+        ['#14532d','#86efac'],
+    ];
+    $idx  = $proyecto->id % 8;
+    $c1   = $colors[$idx][0];
+    $c2   = $colors[$idx][1];
+    $ini  = mb_strtoupper(mb_substr(trim($proyecto->nombre), 0, 2));
+
+    $total = (int)($proyecto->tasks_count ?? 0);
+    $done  = (int)($proyecto->completed_tasks_count ?? 0);
+    $pct   = $total > 0 ? (int)round($done / $total * 100) : 0;
+
+    $estado = $proyecto->estado ?? 'activo';
+    [$badgeTxt, $badgeBg, $badgeFg, $badgeBorder, $barColor] = match ($estado) {
+        'completado'  => ['Completado',  'rgba(16,185,129,.12)',  '#34d399', 'rgba(16,185,129,.3)',  '#10b981'],
+        'en_progreso' => ['En progreso', 'rgba(59,130,246,.12)', '#60a5fa', 'rgba(59,130,246,.3)',  '#3b82f6'],
+        'planificado' => ['Planificado', 'rgba(245,158,11,.12)', '#fbbf24', 'rgba(245,158,11,.3)',  '#f59e0b'],
+        default       => ['Activo',      'rgba(99,102,241,.12)', '#a5b4fc', 'rgba(99,102,241,.3)',  '#6366f1'],
+    };
+
+    $userName    = auth()->user()->name ?? 'U';
+    $userInitial = mb_strtoupper(mb_substr($userName, 0, 1));
+@endphp
+
+<div class="project-list-item"
+     data-name="{{ strtolower($proyecto->nombre) }}"
+     style="
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.07);
+        background: #16213a;
+        transition: border-color .15s, background .15s;
+     "
+     onmouseover="this.style.borderColor='rgba(255,255,255,0.18)';this.style.background='#1a2640'"
+     onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.background='#16213a'">
+
+    {{-- Avatar --}}
+    <div style="
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, {{ $c1 }}, {{ $c2 }});
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 900; color: rgba(255,255,255,0.9);
+            letter-spacing: -1px; user-select: none;
+         ">{{ $ini }}</div>
+
+    {{-- Title + description --}}
+    <div style="flex: 1; min-width: 0; overflow: hidden;">
+        <p style="font-size: 13px; font-weight: 700; color: #f1f5f9; margin: 0 0 2px;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ $proyecto->nombre }}
+        </p>
+        @if($proyecto->descripcion)
+        <p style="font-size: 11px; color: #64748b; margin: 0;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ $proyecto->descripcion }}
+        </p>
+        @endif
+    </div>
+
+    {{-- Status badge --}}
+    <span style="
+            flex-shrink: 0;
+            font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+            padding: 3px 9px; border-radius: 999px;
+            background: {{ $badgeBg }}; color: {{ $badgeFg }}; border: 1px solid {{ $badgeBorder }};
+         ">{{ $badgeTxt }}</span>
+
+    {{-- Progress bar --}}
+    <div style="flex-shrink: 0; width: 100px; display: flex; align-items: center; gap: 6px;">
+        <div style="flex: 1; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.07); overflow: hidden;">
+            <div style="height: 100%; border-radius: 999px; background: {{ $barColor }}; width: {{ $pct }}%;"></div>
+        </div>
+        <span style="font-size: 10px; font-weight: 700; color: #94a3b8; white-space: nowrap; min-width: 26px; text-align: right;">
+            {{ $pct }}%
+        </span>
+    </div>
+
+    {{-- Count --}}
+    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+                font-size: 11px; color: #94a3b8; min-width: 64px; justify-content: flex-end;">
+        <span class="material-symbols-outlined" style="font-size: 13px; color: #475569;">{{ $countIcon }}</span>
+        <span style="font-weight: 600;">{{ $countValue }}</span>
+        <span style="color: #475569;">{{ $countLabel }}</span>
+    </div>
+
+    {{-- Date --}}
+    @if($proyecto->fecha_inicio)
+    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+                font-size: 10px; color: #64748b; min-width: 80px; justify-content: flex-end;">
+        <span class="material-symbols-outlined" style="font-size: 11px; color: #475569;">event</span>
+        <span>{{ $proyecto->fecha_inicio->format('d M Y') }}</span>
+    </div>
+    @endif
+
+    {{-- Owner --}}
+    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 6px;">
+        <div style="
+                width: 26px; height: 26px; border-radius: 999px;
+                background: linear-gradient(135deg, {{ $c1 }}, {{ $c2 }});
+                border: 1.5px solid rgba(255,255,255,0.12);
+                display: flex; align-items: center; justify-content: center;
+                font-size: 10px; font-weight: 900; color: white;
+             ">{{ $userInitial }}</div>
+    </div>
+
+    {{-- Action button --}}
+    <a href="{{ $actionUrl }}"
+       style="
+            flex-shrink: 0;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 14px; border-radius: 8px;
+            background: #4f46e5; color: white;
+            font-size: 11px; font-weight: 700; text-decoration: none;
+            white-space: nowrap;
+            transition: background .15s;
+       "
+       onmouseover="this.style.background='#4338ca'"
+       onmouseout="this.style.background='#4f46e5'">
+        {{ $actionLabel }}
+        <span class="material-symbols-outlined" style="font-size: 12px;">arrow_forward</span>
+    </a>
+
+</div>

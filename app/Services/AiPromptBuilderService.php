@@ -5,13 +5,35 @@ namespace App\Services;
 class AiPromptBuilderService
 {
     /**
+     * Returns the language name for the current locale to inject into prompts.
+     */
+    private function langInstruction(): string
+    {
+        $locale = app()->getLocale();
+        $names = [
+            'es'    => 'español',
+            'en'    => 'English',
+            'fr'    => 'français',
+            'pt'    => 'português',
+            'de'    => 'Deutsch',
+            'it'    => 'italiano',
+            'zh_CN' => '中文简体',
+        ];
+        $lang = $names[$locale] ?? 'español';
+
+        return "LANGUAGE INSTRUCTION: Always respond in {$lang}. Do not mix languages. All titles, descriptions, requirements, tasks, sprints, supplies and recommendations must be written in {$lang}. If the user writes in a different language, still respond in {$lang}.\n\n";
+    }
+
+    /**
      * Phase 1–2: Ask the model to interpret the user's raw idea.
      * Returns a compact JSON with project metadata and suggested modules.
      */
     public function interpretationPrompt(string $userIdea): string
     {
+        $lang = $this->langInstruction();
+
         return <<<PROMPT
-Eres un experto en gestión de proyectos de software. Analiza la siguiente idea y responde ÚNICAMENTE con un objeto JSON válido. No incluyas texto antes ni después del JSON, sin markdown, sin explicaciones.
+{$lang}Eres un experto en gestión de proyectos de software. Analiza la siguiente idea y responde ÚNICAMENTE con un objeto JSON válido. No incluyas texto antes ni después del JSON, sin markdown, sin explicaciones.
 
 IDEA DEL USUARIO:
 {$userIdea}
@@ -30,10 +52,10 @@ Responde con esta estructura JSON exacta (sin añadir ni quitar campos):
 REGLAS ESTRICTAS:
 - complejidad: exactamente "baja", "media" o "alta"
 - tipo_proyecto: exactamente "web", "movil", "escritorio", "api" o "mixto"
-- modulos_detectados: array de 2 a 8 strings en español
+- modulos_detectados: array de 2 a 8 strings
 - tecnologias_sugeridas: array de 1 a 5 strings
 - duracion_semanas_estimada: número entero positivo
-- Todo en español, solo el JSON
+- Solo el JSON, en el idioma indicado
 PROMPT;
     }
 
@@ -43,8 +65,10 @@ PROMPT;
      */
     public function createProjectPrompt(string $userIdea): string
     {
+        $lang = $this->langInstruction();
+
         return <<<PROMPT
-Eres un analista de software experto en metodologías ágiles. Analiza la siguiente idea y genera un borrador completo de proyecto. Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional.
+{$lang}Eres un analista de software experto en metodologías ágiles. Analiza la siguiente idea y genera un borrador completo de proyecto. Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional.
 
 IDEA DEL PROYECTO:
 {$userIdea}
@@ -76,7 +100,7 @@ REGLAS:
 - tipo (insumo): "software", "hardware", "servicio", "recurso_humano" o "otro"
 - prioridad: "alta", "media" o "baja"
 - semanas: entero 1-4
-- Todo en español, solo el JSON
+- Solo el JSON, en el idioma indicado
 PROMPT;
     }
 
@@ -94,9 +118,10 @@ PROMPT;
         $taskLines   = empty($context['tareas'])         ? '  (ninguna)' : implode("\n", array_map(fn($t) => "  - ID={$t['id']} | \"{$t['titulo']}\" | {$t['estado']}", $context['tareas']));
         $sprintLines = empty($context['sprints'])        ? '  (ninguno)' : implode("\n", array_map(fn($s) => "  - ID={$s['id']} | \"{$s['nombre']}\"", $context['sprints']));
         $inputLines  = empty($context['insumos'])        ? '  (ninguno)' : implode("\n", array_map(fn($i) => "  - ID={$i['id']} | \"{$i['titulo']}\"", $context['insumos']));
+        $lang        = $this->langInstruction();
 
         return <<<PROMPT
-Eres un gestor de proyectos de software. El usuario quiere mejorar un proyecto existente. Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional.
+{$lang}Eres un gestor de proyectos de software. El usuario quiere mejorar un proyecto existente. Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional.
 
 PROYECTO: {$projectName}
 DESCRIPCIÓN: {$projectDesc}
@@ -141,7 +166,7 @@ REGLAS:
 - Si pide CAMBIAR una tarea existente, inclúyela en "actualizaciones_tareas" con su ID exacto
 - Si no hay nada nuevo de un tipo, usa array vacío []
 - Solo usa IDs de las listas de estado actual
-- Todo en español, solo el JSON
+- Solo el JSON, en el idioma indicado
 PROMPT;
     }
 
@@ -197,7 +222,7 @@ REGLAS ESTRICTAS:
 - Solo incluye las tareas que realmente necesiten cambio
 - titulo_nuevo debe ser claro, específico y relevante para el proyecto
 - descripcion_nueva debe explicar qué hay que hacer en la tarea
-- Todo en español, solo el JSON
+- Solo el JSON, en el idioma del sistema
 PROMPT;
     }
 

@@ -12,8 +12,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="h-full overflow-hidden bg-app-bg font-sans antialiased text-on-surface">
+
+@php
+    $localeNames = [
+        'es'    => 'Español',
+        'en'    => 'English',
+        'fr'    => 'Français',
+        'pt'    => 'Português',
+        'de'    => 'Deutsch',
+        'it'    => 'Italiano',
+        'zh_CN' => '中文',
+    ];
+    $currentLocale = app()->getLocale();
+@endphp
 
 <div class="flex h-full">
 
@@ -56,81 +70,81 @@
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isDashboard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">dashboard</span>
-                Dashboard
+                {{ __('app.nav.dashboard') }}
             </a>
 
             <a href="{{ route('proyectos.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isProyectos ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">folder_open</span>
-                Proyectos
+                {{ __('app.nav.projects') }}
             </a>
 
             <a href="{{ route('mis-tareas') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isMisTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">task_alt</span>
-                Mis Tareas
+                {{ __('app.nav.my_tasks') }}
             </a>
 
             <div class="my-3 mx-1 border-t border-white/5"></div>
 
             <p class="px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
-                Módulos
+                {{ __('app.nav.modules') }}
             </p>
 
             <a href="{{ route('modulo.selector', 'requerimientos') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isReqs ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">edit_note</span>
-                Requerimientos
+                {{ __('app.nav.requirements') }}
             </a>
 
             <a href="{{ route('scrum-board.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isScrumBoard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">view_kanban</span>
-                Scrum Board
+                {{ __('app.nav.scrum_board') }}
             </a>
 
             <a href="{{ route('modulo.selector', 'sprints') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isSprints ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">sprint</span>
-                Sprints
+                {{ __('app.nav.sprints') }}
             </a>
 
             <a href="{{ route('modulo.selector', 'tareas') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">checklist</span>
-                Tablero Tareas
+                {{ __('app.nav.tasks_board') }}
             </a>
 
             <a href="{{ route('modulo.selector', 'insumos') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium nav-link-inactive hover:translate-x-0.5 transition-all duration-150">
                 <span class="material-symbols-outlined" style="font-size: 20px;">inventory_2</span>
-                Insumos
+                {{ __('app.nav.inputs') }}
             </a>
 
             <a href="{{ route('calendario.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isCalendario ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px;">calendar_month</span>
-                Calendario
+                {{ __('app.nav.calendar') }}
             </a>
 
             <div class="my-3 mx-1 border-t border-white/5"></div>
 
             <p class="px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
-                Inteligencia Artificial
+                {{ __('app.nav.ai_section') }}
             </p>
 
             <a href="{{ route('asistente-ia.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isAiAssist ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
                 <span class="material-symbols-outlined" style="font-size: 20px; font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                Asistente IA
+                {{ __('app.nav.ai_assistant') }}
             </a>
 
         </nav>
@@ -141,21 +155,21 @@
                class="w-full py-2.5 px-4 bg-secondary-container text-white rounded-xl font-bold text-sm
                       flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 mb-1">
                 <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
-                Nuevo proyecto
+                {{ __('app.actions.new_project') }}
             </a>
 
             <div class="pt-3 border-t border-white/5 space-y-0.5">
                 <a href="{{ route('profile.edit') }}"
                    class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm nav-link-inactive hover:translate-x-0.5 transition-all duration-150">
                     <span class="material-symbols-outlined" style="font-size: 18px;">manage_accounts</span>
-                    Perfil
+                    {{ __('app.nav.profile') }}
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
                         class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm nav-link-inactive hover:translate-x-0.5 transition-all duration-150 text-left">
                         <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
-                        Cerrar sesión
+                        {{ __('app.nav.logout') }}
                     </button>
                 </form>
             </div>
@@ -178,9 +192,9 @@
 
             {{-- ─── PROFILE DROPDOWN ────────────────────────────────── --}}
             <div class="relative flex-shrink-0"
-                 x-data="{ open: false }"
-                 @click.outside="open = false"
-                 @keydown.escape.window="open = false">
+                 x-data="{ open: false, showLang: false }"
+                 @click.outside="open = false; showLang = false"
+                 @keydown.escape.window="open = false; showLang = false">
 
                 {{-- Avatar trigger --}}
                 <button @click="open = !open"
@@ -222,7 +236,7 @@
                         <h3 class="text-sm font-bold text-white mb-0.5">{{ Auth::user()->name }}</h3>
                         <p class="text-xs text-on-surface-variant">{{ Auth::user()->email }}</p>
                         <span class="mt-3 px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] uppercase font-bold tracking-widest rounded-full border border-blue-500/20">
-                            Activo
+                            {{ __('app.profile.active') }}
                         </span>
                     </div>
 
@@ -234,8 +248,8 @@
                                 <span class="material-symbols-outlined" style="font-size:20px;">upload_file</span>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-white">Cambiar foto de perfil</p>
-                                <p class="text-[11px] text-on-surface-variant">Sube JPG o PNG</p>
+                                <p class="text-sm font-semibold text-white">{{ __('app.profile.change_photo') }}</p>
+                                <p class="text-[11px] text-on-surface-variant">{{ __('app.profile.upload_hint') }}</p>
                             </div>
                         </button>
                     </div>
@@ -245,27 +259,27 @@
                         <a href="{{ route('profile.edit') }}"
                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
                             <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">person</span>
-                            <span class="text-sm font-medium">Mi perfil</span>
+                            <span class="text-sm font-medium">{{ __('app.profile.my_profile') }}</span>
                         </a>
                         <a href="{{ route('profile.edit') }}"
                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
                             <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">manage_accounts</span>
-                            <span class="text-sm font-medium">Configuración de cuenta</span>
+                            <span class="text-sm font-medium">{{ __('app.profile.account_settings') }}</span>
                         </a>
                         <a href="#"
                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
                             <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">tune</span>
-                            <span class="text-sm font-medium">Preferencias</span>
+                            <span class="text-sm font-medium">{{ __('app.profile.preferences') }}</span>
                         </a>
                         <a href="#"
                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
                             <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">security</span>
-                            <span class="text-sm font-medium">Seguridad</span>
+                            <span class="text-sm font-medium">{{ __('app.profile.security') }}</span>
                         </a>
                         <a href="#"
                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
                             <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">notifications_active</span>
-                            <span class="text-sm font-medium">Notificaciones</span>
+                            <span class="text-sm font-medium">{{ __('app.profile.notifications') }}</span>
                         </a>
                     </div>
 
@@ -274,23 +288,63 @@
                         <div class="flex items-center justify-between px-3 py-1.5">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-blue-400" style="font-size:20px;">dark_mode</span>
-                                <span class="text-sm text-on-surface-variant">Modo oscuro</span>
+                                <span class="text-sm text-on-surface-variant">{{ __('app.profile.dark_mode') }}</span>
                             </div>
                             <div class="w-10 h-5 bg-blue-500 rounded-full relative cursor-default flex-shrink-0">
                                 <div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all cursor-default">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">language</span>
-                                <span class="text-sm text-on-surface-variant">Idioma</span>
+
+                        {{-- ── Selector de idioma ─────────────────── --}}
+                        <div>
+                            <button type="button"
+                                    @click="showLang = !showLang"
+                                    class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">language</span>
+                                    <span class="text-sm text-on-surface-variant">{{ __('app.profile.language') }}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-sm text-blue-400">{{ $localeNames[$currentLocale] ?? $currentLocale }}</span>
+                                    <span class="material-symbols-outlined text-on-surface-variant transition-transform duration-200"
+                                          :class="showLang ? 'rotate-180' : ''"
+                                          style="font-size:16px;">expand_more</span>
+                                </div>
+                            </button>
+
+                            {{-- Submenú de idiomas --}}
+                            <div x-show="showLang"
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 -translate-y-1"
+                                 class="mt-1 mx-1 rounded-xl overflow-hidden bg-[#111a24] border border-white/[0.06]"
+                                 style="display:none;">
+                                @foreach($localeNames as $code => $label)
+                                <form method="POST" action="{{ route('language.change') }}">
+                                    @csrf
+                                    <input type="hidden" name="locale" value="{{ $code }}">
+                                    <button type="submit"
+                                            class="w-full flex items-center justify-between px-4 py-2 text-sm transition-all
+                                                   {{ $currentLocale === $code
+                                                       ? 'text-blue-400 bg-blue-500/10 font-semibold'
+                                                       : 'text-on-surface-variant hover:bg-white/5 hover:text-white' }}">
+                                        <span>{{ $label }}</span>
+                                        @if($currentLocale === $code)
+                                            <span class="material-symbols-outlined" style="font-size:16px;">check</span>
+                                        @endif
+                                    </button>
+                                </form>
+                                @endforeach
                             </div>
-                            <span class="text-sm text-blue-400">Español</span>
                         </div>
+
                         <div class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all cursor-default">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">palette</span>
-                                <span class="text-sm text-on-surface-variant">Tema</span>
+                                <span class="text-sm text-on-surface-variant">{{ __('app.profile.theme') }}</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <div class="w-3 h-3 rounded-full bg-blue-500"></div>
@@ -308,7 +362,7 @@
                                     class="w-full flex items-center gap-3 px-3 py-3 rounded-xl
                                            hover:bg-red-500/10 transition-all text-red-400 cursor-pointer group">
                                 <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
-                                <span class="text-sm font-bold">Cerrar sesión</span>
+                                <span class="text-sm font-bold">{{ __('app.nav.logout') }}</span>
                             </button>
                         </form>
                     </div>

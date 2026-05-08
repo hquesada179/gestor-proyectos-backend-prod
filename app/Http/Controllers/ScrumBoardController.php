@@ -13,7 +13,15 @@ class ScrumBoardController extends Controller
     public function index()
     {
         $proyectos = Auth::user()->proyectos()
-            ->withCount('tasks')
+            ->withCount([
+                'tasks',
+                'sprints',
+                'requirements',
+                'inputs',
+                'tasks as completed_tasks_count' => fn ($q) => $q->whereHas(
+                    'status', fn ($s) => $s->where('nombre', 'Completado')
+                ),
+            ])
             ->latest()
             ->get();
 
@@ -36,10 +44,14 @@ class ScrumBoardController extends Controller
 
     public function updateStatus(Request $request, Task $task)
     {
-        abort_if($task->proyecto->user_id !== Auth::id(), 403);
+        $task->loadMissing('proyecto');
+
+        if (!$task->proyecto || $task->proyecto->user_id !== Auth::id()) {
+            return response()->json(['ok' => false, 'error' => 'Sin permiso.'], 403);
+        }
 
         $request->validate([
-            'task_status_id' => ['required', 'exists:task_statuses,id'],
+            'task_status_id' => ['required', 'integer', 'exists:task_statuses,id'],
         ]);
 
         $task->update(['task_status_id' => $request->task_status_id]);

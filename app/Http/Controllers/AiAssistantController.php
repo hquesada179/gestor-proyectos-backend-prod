@@ -403,8 +403,8 @@ class AiAssistantController extends Controller
                 $counts['requerimientos']++;
             }
 
-            $status = TaskStatus::first()
-                ?? TaskStatus::create(['nombre' => 'To Do', 'color' => '#808080', 'orden' => 1]);
+            $status = TaskStatus::orderBy('orden')->first()
+                ?? TaskStatus::create(['nombre' => 'Pendiente', 'color' => '#6B7280', 'orden' => 1]);
 
             foreach ($data['tareas'] ?? [] as $task) {
                 if (empty($task['titulo'])) continue;
@@ -498,8 +498,8 @@ class AiAssistantController extends Controller
             }
 
             // New tasks
-            $status = TaskStatus::first()
-                ?? TaskStatus::create(['nombre' => 'To Do', 'color' => '#808080', 'orden' => 1]);
+            $status = TaskStatus::orderBy('orden')->first()
+                ?? TaskStatus::create(['nombre' => 'Pendiente', 'color' => '#6B7280', 'orden' => 1]);
 
             foreach ($data['tareas_nuevas'] ?? [] as $task) {
                 if (empty($task['titulo'])) continue;

@@ -8,16 +8,16 @@
                     </a>
                 </p>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Tareas
+                    {{ __('app.nav.tasks_board') }}
                 </h2>
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ route('proyectos.tasks.export', array_filter(['proyecto' => $proyecto->id] + request()->only(['estado', 'sprint', 'responsable']))) }}"
                     class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition">
-                    Exportar CSV
+                    {{ __('app.actions.export_csv') }}
                 </a>
                 <a href="{{ route('proyectos.tasks.create', $proyecto) }}">
-                    <x-primary-button>Nueva tarea</x-primary-button>
+                    <x-primary-button>{{ __('app.actions.new_task') }}</x-primary-button>
                 </a>
             </div>
         </div>
@@ -39,10 +39,10 @@
 
                             @if ($statuses->isNotEmpty())
                                 <div>
-                                    <label for="estado" class="block text-xs font-medium text-gray-500 mb-1">Estado</label>
+                                    <label for="estado" class="block text-xs font-medium text-gray-500 mb-1">{{ __('app.tasks_mod.status_col') }}</label>
                                     <select id="estado" name="estado"
                                         class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                                        <option value="">Todos</option>
+                                        <option value="">{{ __('app.form.all') }}</option>
                                         @foreach ($statuses as $status)
                                             <option value="{{ $status->id }}" {{ request('estado') == $status->id ? 'selected' : '' }}>
                                                 {{ $status->nombre }}
@@ -54,11 +54,11 @@
 
                             @if ($sprints->isNotEmpty())
                                 <div>
-                                    <label for="sprint" class="block text-xs font-medium text-gray-500 mb-1">Sprint</label>
+                                    <label for="sprint" class="block text-xs font-medium text-gray-500 mb-1">{{ __('app.form.sprint') }}</label>
                                     <select id="sprint" name="sprint"
                                         class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                                        <option value="">Todos</option>
-                                        <option value="sin_sprint" {{ request('sprint') === 'sin_sprint' ? 'selected' : '' }}>Sin sprint</option>
+                                        <option value="">{{ __('app.form.all') }}</option>
+                                        <option value="sin_sprint" {{ request('sprint') === 'sin_sprint' ? 'selected' : '' }}>{{ __('app.status.no_sprint') }}</option>
                                         @foreach ($sprints as $sprint)
                                             <option value="{{ $sprint->id }}" {{ request('sprint') == $sprint->id ? 'selected' : '' }}>
                                                 {{ $sprint->nombre }}
@@ -70,11 +70,11 @@
 
                             @if ($assignees->isNotEmpty())
                                 <div>
-                                    <label for="responsable" class="block text-xs font-medium text-gray-500 mb-1">Responsable</label>
+                                    <label for="responsable" class="block text-xs font-medium text-gray-500 mb-1">{{ __('app.tasks_mod.responsible_col') }}</label>
                                     <select id="responsable" name="responsable"
                                         class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                                        <option value="">Todos</option>
-                                        <option value="sin_responsable" {{ request('responsable') === 'sin_responsable' ? 'selected' : '' }}>Sin responsable</option>
+                                        <option value="">{{ __('app.form.all') }}</option>
+                                        <option value="sin_responsable" {{ request('responsable') === 'sin_responsable' ? 'selected' : '' }}>{{ __('app.status.no_responsible') }}</option>
                                         @foreach ($assignees as $assignee)
                                             <option value="{{ $assignee->id }}" {{ request('responsable') == $assignee->id ? 'selected' : '' }}>
                                                 {{ $assignee->name }}
@@ -84,12 +84,12 @@
                                 </div>
                             @endif
 
-                            <x-primary-button type="submit">Filtrar</x-primary-button>
+                            <x-primary-button type="submit">{{ __('app.actions.filter') }}</x-primary-button>
 
                             @if (request()->hasAny(['estado', 'sprint', 'responsable']))
                                 <a href="{{ route('proyectos.tasks.index', $proyecto) }}"
                                     class="text-sm text-gray-500 hover:text-gray-700 hover:underline">
-                                    Limpiar filtros
+                                    {{ __('app.actions.clear_filters') }}
                                 </a>
                             @endif
 
@@ -102,11 +102,11 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-500 text-sm">
                         @if (request()->hasAny(['estado', 'sprint']))
-                            No hay tareas que coincidan con los filtros seleccionados.
-                            <a href="{{ route('proyectos.tasks.index', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Ver todas</a>.
+                            {{ __('app.empty.no_tasks_filter') }}
+                            <a href="{{ route('proyectos.tasks.index', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">{{ __('app.actions.see_all') }}</a>.
                         @else
-                            Este proyecto no tiene tareas todavía.
-                            <a href="{{ route('proyectos.tasks.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Agregar la primera</a>.
+                            {{ __('app.empty.no_tasks_project') }}
+                            <a href="{{ route('proyectos.tasks.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">{{ __('app.empty.add_first_task') }}</a>.
                         @endif
                     </div>
                 </div>
@@ -115,11 +115,11 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Responsable</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Fecha límite</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Registrada</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.tasks_mod.title_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.tasks_mod.status_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.tasks_mod.responsible_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.tasks_mod.deadline_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.tasks_mod.registered_col') }}</th>
                                 <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
@@ -136,14 +136,14 @@
                                     <td class="px-6 py-4 text-gray-600">{{ $task->fecha_limite?->format('d/m/Y') ?? '—' }}</td>
                                     <td class="px-6 py-4 text-gray-600">{{ $task->created_at->format('d/m/Y') }}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('proyectos.tasks.edit', [$proyecto, $task]) }}" class="text-indigo-600 hover:underline text-xs mr-3">Editar</a>
+                                        <a href="{{ route('proyectos.tasks.edit', [$proyecto, $task]) }}" class="text-indigo-600 hover:underline text-xs mr-3">{{ __('app.actions.edit') }}</a>
                                         <form method="POST" action="{{ route('proyectos.tasks.destroy', [$proyecto, $task]) }}" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                 class="text-red-500 hover:underline text-xs"
                                                 onclick="return confirm('¿Eliminar esta tarea?')">
-                                                Eliminar
+                                                {{ __('app.actions.delete') }}
                                             </button>
                                         </form>
                                     </td>
@@ -162,7 +162,7 @@
 
             <div class="mt-4 text-sm">
                 <a href="{{ route('proyectos.show', $proyecto) }}" class="text-indigo-600 hover:underline">
-                    ← Volver al proyecto
+                    {{ __('app.actions.back_project') }}
                 </a>
             </div>
 

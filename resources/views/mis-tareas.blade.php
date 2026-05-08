@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <span class="text-sm font-medium text-gray-400">Mis Tareas</span>
+        <span class="text-sm font-medium text-gray-400">{{ __('app.nav.my_tasks') }}</span>
     </x-slot>
 
     <div class="p-8 space-y-6 max-w-[1400px]">
 
         {{-- ── Page header ──────────────────────────────────────────── --}}
         <div>
-            <h1 class="text-2xl font-bold text-white">Mis Tareas</h1>
-            <p class="text-sm text-on-surface-variant mt-1">Todas las tareas asignadas en tus proyectos</p>
+            <h1 class="text-2xl font-bold text-white">{{ __('app.nav.my_tasks') }}</h1>
+            <p class="text-sm text-on-surface-variant mt-1">{{ __('app.my_tasks_page.subtitle') }}</p>
         </div>
 
         {{-- ── Filters ───────────────────────────────────────────────── --}}
@@ -17,15 +17,15 @@
 
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-gray-500" style="font-size: 16px;">filter_list</span>
-                <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Filtros</span>
+                <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">{{ __('app.my_tasks_page.filters') }}</span>
             </div>
 
             @if ($sprintsDisponibles->isNotEmpty())
                 <div class="flex items-center gap-2">
-                    <label class="text-xs text-gray-400 whitespace-nowrap">Sprint:</label>
+                    <label class="text-xs text-gray-400 whitespace-nowrap">{{ __('app.my_tasks_page.sprint_lbl') }}</label>
                     <select name="sprint" onchange="this.form.submit()" class="ds-select">
-                        <option value="todos" {{ $sprintFiltro === 'todos' ? 'selected' : '' }}>Todos</option>
-                        <option value="sin_sprint" {{ $sprintFiltro === 'sin_sprint' ? 'selected' : '' }}>Sin sprint</option>
+                        <option value="todos" {{ $sprintFiltro === 'todos' ? 'selected' : '' }}>{{ __('app.status.all') }}</option>
+                        <option value="sin_sprint" {{ $sprintFiltro === 'sin_sprint' ? 'selected' : '' }}>{{ __('app.status.no_sprint') }}</option>
                         @foreach ($sprintsDisponibles as $sprint)
                             <option value="{{ $sprint->id }}"
                                 {{ (string) $sprintFiltro === (string) $sprint->id ? 'selected' : '' }}>
@@ -37,9 +37,9 @@
             @endif
 
             <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-400 whitespace-nowrap">Estado:</label>
+                <label class="text-xs text-gray-400 whitespace-nowrap">{{ __('app.my_tasks_page.status_lbl') }}</label>
                 <select name="estado" onchange="this.form.submit()" class="ds-select">
-                    <option value="todos" {{ $estadoFiltro === 'todos' ? 'selected' : '' }}>Todos</option>
+                    <option value="todos" {{ $estadoFiltro === 'todos' ? 'selected' : '' }}>{{ __('app.status.all') }}</option>
                     @foreach ($estadosDisponibles as $status)
                         <option value="{{ $status->id }}"
                             {{ (string) $estadoFiltro === (string) $status->id ? 'selected' : '' }}>
@@ -53,7 +53,7 @@
                 <a href="{{ route('mis-tareas') }}"
                    class="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors ml-auto">
                     <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                    Limpiar filtros
+                    {{ __('app.actions.clear_filters') }}
                 </a>
             @endif
 
@@ -65,15 +65,15 @@
                 <span class="material-symbols-outlined text-gray-600 block mb-4" style="font-size: 48px;">task_alt</span>
                 <p class="text-sm text-gray-500">
                     @if ($sprintFiltro !== 'todos' || $estadoFiltro !== 'todos')
-                        No hay tareas para el filtro seleccionado.
+                        {{ __('app.empty.no_tasks_filter_short') }}
                     @else
-                        No tienes tareas asignadas en ningún proyecto todavía.
+                        {{ __('app.empty.no_tasks_assigned') }}
                     @endif
                 </p>
                 @if ($sprintFiltro !== 'todos' || $estadoFiltro !== 'todos')
                     <a href="{{ route('mis-tareas') }}"
                        class="text-xs text-blue-400 hover:underline mt-2 inline-block">
-                        Ver todas las tareas →
+                        {{ __('app.actions.see_all_tasks') }}
                     </a>
                 @endif
             </div>
@@ -84,11 +84,11 @@
                 <table class="ds-table w-full">
                     <thead>
                         <tr>
-                            <th>Tarea</th>
-                            <th>Proyecto</th>
-                            <th>Estado</th>
-                            <th>Sprint</th>
-                            <th>Fecha límite</th>
+                            <th>{{ __('app.my_tasks_page.task_col') }}</th>
+                            <th>{{ __('app.my_tasks_page.project_col') }}</th>
+                            <th>{{ __('app.tasks_mod.status_col') }}</th>
+                            <th>{{ __('app.my_tasks_page.sprint_col') }}</th>
+                            <th>{{ __('app.my_tasks_page.deadline_col') }}</th>
                             <th class="px-6 py-4 border-b border-white/5"></th>
                         </tr>
                     </thead>
@@ -151,9 +151,9 @@
                                             <span class="material-symbols-outlined" style="font-size: 13px;">{{ $dateIcon }}</span>
                                             {{ $task->fecha_limite->format('d/m/Y') }}
                                             @if ($isOverdue)
-                                                <span class="text-red-500/70">· Vencida</span>
+                                                <span class="text-red-500/70">{{ __('app.my_tasks_page.overdue') }}</span>
                                             @elseif ($isUpcoming)
-                                                <span class="text-amber-500/70">· Próxima</span>
+                                                <span class="text-amber-500/70">{{ __('app.my_tasks_page.upcoming') }}</span>
                                             @endif
                                         </span>
                                     @else
@@ -165,7 +165,7 @@
                                     <a href="{{ route('proyectos.tasks.show', [$task->proyecto, $task]) }}"
                                        class="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100
                                               transition-opacity flex items-center gap-1 justify-end">
-                                        Ver tarea
+                                        {{ __('app.actions.view_task') }}
                                         <span class="material-symbols-outlined" style="font-size: 13px;">open_in_new</span>
                                     </a>
                                 </td>

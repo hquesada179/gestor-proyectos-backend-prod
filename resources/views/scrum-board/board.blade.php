@@ -116,13 +116,27 @@
         const csrf    = document.querySelector('meta[name="csrf-token"]').content;
         const baseUrl = '{{ url("/scrum-board/tasks") }}';
 
+        // Track drag state via SortableJS onStart/onEnd (not DOM events)
+        var dragging = false;
+
         document.querySelectorAll('.kanban-list').forEach(function (list) {
             Sortable.create(list, {
-                group:       'kanban-board',
-                animation:   150,
-                ghostClass:  'kanban-ghost',
-                dragClass:   'kanban-dragging',
+                group:           'kanban-board',
+                animation:       150,
+                ghostClass:      'kanban-ghost',
+                dragClass:       'kanban-dragging',
+                draggable:       '.kanban-card',   // only task cards, not the empty hint
+                scroll:          true,
+                scrollSensitivity: 80,
+                scrollSpeed:     10,
+
+                onStart: function () {
+                    dragging = true;
+                },
+
                 onEnd: function (evt) {
+                    setTimeout(function () { dragging = false; }, 50);
+
                     const taskId      = evt.item.dataset.taskId;
                     const newStatusId = parseInt(evt.to.dataset.statusId, 10);
                     const oldStatusId = parseInt(evt.from.dataset.statusId, 10);
@@ -130,6 +144,8 @@
                     refreshCounts();
                     syncEmptyHints();
 
+                    // Guard: taskId or statusId missing / invalid
+                    if (!taskId || isNaN(newStatusId) || isNaN(oldStatusId)) return;
                     if (newStatusId === oldStatusId) return;
 
                     fetch(baseUrl + '/' + taskId + '/status', {
@@ -141,25 +157,29 @@
                         },
                         body: JSON.stringify({ task_status_id: newStatusId }),
                     })
-                    .then(function (r) { return r.json(); })
+                    .then(function (r) {
+                        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+                        return r.json();
+                    })
                     .then(function (data) {
                         if (!data.ok) {
-                            // Revert: move card back to original position
-                            var ref = evt.from.children[evt.oldIndex] || null;
-                            evt.from.insertBefore(evt.item, ref);
-                            refreshCounts();
-                            syncEmptyHints();
+                            revertCard(evt);
                         }
                     })
-                    .catch(function () {
-                        var ref = evt.from.children[evt.oldIndex] || null;
-                        evt.from.insertBefore(evt.item, ref);
-                        refreshCounts();
-                        syncEmptyHints();
+                    .catch(function (err) {
+                        console.warn('[Kanban] Error al actualizar estado:', err);
+                        revertCard(evt);
                     });
                 }
             });
         });
+
+        function revertCard(evt) {
+            var ref = evt.from.children[evt.oldIndex] || null;
+            evt.from.insertBefore(evt.item, ref);
+            refreshCounts();
+            syncEmptyHints();
+        }
 
         function refreshCounts() {
             document.querySelectorAll('.kanban-col').forEach(function (col) {
@@ -173,28 +193,16 @@
 
         function syncEmptyHints() {
             document.querySelectorAll('.kanban-col').forEach(function (col) {
-                var list   = col.querySelector('.kanban-list');
-                var hint   = list.querySelector('.kanban-empty');
-                var cards  = list.querySelectorAll('.kanban-card');
+                var list  = col.querySelector('.kanban-list');
+                var hint  = list ? list.querySelector('.kanban-empty') : null;
+                var cards = list ? list.querySelectorAll('.kanban-card') : [];
 
                 if (!hint) return;
-
-                if (cards.length === 0) {
-                    hint.style.display = '';
-                } else {
-                    hint.style.display = 'none';
-                }
+                hint.style.display = cards.length === 0 ? '' : 'none';
             });
         }
 
         // Click a card → navigate to task detail (only when not dragging)
-        var dragging = false;
-
-        document.querySelectorAll('.kanban-list').forEach(function (list) {
-            list.addEventListener('sortstart', function () { dragging = true; });
-            list.addEventListener('sortend',   function () { setTimeout(function () { dragging = false; }, 50); });
-        });
-
         document.querySelectorAll('.kanban-card').forEach(function (card) {
             card.addEventListener('click', function () {
                 if (!dragging) {

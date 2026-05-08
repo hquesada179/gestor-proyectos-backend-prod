@@ -8,11 +8,11 @@
                     </a>
                 </p>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Sprints
+                    {{ __('app.nav.sprints') }}
                 </h2>
             </div>
             <a href="{{ route('proyectos.sprints.create', $proyecto) }}">
-                <x-primary-button>Nuevo sprint</x-primary-button>
+                <x-primary-button>{{ __('app.actions.new_sprint') }}</x-primary-button>
             </a>
         </div>
     </x-slot>
@@ -30,13 +30,13 @@
             <form method="GET" action="{{ route('proyectos.sprints.index', $proyecto) }}" class="mb-4 flex items-center gap-3">
                 <select name="estado" onchange="this.form.submit()"
                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    <option value="">Todos los estados</option>
-                    <option value="planificado"  {{ request('estado') === 'planificado'  ? 'selected' : '' }}>Planificado</option>
-                    <option value="en_progreso"  {{ request('estado') === 'en_progreso'  ? 'selected' : '' }}>En progreso</option>
-                    <option value="completado"   {{ request('estado') === 'completado'   ? 'selected' : '' }}>Completado</option>
+                    <option value="">{{ __('app.sprints_mod.all_states') }}</option>
+                    <option value="planificado"  {{ request('estado') === 'planificado'  ? 'selected' : '' }}>{{ __('app.status.planned') }}</option>
+                    <option value="en_progreso"  {{ request('estado') === 'en_progreso'  ? 'selected' : '' }}>{{ __('app.status.in_progress') }}</option>
+                    <option value="completado"   {{ request('estado') === 'completado'   ? 'selected' : '' }}>{{ __('app.status.completed') }}</option>
                 </select>
                 @if (request('estado'))
-                    <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="text-xs text-gray-500 hover:text-gray-700">Limpiar</a>
+                    <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="text-xs text-gray-500 hover:text-gray-700">{{ __('app.actions.clear') }}</a>
                 @endif
             </form>
 
@@ -44,11 +44,11 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-500 text-sm">
                         @if (request('estado'))
-                            No hay sprints con el estado seleccionado.
-                            <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Ver todos</a>.
+                            {{ __('app.empty.no_sprints_filter') }}
+                            <a href="{{ route('proyectos.sprints.index', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">{{ __('app.actions.see_all') }}</a>.
                         @else
-                            Este proyecto no tiene sprints todavía.
-                            <a href="{{ route('proyectos.sprints.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">Agregar el primero</a>.
+                            {{ __('app.empty.no_sprints') }}
+                            <a href="{{ route('proyectos.sprints.create', $proyecto) }}" class="text-indigo-600 hover:underline ml-1">{{ __('app.empty.add_first') }}</a>.
                         @endif
                     </div>
                 </div>
@@ -57,11 +57,11 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tareas</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Inicio</th>
-                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Fin</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.sprints_mod.name_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.form.status') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.sprints_mod.tasks_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.sprints_mod.start_col') }}</th>
+                                <th class="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">{{ __('app.sprints_mod.end_col') }}</th>
                                 <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
@@ -90,20 +90,20 @@
                                         @if ($sprint->tasks_count > 0)
                                             <span class="text-gray-700">{{ $sprint->tasks_count }}</span>
                                         @else
-                                            <span class="text-gray-400 text-xs">Sin tareas</span>
+                                            <span class="text-gray-400 text-xs">{{ __('app.sprints_mod.no_tasks') }}</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-gray-600">{{ $sprint->fecha_inicio?->format('d/m/Y') ?? '—' }}</td>
                                     <td class="px-6 py-4 text-gray-600">{{ $sprint->fecha_fin?->format('d/m/Y') ?? '—' }}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('proyectos.sprints.edit', [$proyecto, $sprint]) }}" class="text-indigo-600 hover:underline text-xs mr-3">Editar</a>
+                                        <a href="{{ route('proyectos.sprints.edit', [$proyecto, $sprint]) }}" class="text-indigo-600 hover:underline text-xs mr-3">{{ __('app.actions.edit') }}</a>
                                         <form method="POST" action="{{ route('proyectos.sprints.destroy', [$proyecto, $sprint]) }}" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                 class="text-red-500 hover:underline text-xs"
                                                 onclick="return confirm('¿Eliminar este sprint?')">
-                                                Eliminar
+                                                {{ __('app.actions.delete') }}
                                             </button>
                                         </form>
                                     </td>
@@ -116,7 +116,7 @@
 
             <div class="mt-4 text-sm">
                 <a href="{{ route('proyectos.show', $proyecto) }}" class="text-indigo-600 hover:underline">
-                    ← Volver al proyecto
+                    {{ __('app.actions.back_project') }}
                 </a>
             </div>
 

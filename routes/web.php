@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AiAssistantController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\ModuloSelectorController;
 use App\Http\Controllers\MyTasksController;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('auth.login');
 });
+
+Route::post('/language', [LanguageController::class, 'change'])->name('language.change');
 
 Route::get('/dashboard', function () {
     $totalProyectos    = Auth::user()->proyectos()->count();
