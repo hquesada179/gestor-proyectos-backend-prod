@@ -44,7 +44,8 @@
                 </div>
 
                 <div class="p-6 sm:p-8">
-                    <form method="POST" action="{{ route('proyectos.store') }}" class="space-y-6">
+                    <form method="POST" action="{{ route('proyectos.store') }}"
+                          enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
                         <div>
@@ -96,6 +97,47 @@
                             </div>
                         </div>
 
+                        {{-- ── Imagen de portada ──────────────────────────────────── --}}
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-300">
+                                Imagen de portada
+                                <span class="text-gray-500 font-normal">(opcional)</span>
+                            </label>
+
+                            {{-- Preview area --}}
+                            <div id="cover-preview-wrap"
+                                 style="position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden;
+                                        background:linear-gradient(135deg,#1e40af,#38bdf8);
+                                        margin-bottom:10px; cursor:pointer;"
+                                 onclick="document.getElementById('cover_image_input').click()"
+                                 title="Haz clic para seleccionar imagen">
+                                <img id="cover-preview-img"
+                                     src="" alt="Previsualización"
+                                     style="width:100%;height:100%;object-fit:cover;display:none;">
+                                <div id="cover-preview-overlay"
+                                     style="position:absolute;inset:0;display:flex;flex-direction:column;
+                                            align-items:center;justify-content:center;gap:6px;
+                                            background:rgba(0,0,0,0.25);transition:background .15s;"
+                                     onmouseover="this.style.background='rgba(0,0,0,0.4)'"
+                                     onmouseout="this.style.background='rgba(0,0,0,0.25)'">
+                                    <span class="material-symbols-outlined" style="font-size:32px;color:rgba(255,255,255,0.7);">add_photo_alternate</span>
+                                    <span style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;">Clic para subir imagen</span>
+                                </div>
+                            </div>
+
+                            <input type="file" id="cover_image_input" name="cover_image"
+                                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                                   style="display:none;"
+                                   onchange="previewCoverImage(this, 'cover-preview-img', 'cover-preview-overlay')">
+
+                            <p style="font-size:10px;color:#475569;margin-top:2px;">
+                                JPG, PNG o WEBP · Máximo 5 MB
+                            </p>
+                            @error('cover_image')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-8">
                             <a href="{{ route('proyectos.index') }}"
                                class="flex items-center gap-2 bg-surface border border-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-white/5 transition-all active:scale-95">
@@ -112,4 +154,20 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+    function previewCoverImage(input, imgId, overlayId) {
+        if (!input.files || !input.files[0]) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById(imgId);
+            var ov  = document.getElementById(overlayId);
+            if (img) { img.src = e.target.result; img.style.display = 'block'; }
+            if (ov)  { ov.style.background = 'rgba(0,0,0,0)'; ov.style.pointerEvents = 'none'; }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+    </script>
+    @endpush
 </x-app-layout>

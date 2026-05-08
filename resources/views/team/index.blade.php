@@ -66,8 +66,19 @@
                          style="background:#16213a"
                          data-name="{{ strtolower($proyecto->nombre) }}">
                     {{-- Banner --}}
-                    <div style="height:90px; flex-shrink:0; background:linear-gradient(135deg,{{ $c[0] }},{{ $c[1] }}); display:flex; align-items:center; justify-content:center; position:relative;">
-                        <span style="font-size:1.8rem; font-weight:900; color:rgba(255,255,255,0.9); letter-spacing:-2px; user-select:none;">{{ $ini }}</span>
+                    <div style="height:90px; flex-shrink:0; position:relative; overflow:hidden;
+                                background:linear-gradient(135deg,{{ $c[0] }},{{ $c[1] }});">
+                        @if(!empty($proyecto->cover_image))
+                        <img src="{{ asset('storage/'.$proyecto->cover_image) }}"
+                             alt="{{ $proyecto->nombre }}"
+                             style="width:100%;height:100%;object-fit:cover;display:block;"
+                             onerror="this.style.display='none'">
+                        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05),rgba(0,0,0,0.3));pointer-events:none;"></div>
+                        @else
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                            <span style="font-size:1.8rem;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:-2px;user-select:none;">{{ $ini }}</span>
+                        </div>
+                        @endif
                     </div>
                     {{-- Body --}}
                     <div style="padding:16px; flex:1; display:flex; flex-direction:column; gap:8px;">

@@ -7,6 +7,7 @@ use App\Models\TaskStatus;
 use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProyectoController extends Controller
 {
@@ -27,12 +28,19 @@ class ProyectoController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(
-            $this->rules(),
+        $request->validate(
+            array_merge($this->rules(), $this->imageRules()),
             $this->messages()
         );
 
-        $proyecto = Auth::user()->proyectos()->create($validated);
+        $data = $request->only(['nombre', 'descripcion', 'estado', 'fecha_inicio', 'fecha_fin_estimada']);
+
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')
+                ->store('proyectos', 'public');
+        }
+
+        $proyecto = Auth::user()->proyectos()->create($data);
 
         ProjectActivityLogger::log($proyecto, 'created', 'proyectos',
             "Proyecto creado: «{$proyecto->nombre}»", null, $proyecto
@@ -100,13 +108,29 @@ class ProyectoController extends Controller
     {
         abort_if($proyecto->user_id !== Auth::id(), 403);
 
-        $validated = $request->validate(
-            $this->rules(),
+        $request->validate(
+            array_merge($this->rules(), $this->imageRules()),
             $this->messages()
         );
 
         $oldValues = $proyecto->only(['nombre', 'estado', 'descripcion', 'fecha_inicio', 'fecha_fin_estimada']);
-        $proyecto->update($validated);
+        $data = $request->only(['nombre', 'descripcion', 'estado', 'fecha_inicio', 'fecha_fin_estimada']);
+
+        if ($request->hasFile('cover_image')) {
+            // Replace existing image
+            if ($proyecto->cover_image) {
+                Storage::disk('public')->delete($proyecto->cover_image);
+            }
+            $data['cover_image'] = $request->file('cover_image')->store('proyectos', 'public');
+        } elseif ($request->boolean('remove_cover_image')) {
+            // Explicit removal
+            if ($proyecto->cover_image) {
+                Storage::disk('public')->delete($proyecto->cover_image);
+            }
+            $data['cover_image'] = null;
+        }
+
+        $proyecto->update($data);
         $newValues = $proyecto->fresh()->only(['nombre', 'estado', 'descripcion', 'fecha_inicio', 'fecha_fin_estimada']);
 
         ProjectActivityLogger::log($proyecto, 'updated', 'proyectos',
@@ -122,6 +146,10 @@ class ProyectoController extends Controller
         abort_if($proyecto->user_id !== Auth::id(), 403);
 
         $nombre = $proyecto->nombre;
+
+        if ($proyecto->cover_image) {
+            Storage::disk('public')->delete($proyecto->cover_image);
+        }
 
         ProjectActivityLogger::log($proyecto, 'deleted', 'proyectos',
             "Proyecto eliminado: «{$nombre}»"
@@ -141,6 +169,13 @@ class ProyectoController extends Controller
             'estado'             => ['required', 'string', 'in:activo,pausado,completado,cancelado'],
             'fecha_inicio'       => ['nullable', 'date'],
             'fecha_fin_estimada' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
+        ];
+    }
+
+    private function imageRules(): array
+    {
+        return [
+            'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

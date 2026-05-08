@@ -17,6 +17,7 @@ class Proyecto extends Model
         'user_id',
         'nombre',
         'descripcion',
+        'cover_image',
         'estado',
         'fecha_inicio',
         'fecha_fin_estimada',

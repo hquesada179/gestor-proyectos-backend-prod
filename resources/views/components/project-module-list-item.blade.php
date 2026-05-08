@@ -59,16 +59,21 @@
      onmouseover="this.style.borderColor='rgba(255,255,255,0.18)';this.style.background='#1a2640'"
      onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.background='#16213a'">
 
-    {{-- Avatar --}}
-    <div style="
-            width: 44px; height: 44px;
-            border-radius: 10px;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, {{ $c1 }}, {{ $c2 }});
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 900; color: rgba(255,255,255,0.9);
-            letter-spacing: -1px; user-select: none;
-         ">{{ $ini }}</div>
+    {{-- Avatar / thumbnail --}}
+    <div style="width:44px;height:44px;border-radius:10px;flex-shrink:0;overflow:hidden;
+                background:linear-gradient(135deg,{{ $c1 }},{{ $c2 }});">
+        @if(!empty($proyecto->cover_image))
+        <img src="{{ asset('storage/'.$proyecto->cover_image) }}"
+             alt="{{ $proyecto->nombre }}"
+             style="width:100%;height:100%;object-fit:cover;display:block;"
+             onerror="this.style.display='none'">
+        @else
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+                    font-size:13px;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:-1px;user-select:none;">
+            {{ $ini }}
+        </div>
+        @endif
+    </div>
 
     {{-- Title + description --}}
     <div style="flex: 1; min-width: 0; overflow: hidden;">

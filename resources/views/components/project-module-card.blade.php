@@ -70,35 +70,34 @@
          onmouseover="this.style.borderColor='rgba(255,255,255,0.22)';this.style.boxShadow='0 20px 60px rgba(0,0,0,0.5)';this.style.transform='translateY(-2px)'"
          onmouseout="this.style.borderColor='rgba(255,255,255,0.09)';this.style.boxShadow='none';this.style.transform='none'">
 
-    {{-- ── BANNER (gradient image placeholder) ──────────────────────────── --}}
-    <div style="
-            background: linear-gradient(135deg, {{ $c1 }}, {{ $c2 }});
-            height: 108px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-         ">
-        {{-- Initials --}}
-        <span style="font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.9);
-                     letter-spacing: -2px; user-select: none;">{{ $ini }}</span>
+    {{-- ── BANNER ───────────────────────────────────────────────────────── --}}
+    <div style="height:108px; flex-shrink:0; position:relative; overflow:hidden;
+                background:linear-gradient(135deg,{{ $c1 }},{{ $c2 }});">
 
-        {{-- Status badge (top-right) --}}
+        @if(!empty($proyecto->cover_image))
+        {{-- Project cover image --}}
+        <img src="{{ asset('storage/'.$proyecto->cover_image) }}"
+             alt="{{ $proyecto->nombre }}"
+             style="width:100%;height:100%;object-fit:cover;display:block;"
+             onerror="this.style.display='none';document.getElementById('banner-fallback-{{ $proyecto->id }}').style.display='flex';">
+        {{-- Subtle gradient overlay for readability --}}
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.08),rgba(0,0,0,0.35));pointer-events:none;"></div>
+        @else
+        {{-- Fallback: initials on gradient --}}
+        <div id="banner-fallback-{{ $proyecto->id }}"
+             style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:2rem;font-weight:900;color:rgba(255,255,255,0.9);
+                         letter-spacing:-2px;user-select:none;">{{ $ini }}</span>
+        </div>
+        @endif
+
+        {{-- Status badge (top-right) — always visible --}}
         <span style="
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                font-size: 9px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: .05em;
-                padding: 2px 8px;
-                border-radius: 999px;
-                background: {{ $badgeBg }};
-                color: {{ $badgeFg }};
-                border: 1px solid {{ $badgeBorder }};
-                backdrop-filter: blur(4px);
+                position:absolute; top:10px; right:10px;
+                font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+                padding:2px 8px; border-radius:999px;
+                background:{{ $badgeBg }}; color:{{ $badgeFg }}; border:1px solid {{ $badgeBorder }};
+                backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
              ">{{ $badgeTxt }}</span>
     </div>
 
