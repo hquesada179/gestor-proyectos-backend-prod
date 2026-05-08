@@ -13,6 +13,146 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+
+    {{-- ── Sidebar collapse system ────────────────────────────────────────── --}}
+    <style>
+        /* Smooth transitions */
+        #sidebar      { transition: width 280ms cubic-bezier(.4,0,.2,1); }
+        #mainContent  { transition: margin-left 280ms cubic-bezier(.4,0,.2,1); }
+
+        /* Text labels: fade + shrink when collapsed */
+        .sb-text {
+            overflow: hidden;
+            white-space: nowrap;
+            transition: opacity 150ms ease, max-width 260ms cubic-bezier(.4,0,.2,1);
+            max-width: 180px;
+            opacity: 1;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .sidebar-collapsed .sb-text {
+            opacity: 0;
+            max-width: 0;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Section labels */
+        .sb-section-label {
+            transition: opacity 150ms ease, max-height 260ms ease;
+            max-height: 40px;
+            overflow: hidden;
+            opacity: 1;
+        }
+        .sidebar-collapsed .sb-section-label {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
+        /* Nav link: center icon when collapsed */
+        .sidebar-collapsed .sb-nav-link {
+            justify-content: center !important;
+            padding-left:  6px !important;
+            padding-right: 6px !important;
+            gap: 0 !important;
+        }
+        /* Bottom profile/logout links */
+        .sidebar-collapsed .sb-bottom-link {
+            justify-content: center !important;
+            padding-left:  6px !important;
+            padding-right: 6px !important;
+            gap: 0 !important;
+        }
+        /* Logo area */
+        .sidebar-collapsed .sb-logo-link {
+            justify-content: center !important;
+            gap: 0 !important;
+        }
+        .sidebar-collapsed .sb-logo-wrap {
+            padding-left:  0 !important;
+            padding-right: 0 !important;
+        }
+        /* CTA new project button */
+        .sidebar-collapsed .sb-new-btn {
+            padding-left:  6px !important;
+            padding-right: 6px !important;
+            justify-content: center !important;
+            gap: 0 !important;
+        }
+        /* Hide bottom border when collapsed */
+        .sidebar-collapsed .sb-bottom-wrap {
+            padding-left:  6px !important;
+            padding-right: 6px !important;
+        }
+
+        /* ── Toggle button ─────────────────────────────────────────────── */
+        #sidebarToggle {
+            position: absolute;
+            right: -12px;
+            top: 76px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #0d1c2d;
+            border: 1px solid rgba(255,255,255,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 55;
+            transition: background .15s, box-shadow .15s;
+            flex-shrink: 0;
+        }
+        #sidebarToggle:hover {
+            background: #1c2b3c;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        #sbToggleIcon {
+            font-size: 15px;
+            color: #94a3b8;
+            transition: transform 280ms cubic-bezier(.4,0,.2,1);
+            line-height: 1;
+            display: block;
+        }
+        .sidebar-collapsed #sbToggleIcon { transform: rotate(180deg); }
+
+        /* ── Tooltip for collapsed icons ───────────────────────────────── */
+        .sidebar-collapsed .sb-nav-link,
+        .sidebar-collapsed .sb-bottom-link {
+            position: relative;
+        }
+        .sidebar-collapsed .sb-nav-link::after,
+        .sidebar-collapsed .sb-bottom-link::after {
+            content: attr(data-tip);
+            position: absolute;
+            left: calc(100% + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(10,15,25,0.97);
+            color: #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 120ms;
+        }
+        .sidebar-collapsed .sb-nav-link:hover::after,
+        .sidebar-collapsed .sb-bottom-link:hover::after {
+            opacity: 1;
+        }
+
+        /* ── Mobile: hide toggle button, keep sidebar full-width ───────── */
+        @media (max-width: 767px) {
+            #sidebarToggle { display: none; }
+        }
+    </style>
 </head>
 <body class="h-full overflow-hidden bg-app-bg font-sans antialiased text-on-surface">
 
@@ -31,145 +171,164 @@
 
 <div class="flex h-full">
 
-    {{-- ─── SIDEBAR ───────────────────────────────────────────────── --}}
-    <aside class="fixed left-0 top-0 h-full w-[280px] z-50
-                  bg-white/5 backdrop-blur-2xl border-r border-white/5
+    {{-- ─── SIDEBAR ───────────────────────────────────────────────────── --}}
+    <aside id="sidebar"
+           style="width:280px; position:fixed; left:0; top:0; height:100%; z-index:50;"
+           class="bg-white/5 backdrop-blur-2xl border-r border-white/5
                   flex flex-col py-6 shadow-2xl shadow-black/50">
 
-        {{-- Logo --}}
-        <div class="px-6 mb-6">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
+        {{-- Toggle button (positioned on right edge) --}}
+        <button id="sidebarToggle" onclick="sidebarToggle()" title="Colapsar/Expandir">
+            <span class="material-symbols-outlined" id="sbToggleIcon">chevron_left</span>
+        </button>
+
+        {{-- ── Logo ────────────────────────────────────────────────────── --}}
+        <div class="sb-logo-wrap px-6 mb-6">
+            <a href="{{ route('dashboard') }}" class="sb-logo-link flex items-center gap-3 group">
                 <div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-white" style="font-size: 17px; font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;">rocket_launch</span>
+                    <span class="material-symbols-outlined text-white"
+                          style="font-size:17px;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;">rocket_launch</span>
                 </div>
-                <span class="text-base font-black text-white tracking-tight truncate">
+                <span class="sb-text text-base font-black text-white tracking-tight">
                     {{ config('app.name', 'GestorApp') }}
                 </span>
             </a>
         </div>
 
-        {{-- Primary navigation --}}
+        {{-- ── Primary navigation ───────────────────────────────────────── --}}
         <nav class="flex-1 flex flex-col gap-0.5 px-3 overflow-y-auto">
 
             @php
-                $ruta         = request()->route()?->getName() ?? '';
-                $isDashboard  = $ruta === 'dashboard';
-                $isReqs       = str_starts_with($ruta, 'proyectos.requirements');
-                $isSprints    = str_starts_with($ruta, 'proyectos.sprints');
-                $isTareas     = str_starts_with($ruta, 'proyectos.tasks');
-                $isInputs     = str_starts_with($ruta, 'proyectos.inputs');
-                $isProyectos  = str_starts_with($ruta, 'proyectos.')
-                    && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
-                $isMisTareas  = $ruta === 'mis-tareas';
-                $isScrumBoard  = str_starts_with($ruta, 'scrum-board');
-                $isCalendario  = $ruta === 'calendario.index';
-                $isAiAssist    = str_starts_with($ruta, 'asistente-ia');
+                $ruta        = request()->route()?->getName() ?? '';
+                $isDashboard = $ruta === 'dashboard';
+                $isReqs      = str_starts_with($ruta, 'proyectos.requirements');
+                $isSprints   = str_starts_with($ruta, 'proyectos.sprints');
+                $isTareas    = str_starts_with($ruta, 'proyectos.tasks');
+                $isInputs    = str_starts_with($ruta, 'proyectos.inputs');
+                $isProyectos = str_starts_with($ruta, 'proyectos.') && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
+                $isMisTareas = $ruta === 'mis-tareas';
+                $isScrumBoard= str_starts_with($ruta, 'scrum-board');
+                $isCalendario= $ruta === 'calendario.index';
+                $isAiAssist  = str_starts_with($ruta, 'asistente-ia');
             @endphp
 
             <a href="{{ route('dashboard') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isDashboard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">dashboard</span>
-                {{ __('app.nav.dashboard') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isDashboard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.dashboard') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">dashboard</span>
+                <span class="sb-text">{{ __('app.nav.dashboard') }}</span>
             </a>
 
             <a href="{{ route('proyectos.index') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isProyectos ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">folder_open</span>
-                {{ __('app.nav.projects') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isProyectos ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.projects') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">folder_open</span>
+                <span class="sb-text">{{ __('app.nav.projects') }}</span>
             </a>
 
             <a href="{{ route('mis-tareas') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isMisTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">task_alt</span>
-                {{ __('app.nav.my_tasks') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isMisTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.my_tasks') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">task_alt</span>
+                <span class="sb-text">{{ __('app.nav.my_tasks') }}</span>
             </a>
 
-            <div class="my-3 mx-1 border-t border-white/5"></div>
+            <div class="sb-separator my-3 mx-1 border-t border-white/5"></div>
 
-            <p class="px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
+            <p class="sb-section-label px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
                 {{ __('app.nav.modules') }}
             </p>
 
             <a href="{{ route('modulo.selector', 'requerimientos') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isReqs ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">edit_note</span>
-                {{ __('app.nav.requirements') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isReqs ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.requirements') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">edit_note</span>
+                <span class="sb-text">{{ __('app.nav.requirements') }}</span>
             </a>
 
             <a href="{{ route('scrum-board.index') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isScrumBoard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">view_kanban</span>
-                {{ __('app.nav.scrum_board') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isScrumBoard ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.scrum_board') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">view_kanban</span>
+                <span class="sb-text">{{ __('app.nav.scrum_board') }}</span>
             </a>
 
             <a href="{{ route('modulo.selector', 'sprints') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isSprints ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">sprint</span>
-                {{ __('app.nav.sprints') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isSprints ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.sprints') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">sprint</span>
+                <span class="sb-text">{{ __('app.nav.sprints') }}</span>
             </a>
 
             <a href="{{ route('modulo.selector', 'tareas') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">checklist</span>
-                {{ __('app.nav.tasks_board') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.tasks_board') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">checklist</span>
+                <span class="sb-text">{{ __('app.nav.tasks_board') }}</span>
             </a>
 
             <a href="{{ route('modulo.selector', 'insumos') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium nav-link-inactive hover:translate-x-0.5 transition-all duration-150">
-                <span class="material-symbols-outlined" style="font-size: 20px;">inventory_2</span>
-                {{ __('app.nav.inputs') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium nav-link-inactive hover:translate-x-0.5 transition-all duration-150"
+               data-tip="{{ __('app.nav.inputs') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">inventory_2</span>
+                <span class="sb-text">{{ __('app.nav.inputs') }}</span>
             </a>
 
             <a href="{{ route('calendario.index') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isCalendario ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px;">calendar_month</span>
-                {{ __('app.nav.calendar') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isCalendario ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.calendar') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">calendar_month</span>
+                <span class="sb-text">{{ __('app.nav.calendar') }}</span>
             </a>
 
-            <div class="my-3 mx-1 border-t border-white/5"></div>
+            <div class="sb-separator my-3 mx-1 border-t border-white/5"></div>
 
-            <p class="px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
+            <p class="sb-section-label px-4 py-1 text-[10px] uppercase tracking-widest text-gray-600 font-semibold select-none">
                 {{ __('app.nav.ai_section') }}
             </p>
 
             <a href="{{ route('asistente-ia.index') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                      {{ $isAiAssist ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}">
-                <span class="material-symbols-outlined" style="font-size: 20px; font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                {{ __('app.nav.ai_assistant') }}
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isAiAssist ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="{{ __('app.nav.ai_assistant') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;font-variation-settings:'FILL' 1;">auto_awesome</span>
+                <span class="sb-text">{{ __('app.nav.ai_assistant') }}</span>
             </a>
 
         </nav>
 
-        {{-- Bottom: CTA + user actions --}}
-        <div class="px-4 mt-4 space-y-1">
+        {{-- ── Bottom: CTA + user actions ──────────────────────────────── --}}
+        <div class="sb-bottom-wrap px-4 mt-4 space-y-1">
             <a href="{{ route('proyectos.create') }}"
-               class="w-full py-2.5 px-4 bg-secondary-container text-white rounded-xl font-bold text-sm
-                      flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 mb-1">
-                <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
-                {{ __('app.actions.new_project') }}
+               class="sb-new-btn w-full py-2.5 px-4 bg-secondary-container text-white rounded-xl font-bold text-sm
+                      flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 mb-1"
+               title="{{ __('app.actions.new_project') }}">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:16px;">add</span>
+                <span class="sb-text">{{ __('app.actions.new_project') }}</span>
             </a>
 
             <div class="pt-3 border-t border-white/5 space-y-0.5">
                 <a href="{{ route('profile.edit') }}"
-                   class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm nav-link-inactive hover:translate-x-0.5 transition-all duration-150">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">manage_accounts</span>
-                    {{ __('app.nav.profile') }}
+                   class="sb-bottom-link flex items-center gap-3 px-4 py-2 rounded-lg text-sm nav-link-inactive hover:translate-x-0.5 transition-all duration-150"
+                   data-tip="{{ __('app.nav.profile') }}">
+                    <span class="material-symbols-outlined flex-shrink-0" style="font-size:18px;">manage_accounts</span>
+                    <span class="sb-text">{{ __('app.nav.profile') }}</span>
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm nav-link-inactive hover:translate-x-0.5 transition-all duration-150 text-left">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
-                        {{ __('app.nav.logout') }}
+                            class="sb-bottom-link w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm nav-link-inactive hover:translate-x-0.5 transition-all duration-150 text-left"
+                            data-tip="{{ __('app.nav.logout') }}">
+                        <span class="material-symbols-outlined flex-shrink-0" style="font-size:18px;">logout</span>
+                        <span class="sb-text">{{ __('app.nav.logout') }}</span>
                     </button>
                 </form>
             </div>
@@ -177,8 +336,10 @@
 
     </aside>
 
-    {{-- ─── MAIN CONTENT AREA ─────────────────────────────────────── --}}
-    <div class="ml-[280px] flex-1 flex flex-col h-full overflow-hidden">
+    {{-- ─── MAIN CONTENT AREA ─────────────────────────────────────────── --}}
+    <div id="mainContent"
+         style="margin-left:280px;"
+         class="flex-1 flex flex-col h-full overflow-hidden">
 
         {{-- Topbar --}}
         <header class="flex-shrink-0 h-16 bg-[#0F1117]/80 backdrop-blur-xl border-b border-white/10 z-40
@@ -381,6 +542,64 @@
     </div>
 
 </div>
+
+{{-- ── Sidebar toggle script (runs on every page) ───────────────────────── --}}
+<script>
+(function () {
+    'use strict';
+
+    var LS_KEY      = 'sidebarCollapsed';
+    var FULL_WIDTH  = 280;
+    var MINI_WIDTH  = 72;
+    var sidebar     = document.getElementById('sidebar');
+    var mainContent = document.getElementById('mainContent');
+    var toggleIcon  = document.getElementById('sbToggleIcon');
+
+    function applyState(collapsed) {
+        var w = collapsed ? MINI_WIDTH : FULL_WIDTH;
+
+        if (sidebar)     sidebar.style.width       = w + 'px';
+        if (mainContent) mainContent.style.marginLeft = w + 'px';
+
+        if (collapsed) {
+            document.body.classList.add('sidebar-collapsed');
+        } else {
+            document.body.classList.remove('sidebar-collapsed');
+        }
+
+        if (toggleIcon) {
+            toggleIcon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
+        }
+    }
+
+    window.sidebarToggle = function () {
+        var isCollapsed = document.body.classList.contains('sidebar-collapsed');
+        var next = !isCollapsed;
+        applyState(next);
+        try { localStorage.setItem(LS_KEY, next ? 'true' : 'false'); } catch (e) {}
+    };
+
+    // Restore saved state on load (no transition on first render)
+    var saved = 'false';
+    try { saved = localStorage.getItem(LS_KEY) || 'false'; } catch (e) {}
+
+    if (saved === 'true') {
+        // Apply instantly (before paint) to prevent flash
+        if (sidebar)     sidebar.style.transition    = 'none';
+        if (mainContent) mainContent.style.transition = 'none';
+
+        applyState(true);
+
+        // Re-enable transitions after first frame
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (sidebar)     sidebar.style.transition    = '';
+                if (mainContent) mainContent.style.transition = '';
+            });
+        });
+    }
+})();
+</script>
 
 @stack('scripts')
 </body>
