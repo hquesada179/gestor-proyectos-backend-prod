@@ -1,10 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\AiApiController;
+use App\Http\Controllers\Api\FirebaseApiAuthController;
 use App\Http\Controllers\Api\ProyectoApiController;
 use App\Http\Controllers\Api\SprintApiController;
 use App\Http\Controllers\Api\TareaApiController;
 use Illuminate\Support\Facades\Route;
+
+// ── Firebase Auth para Android ────────────────────────────────────────────
+// Recibe el Firebase ID Token y devuelve usuario + Sanctum Bearer token
+Route::post('/auth/firebase-login', [FirebaseApiAuthController::class, 'login']);
 
 Route::middleware('auth')->prefix('ai')->name('api.ai.')->group(function () {
     Route::post('/generate-project', [AiApiController::class, 'generateProject'])->name('generate-project');

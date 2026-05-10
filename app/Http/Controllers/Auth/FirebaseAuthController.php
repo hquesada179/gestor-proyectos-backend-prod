@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Kreait\Firebase\Contract\Auth as FirebaseAuth;
 use Throwable;
@@ -19,6 +20,8 @@ class FirebaseAuthController extends Controller
     {
         $idToken = $request->input('firebase_id_token');
 
+        Log::info('FirebaseAuth: POST recibido', ['has_token' => (bool) $idToken]);
+
         if (! $idToken) {
             return redirect()->route('login')
                 ->withErrors(['email' => 'Token de autenticación no recibido.']);
@@ -26,7 +29,11 @@ class FirebaseAuthController extends Controller
 
         try {
             $verifiedToken = $this->firebaseAuth->verifyIdToken($idToken);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Log::error('FirebaseAuth: fallo al verificar token', [
+                'error'   => $e->getMessage(),
+                'class'   => get_class($e),
+            ]);
             return redirect()->route('login')
                 ->withErrors(['email' => 'No se pudo verificar la autenticación con Google. Intenta de nuevo.']);
         }
@@ -56,6 +63,11 @@ class FirebaseAuthController extends Controller
         if (! $user->firebase_uid) {
             $user->update(['firebase_uid' => $uid]);
         }
+
+        Log::info('FirebaseAuth: login exitoso', [
+            'user_id' => $user->id,
+            'email'   => $user->email,
+        ]);
 
         Auth::login($user, remember: true);
         $request->session()->regenerate();

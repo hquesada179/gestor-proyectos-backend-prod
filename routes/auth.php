@@ -13,8 +13,8 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::post('auth/firebase/callback', [FirebaseAuthController::class, 'handleCallback'])
-        ->name('firebase.callback');
+    Route::post('auth/firebase-login', [FirebaseAuthController::class, 'handleCallback'])
+        ->name('firebase.login');
 
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
