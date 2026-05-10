@@ -18,6 +18,7 @@ use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserStoryController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PaymentController;
@@ -33,6 +34,10 @@ Route::get('/', function () {
 });
 
 Route::post('/language', [LanguageController::class, 'change'])->name('language.change');
+
+// ── Google OAuth (Socialite) ──────────────────────────────────────────────
+Route::get('/auth/google',          [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 
 Route::get('/dashboard', function () {
     $userId = Auth::id();

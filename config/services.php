@@ -50,6 +50,12 @@ return [
         'provider' => env('AI_PROVIDER', 'openai'),
     ],
 
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI'),
+    ],
+
     'wompi' => [
         'env'              => env('WOMPI_ENV', 'sandbox'),
         'public_key'       => env('WOMPI_PUBLIC_KEY', ''),
