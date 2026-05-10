@@ -81,7 +81,7 @@
 
                         <div>
                             <label for="estado" class="block mb-2 text-sm font-medium text-gray-300">Estado</label>
-                            <select id="estado" name="estado" class="form-input">
+                            <select id="estado" name="estado" class="form-input dark-form-select">
                                 @foreach (['planificado' => 'Planificado', 'en_progreso' => 'En progreso', 'completado' => 'Completado'] as $value => $label)
                                     <option value="{{ $value }}" {{ old('estado', 'planificado') === $value ? 'selected' : '' }}>
                                         {{ $label }}

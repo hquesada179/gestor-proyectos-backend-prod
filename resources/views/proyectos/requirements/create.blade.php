@@ -34,7 +34,7 @@
         }
 
         .form-input::placeholder {
-            color: #3f424e;
+            color: #64748b;
         }
 
         .form-input:hover {
@@ -108,7 +108,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                                 <label for="tipo" class="block mb-2 text-sm font-medium text-gray-300">Tipo</label>
-                                <select id="tipo" name="tipo" class="form-input">
+                                <select id="tipo" name="tipo" class="form-input dark-form-select">
                                     <option value="funcional" {{ old('tipo', 'funcional') === 'funcional' ? 'selected' : '' }}>Funcional</option>
                                     <option value="no_funcional" {{ old('tipo') === 'no_funcional' ? 'selected' : '' }}>No funcional</option>
                                 </select>
@@ -116,7 +116,7 @@
                             </div>
                             <div>
                                 <label for="prioridad" class="block mb-2 text-sm font-medium text-gray-300">Prioridad</label>
-                                <select id="prioridad" name="prioridad" class="form-input">
+                                <select id="prioridad" name="prioridad" class="form-input dark-form-select">
                                     @foreach (['alta', 'media', 'baja'] as $opcion)
                                         <option value="{{ $opcion }}" {{ old('prioridad', 'media') === $opcion ? 'selected' : '' }}>
                                             {{ ucfirst($opcion) }}

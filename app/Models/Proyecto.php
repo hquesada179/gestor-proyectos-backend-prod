@@ -76,6 +76,11 @@ class Proyecto extends Model
         return $this->hasMany(\App\Models\ProjectActivityLog::class, 'project_id');
     }
 
+    public function messages(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectMessage::class, 'project_id');
+    }
+
     /**
      * Returns a deduplicated collection of User objects to display as avatars:
      * project owner first, then active members with accounts (excluding owner).

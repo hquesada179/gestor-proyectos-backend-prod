@@ -8,6 +8,7 @@ use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectInputController;
 use App\Http\Controllers\ProjectActivityController;
+use App\Http\Controllers\ProjectChatController;
 use App\Http\Controllers\ProjectInvitationController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RequirementController;
@@ -18,6 +19,9 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserStoryController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\WompiWebhookController;
 use App\Models\Proyecto;
 use App\Models\Sprint;
 use App\Models\Task;
@@ -53,7 +57,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/perfil/foto', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
 
-    Route::get('/mis-tareas', [MyTasksController::class, 'index'])->name('mis-tareas');
+    Route::prefix('mis-tareas')->name('mis-tareas.')->group(function () {
+        Route::get('/', [MyTasksController::class, 'index'])->name('index');
+        Route::get('/create', [MyTasksController::class, 'create'])->name('create');
+        Route::post('/', [MyTasksController::class, 'store'])->name('store');
+        Route::get('/{tarea}', [MyTasksController::class, 'show'])->name('show');
+        Route::get('/{tarea}/edit', [MyTasksController::class, 'edit'])->name('edit');
+        Route::match(['put', 'patch'], '/{tarea}', [MyTasksController::class, 'update'])->name('update');
+        Route::delete('/{tarea}', [MyTasksController::class, 'destroy'])->name('destroy');
+    });
     Route::get('/modulo/{modulo}', [ModuloSelectorController::class, 'show'])->name('modulo.selector');
 
     // Calendario
@@ -64,14 +76,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/scrum-board/{proyecto}', [ScrumBoardController::class, 'show'])->name('scrum-board.show');
     Route::patch('/scrum-board/tasks/{task}/status', [ScrumBoardController::class, 'updateStatus'])->name('scrum-board.tasks.status');
 
-    // Chat IA
+    // Asistente IA legacy: redirige al asistente OpenAI actual
     Route::get('proyectos/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('proyectos/chat', [ChatController::class, 'sendMessage'])->name('chat.send');
 
-    // Historial IA (must be before any wildcard segments)
+    // Historial IA legacy: redirige al asistente OpenAI actual
     Route::get('proyectos/chat/historial', [ChatController::class, 'history'])->name('chat.history');
     Route::delete('proyectos/chat/historial/limpiar', [ChatController::class, 'clearHistory'])->name('chat.history.clear');
     Route::delete('proyectos/chat/historial/{id}', [ChatController::class, 'deleteHistoryItem'])->name('chat.history.delete');
+
+    // Planes SaaS — vista informativa y checkout
+    Route::get('/planes', [PlanController::class, 'index'])->name('planes.index');
+    Route::post('/planes/{plan}/checkout', [PaymentController::class, 'checkout'])->name('planes.checkout');
+
+    // Páginas de resultado de pago (retorno desde Wompi)
+    Route::get('/pagos/resultado', [PaymentController::class, 'resultado'])->name('pagos.resultado');
+    Route::get('/pagos/exitoso',   [PaymentController::class, 'success'])->name('pagos.exitoso');   // legacy
+    Route::get('/pagos/pendiente', [PaymentController::class, 'pending'])->name('pagos.pendiente'); // legacy
+    Route::get('/pagos/fallido',   [PaymentController::class, 'failed'])->name('pagos.fallido');    // legacy
 
     // Asistente IA — pantalla principal (nueva)
     Route::get('/asistente-ia', [AiAssistantController::class, 'index'])->name('asistente-ia.index');
@@ -79,6 +101,11 @@ Route::middleware('auth')->group(function () {
     // Asistente IA — endpoints principales (nuevos)
     Route::post('/asistente-ia/submit', [AiAssistantController::class, 'submit'])->name('asistente-ia.submit');
     Route::post('/asistente-ia/apply', [AiAssistantController::class, 'apply'])->name('asistente-ia.apply');
+    Route::post('/asistente-ia/refinar-propuesta', [AiAssistantController::class, 'refineProposal'])->name('asistente-ia.refine');
+    Route::post('/asistente-ia/regenerar-seccion', [AiAssistantController::class, 'regenerateSection'])->name('asistente-ia.regenerate-section');
+    Route::post('/asistente-ia/regenerar-elemento', [AiAssistantController::class, 'regenerateItem'])->name('asistente-ia.regenerate-item');
+    Route::get('/asistente-ia/proyecto/{id}/estructura', [AiAssistantController::class, 'loadProjectStructure'])->name('asistente-ia.proyecto.estructura');
+    Route::get('/asistente-ia/creditos', [AiAssistantController::class, 'getBalance'])->name('asistente-ia.balance');
     Route::get('/asistente-ia/historial', [AiAssistantController::class, 'history'])->name('asistente-ia.historial');
     Route::delete('/asistente-ia/historial/limpiar', [AiAssistantController::class, 'clearHistory'])->name('asistente-ia.historial.clear');
     Route::get('/asistente-ia/historial/{id}', [AiAssistantController::class, 'historyDetail'])->name('asistente-ia.historial.detail');
@@ -114,10 +141,20 @@ Route::middleware('auth')->group(function () {
     // ── Actividad / Auditoría ─────────────────────────────────────────────
     Route::get('/proyectos/{proyecto}/actividad', [ProjectActivityController::class, 'index'])->name('proyectos.actividad');
 
+    // ── Chat interno de proyectos ─────────────────────────────────────────
+    Route::prefix('mensajes')->name('mensajes.')->group(function () {
+        Route::get('/proyectos', [ProjectChatController::class, 'projects'])->name('projects');
+        Route::get('/proyectos/{proyecto}', [ProjectChatController::class, 'messages'])->name('messages');
+        Route::post('/proyectos/{proyecto}', [ProjectChatController::class, 'store'])->name('store');
+    });
+
     // ── Invitaciones ─────────────────────────────────────────────────────
     Route::get('/invitaciones', [ProjectInvitationController::class, 'index'])->name('invitations.index');
     Route::post('/invitaciones/{invitation}/aceptar', [ProjectInvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('/invitaciones/{invitation}/rechazar', [ProjectInvitationController::class, 'reject'])->name('invitations.reject');
 });
+
+// ── Webhooks — fuera del middleware auth, sin CSRF (excluido en bootstrap/app.php) ──
+Route::post('/webhooks/wompi', [WompiWebhookController::class, 'handle'])->name('webhooks.wompi');
 
 require __DIR__.'/auth.php';

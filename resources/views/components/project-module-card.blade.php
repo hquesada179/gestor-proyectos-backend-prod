@@ -5,6 +5,7 @@
     'countIcon'   => 'tag',
     'actionLabel' => 'Entrar',
     'actionUrl'   => '#',
+    'coverPriority' => false,
 ])
 @php
     // Color pairs for the gradient banner
@@ -47,6 +48,10 @@
     $displayMembers = $proyecto->displayMembers();
     $visibleMembers = $displayMembers->take(3);
     $extraCount     = max(0, $displayMembers->count() - 3);
+    $coverUrl       = !empty($proyecto->cover_image)
+        ? asset('storage/'.$proyecto->cover_image).'?v='.(optional($proyecto->updated_at)->timestamp ?? '1')
+        : null;
+    $coverPriority  = (bool) $coverPriority;
 @endphp
 
 {{-- ─────────────────────────────────────────────────────────────────────────
@@ -64,31 +69,58 @@
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.09);
             background: #16213a;
-            transition: border-color .18s, box-shadow .18s, transform .18s;
+            transition: border-color .18s, box-shadow .18s;
             cursor: default;
+            isolation: isolate;
+            contain: layout paint style;
+            width: 100%;
+            min-width: 0;
          "
-         onmouseover="this.style.borderColor='rgba(255,255,255,0.22)';this.style.boxShadow='0 20px 60px rgba(0,0,0,0.5)';this.style.transform='translateY(-2px)'"
-         onmouseout="this.style.borderColor='rgba(255,255,255,0.09)';this.style.boxShadow='none';this.style.transform='none'">
+         onmouseover="this.style.borderColor='rgba(255,255,255,0.22)';this.style.boxShadow='0 20px 60px rgba(0,0,0,0.5)'"
+         onmouseout="this.style.borderColor='rgba(255,255,255,0.09)';this.style.boxShadow='none'">
 
     {{-- ── BANNER ───────────────────────────────────────────────────────── --}}
-    <div style="height:108px; flex-shrink:0; position:relative; overflow:hidden;
-                background:linear-gradient(135deg,{{ $c1 }},{{ $c2 }});">
+    <div class="project-cover-frame"
+         style="height:128px; min-height:128px; max-height:128px; aspect-ratio:16/5; flex-shrink:0; position:relative; overflow:hidden;
+                contain:layout paint style; isolation:isolate; background:{{ $coverUrl ? '#111827' : "linear-gradient(135deg,{$c1},{$c2})" }};">
 
-        @if(!empty($proyecto->cover_image))
-        {{-- Project cover image --}}
-        <img src="{{ asset('storage/'.$proyecto->cover_image) }}"
-             alt="{{ $proyecto->nombre }}"
-             style="width:100%;height:100%;object-fit:cover;display:block;"
-             onerror="this.style.display='none';document.getElementById('banner-fallback-{{ $proyecto->id }}').style.display='flex';">
-        {{-- Subtle gradient overlay for readability --}}
-        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.08),rgba(0,0,0,0.35));pointer-events:none;"></div>
-        @else
-        {{-- Fallback: initials on gradient --}}
+        @unless($coverUrl)
+        {{-- Fallback: initials on gradient. Only rendered when the project has no real cover image. --}}
         <div id="banner-fallback-{{ $proyecto->id }}"
-             style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+             style="
+                position:absolute; inset:0;
+                width:100%; height:100%;
+                display:flex;
+                align-items:center; justify-content:center;
+             ">
             <span style="font-size:2rem;font-weight:900;color:rgba(255,255,255,0.9);
                          letter-spacing:-2px;user-select:none;">{{ $ini }}</span>
         </div>
+        @endunless
+
+        @if($coverUrl)
+        {{-- Project cover image --}}
+        <img src="{{ $coverUrl }}"
+             alt="{{ $proyecto->nombre }}"
+             class="project-cover-image"
+             loading="{{ $coverPriority ? 'eager' : 'lazy' }}"
+             decoding="{{ $coverPriority ? 'sync' : 'async' }}"
+             fetchpriority="{{ $coverPriority ? 'high' : 'auto' }}"
+             width="1280"
+             height="400"
+             data-project-cover="true"
+             data-priority-cover="{{ $coverPriority ? 'true' : 'false' }}"
+             style="
+                position:absolute; inset:0;
+                width:100%; height:100%;
+                max-width:100%; max-height:100%;
+                object-fit:cover; display:block;
+                border:0; opacity:1; transform:translateZ(0); filter:none;
+                transition:none; animation:none;
+             "
+             onerror="this.style.visibility='hidden';">
+        {{-- Subtle gradient overlay for readability --}}
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.08),rgba(0,0,0,0.35));pointer-events:none;"></div>
         @endif
 
         {{-- Status badge (top-right) — always visible --}}

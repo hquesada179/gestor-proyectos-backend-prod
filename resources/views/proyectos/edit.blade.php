@@ -69,7 +69,7 @@
                         {{-- Estado --}}
                         <div>
                             <label for="estado" class="block mb-2 text-sm font-medium text-gray-300">Estado</label>
-                            <select id="estado" name="estado" class="form-input" style="color:#000000;">
+                            <select id="estado" name="estado" class="form-input dark-form-select">
                                 @foreach (['activo','pausado','completado','cancelado'] as $opcion)
                                     <option value="{{ $opcion }}" {{ old('estado', $proyecto->estado) === $opcion ? 'selected' : '' }}>
                                         {{ ucfirst($opcion) }}

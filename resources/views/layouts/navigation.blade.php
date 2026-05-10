@@ -18,7 +18,7 @@
                     <x-nav-link :href="route('proyectos.index')" :active="request()->routeIs('proyectos.*')">
                         Proyectos
                     </x-nav-link>
-                    <x-nav-link :href="route('mis-tareas')" :active="request()->routeIs('mis-tareas')">
+                    <x-nav-link :href="route('mis-tareas.index')" :active="request()->routeIs('mis-tareas.*')">
                         Mis tareas
                     </x-nav-link>
                 </div>
@@ -79,7 +79,7 @@
             <x-responsive-nav-link :href="route('proyectos.index')" :active="request()->routeIs('proyectos.*')">
                 Proyectos
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('mis-tareas')" :active="request()->routeIs('mis-tareas')">
+            <x-responsive-nav-link :href="route('mis-tareas.index')" :active="request()->routeIs('mis-tareas.*')">
                 Mis tareas
             </x-responsive-nav-link>
         </div>

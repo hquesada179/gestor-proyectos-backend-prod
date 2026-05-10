@@ -5,9 +5,9 @@
                 <span class="material-symbols-outlined text-violet-400" style="font-size: 18px; font-variation-settings: 'FILL' 1;">auto_awesome</span>
                 <span class="text-white font-semibold">Crear Proyecto con IA</span>
                 <span class="text-gray-600">·</span>
-                <span class="text-xs {{ $ollamaOnline ? 'text-emerald-400' : 'text-red-400' }} flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full {{ $ollamaOnline ? 'bg-emerald-400' : 'bg-red-400' }} animate-pulse inline-block"></span>
-                    Ollama {{ $ollamaOnline ? 'en línea' : 'desconectado' }}
+                <span class="text-xs {{ $aiOnline ? 'text-emerald-400' : 'text-red-400' }} flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $aiOnline ? 'bg-emerald-400' : 'bg-red-400' }} animate-pulse inline-block"></span>
+                    {{ $aiOnline ? 'Asistente disponible' : 'Servicio no disponible' }}
                 </span>
             </div>
             <a href="{{ route('asistente-ia.index') }}"
@@ -20,13 +20,15 @@
 
     <div class="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
-        {{-- ─── OLLAMA OFFLINE ALERT ───────────────────────────────────────── --}}
-        @unless($ollamaOnline)
+        {{-- ─── SERVICE ALERT ───────────────────────────────────────────── --}}
+        @unless($aiOnline)
         <div class="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 flex gap-3 items-start">
             <span class="material-symbols-outlined text-amber-400 flex-shrink-0 mt-0.5" style="font-size: 18px;">warning</span>
             <div>
-                <p class="text-xs font-semibold text-amber-300">Ollama no está corriendo</p>
-                <p class="text-[11px] text-amber-200/70 mt-0.5">Inicia el servicio con <code class="bg-black/30 px-1.5 py-0.5 rounded font-mono">ollama serve</code> y luego instala un modelo con <code class="bg-black/30 px-1.5 py-0.5 rounded font-mono">ollama pull gemma3</code></p>
+                <p class="text-xs font-semibold text-amber-300">Asistente no disponible</p>
+                <p class="text-[11px] text-amber-200/70 mt-0.5">
+                    El servicio de generacion IA no esta activo. Contacta al administrador.
+                </p>
             </div>
         </div>
         @endunless
@@ -118,29 +120,8 @@
                     </p>
                 </div>
 
-                {{-- Model selector --}}
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 mb-1.5">Modelo de IA</label>
-                    @if(count($models) > 0)
-                    <select name="modelo" id="model-select"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white
-                                   focus:outline-none focus:border-indigo-500/50 transition-colors">
-                        @foreach($models as $m)
-                        <option value="{{ $m }}" {{ $m === $defaultModel || str_starts_with($m, $defaultModel) ? 'selected' : '' }}>
-                            {{ $m }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @else
-                    <input type="text" id="model-select" value="{{ $defaultModel }}"
-                           placeholder="ej: gemma3, phi3, llama3.2"
-                           class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white
-                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 transition-colors" />
-                    <p class="text-[10px] text-gray-600 mt-1">
-                        Ollama {{ $ollamaOnline ? 'sin modelos instalados' : 'no conectado' }}. Escribe el nombre manualmente.
-                    </p>
-                    @endif
-                </div>
+                {{-- Model is resolved internally; not exposed to users --}}
+                <input type="hidden" id="model-select" name="modelo" value="{{ $defaultModel }}">
 
                 {{-- Idea textarea --}}
                 <div>
@@ -483,7 +464,7 @@
                 return;
             }
             if (!model) {
-                showError('Selecciona o escribe un modelo de IA.');
+                showError('El asistente no esta configurado correctamente. Contacta al administrador.');
                 return;
             }
 
@@ -506,7 +487,7 @@
                     });
                 }
                 if (!r.ok) {
-                    throw new Error('Error HTTP ' + r.status + '. Revisa que Ollama esté activo.');
+                    throw new Error('No se pudo generar la propuesta. Intenta nuevamente en unos segundos.');
                 }
                 return r.json();
             })

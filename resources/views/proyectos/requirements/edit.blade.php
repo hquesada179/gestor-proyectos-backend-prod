@@ -6,15 +6,15 @@
                     {{ $proyecto->nombre }} › Requerimientos › {{ $requirement->titulo }}
                 </a>
             </p>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-slate-100 leading-tight">
                 Editar requerimiento
             </h2>
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12 text-slate-100">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/80 shadow-xl shadow-black/20">
                 <div class="p-6">
 
                     <form method="POST" action="{{ route('proyectos.requirements.update', [$proyecto, $requirement]) }}">
@@ -43,7 +43,7 @@
                             <x-input-label for="descripcion" value="Descripción" />
                             <textarea id="descripcion" name="descripcion"
                                 rows="5"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                                class="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-800 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500"
                                 required>{{ old('descripcion', $requirement->descripcion) }}</textarea>
                             <x-input-error :messages="$errors->get('descripcion')" class="mt-1" />
                         </div>
@@ -52,7 +52,7 @@
                             <div>
                                 <x-input-label for="tipo" value="Tipo" />
                                 <select id="tipo" name="tipo"
-                                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                                    class="dark-form-select mt-1 block w-full rounded-lg border border-slate-600 bg-slate-800 text-sm text-white focus:border-indigo-500 focus:ring-indigo-500">
                                     <option value="funcional" {{ old('tipo', $requirement->tipo) === 'funcional' ? 'selected' : '' }}>Funcional</option>
                                     <option value="no_funcional" {{ old('tipo', $requirement->tipo) === 'no_funcional' ? 'selected' : '' }}>No funcional</option>
                                 </select>
@@ -61,7 +61,7 @@
                             <div>
                                 <x-input-label for="prioridad" value="Prioridad" />
                                 <select id="prioridad" name="prioridad"
-                                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                                    class="dark-form-select mt-1 block w-full rounded-lg border border-slate-600 bg-slate-800 text-sm text-white focus:border-indigo-500 focus:ring-indigo-500">
                                     @foreach (['alta', 'media', 'baja'] as $opcion)
                                         <option value="{{ $opcion }}" {{ old('prioridad', $requirement->prioridad) === $opcion ? 'selected' : '' }}>
                                             {{ ucfirst($opcion) }}

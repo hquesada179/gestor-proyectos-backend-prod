@@ -16,15 +16,36 @@
             display: grid;
             grid-template-columns: repeat(1, minmax(0, 1fr));
             gap: 1.25rem;
+            min-width: 0;
+            overflow: hidden;
+            contain: layout paint style;
         }
         @media (min-width: 768px)  { #projectsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (min-width: 1024px) { #projectsGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
         /* ── List layout ───────────────────────────────────────────────── */
-        #projectsList { display: flex; flex-direction: column; gap: .625rem; }
+        #projectsList { display: flex; flex-direction: column; gap: .625rem; min-width: 0; overflow: hidden; contain: layout paint style; }
 
         /* ── Hidden state (works even if Tailwind 'hidden' isn't compiled) */
         .pv-hidden { display: none !important; }
+        #projectsGrid.pv-view-hidden {
+            display: grid !important;
+            position: absolute !important;
+            left: -10000px !important;
+            top: 0 !important;
+            width: 100% !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        #projectsList.pv-view-hidden {
+            display: flex !important;
+            position: absolute !important;
+            left: -10000px !important;
+            top: 0 !important;
+            width: 100% !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
 
         /* ── Toggle button states ──────────────────────────────────────── */
         .view-btn       { padding:6px; border-radius:8px; border:none; cursor:pointer;
@@ -41,7 +62,23 @@
     </style>
     @endpush
 
-    <div style="padding: 1.5rem;">
+    @php
+        $activeProjectViewMode = request()->cookie('project_view_mode', 'grid');
+        $isListViewActive = $activeProjectViewMode === 'list';
+        $preloadCoverUrls = $proyectos
+            ->filter(fn ($project) => !empty($project->cover_image))
+            ->take(6)
+            ->map(fn ($project) => asset('storage/'.$project->cover_image).'?v='.(optional($project->updated_at)->timestamp ?? '1'))
+            ->values();
+    @endphp
+
+    @push('head')
+        @foreach($preloadCoverUrls as $coverUrl)
+            <link rel="preload" as="image" href="{{ $coverUrl }}" fetchpriority="{{ $loop->first ? 'high' : 'auto' }}">
+        @endforeach
+    @endpush
+
+    <div style="padding: 1.5rem; min-width:0; overflow-x:hidden;">
 
         {{-- ── Page header ────────────────────────────────────────────────── --}}
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.25rem;">
@@ -68,10 +105,10 @@
                 <div style="display:flex;align-items:center;gap:4px;
                             background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
                             border-radius:10px;padding:4px;">
-                    <button id="btn-grid" class="view-btn active" onclick="setView('grid')" title="Vista bloques">
+                    <button id="btn-grid" class="view-btn {{ $isListViewActive ? '' : 'active' }}" onclick="setView('grid')" title="Vista bloques">
                         <span class="material-symbols-outlined" style="font-size:18px;display:block;">grid_view</span>
                     </button>
-                    <button id="btn-list" class="view-btn" onclick="setView('list')" title="Vista lista">
+                    <button id="btn-list" class="view-btn {{ $isListViewActive ? 'active' : '' }}" onclick="setView('list')" title="Vista lista">
                         <span class="material-symbols-outlined" style="font-size:18px;display:block;">view_list</span>
                     </button>
                 </div>
@@ -93,7 +130,7 @@
             </p>
 
             {{-- ── GRID VIEW (default) ────────────────────────────────────── --}}
-            <div id="projectsGrid">
+            <div id="projectsGrid" class="{{ $isListViewActive ? 'pv-view-hidden' : '' }}">
                 @foreach($proyectos as $proyecto)
                     <x-project-module-card
                         :proyecto="$proyecto"
@@ -102,12 +139,13 @@
                         countIcon="task_alt"
                         actionLabel="{{ __('app.scrum.open_board') }}"
                         :actionUrl="route('scrum-board.show', $proyecto)"
+                        :coverPriority="!$isListViewActive && $loop->iteration <= 6 && !empty($proyecto->cover_image)"
                     />
                 @endforeach
             </div>
 
             {{-- ── LIST VIEW ──────────────────────────────────────────────── --}}
-            <div id="projectsList" class="pv-hidden">
+            <div id="projectsList" class="{{ $isListViewActive ? '' : 'pv-view-hidden' }}">
                 @foreach($proyectos as $proyecto)
                     <x-project-module-list-item
                         :proyecto="$proyecto"
@@ -116,6 +154,7 @@
                         countIcon="task_alt"
                         actionLabel="{{ __('app.scrum.open_board') }}"
                         :actionUrl="route('scrum-board.show', $proyecto)"
+                        :coverPriority="$isListViewActive && $loop->iteration <= 6 && !empty($proyecto->cover_image)"
                     />
                 @endforeach
             </div>
@@ -141,19 +180,56 @@
 
         // ── View toggle ───────────────────────────────────────────────────
         window.setView = function (mode) {
+            var pre = document.getElementById('pv-pre');
+            if (pre) pre.parentNode.removeChild(pre);
+
             var isGrid = mode === 'grid';
 
-            if (grid)    { if (isGrid) grid.classList.remove('pv-hidden'); else grid.classList.add('pv-hidden'); }
-            if (list)    { if (isGrid) list.classList.add('pv-hidden');    else list.classList.remove('pv-hidden'); }
+            if (grid)    { if (isGrid) grid.classList.remove('pv-view-hidden'); else grid.classList.add('pv-view-hidden'); }
+            if (list)    { if (isGrid) list.classList.add('pv-view-hidden');    else list.classList.remove('pv-view-hidden'); }
 
             if (btnGrid) { if (isGrid) btnGrid.classList.add('active');  else btnGrid.classList.remove('active'); }
             if (btnList) { if (isGrid) btnList.classList.remove('active'); else btnList.classList.add('active'); }
 
-            try { localStorage.setItem(LS_KEY, mode); } catch(e) {}
+            try {
+                localStorage.setItem(LS_KEY, mode);
+                document.cookie = 'project_view_mode=' + encodeURIComponent(mode) + ';path=/;max-age=31536000;SameSite=Lax';
+            } catch(e) {}
 
             // Re-apply search filter so hidden items stay hidden
             applySearch((document.getElementById('project-search') || {}).value || '');
+            warmVisibleProjectCovers(mode);
         };
+
+        function warmVisibleProjectCovers(mode) {
+            var root = mode === 'list' ? list : grid;
+            var inactiveRoot = mode === 'list' ? grid : list;
+            if (!root) return;
+
+            if (inactiveRoot) {
+                inactiveRoot.querySelectorAll('img[data-project-cover="true"]').forEach(function (img) {
+                    img.fetchPriority = 'low';
+                    img.dataset.priorityCover = 'false';
+                });
+            }
+
+            root.querySelectorAll('img[data-project-cover="true"]').forEach(function (img, index) {
+                var priority = index < 6;
+                if (priority) {
+                    img.loading = 'eager';
+                    img.decoding = 'sync';
+                    img.fetchPriority = 'high';
+                    img.dataset.priorityCover = 'true';
+                } else {
+                    img.fetchPriority = 'low';
+                    img.dataset.priorityCover = 'false';
+                }
+
+                if (priority && img.decode && (!img.complete || !img.naturalWidth)) {
+                    img.decode().catch(function () {});
+                }
+            });
+        }
 
         // ── Search ────────────────────────────────────────────────────────
         function applySearch(raw) {

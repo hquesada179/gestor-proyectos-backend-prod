@@ -1,26 +1,53 @@
+# ── Laravel defaults ─────────────────────────────────────────────────────────
 *.log
-.DS_Store
-/storage/firebase/
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.cursor/
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+/vendor
 /node_modules
-/public/build
 /public/hot
+/public/build
 /public/storage
+/bootstrap/cache/*.php
+
+# ── Entornos — NUNCA subir .env reales ───────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Base de datos local ───────────────────────────────────────────────────────
+# database/.gitignore ya ignora *.sqlite*, pero lo reforzamos aquí
+/database/*.sqlite
+/database/*.sqlite-shm
+/database/*.sqlite-wal
+
+# ── Claves y secretos de almacenamiento ──────────────────────────────────────
 /storage/*.key
 /storage/pail
-/vendor
+/storage/firebase/
+
+# ── Cachés y archivos de build ───────────────────────────────────────────────
+.phpunit.result.cache
+/.phpunit.cache
 _ide_helper.php
 Homestead.json
 Homestead.yaml
+
+# ── IDEs y OS ─────────────────────────────────────────────────────────────────
+.DS_Store
 Thumbs.db
+.phpactor.json
+/.cursor/
+/.idea
+/.nova
+/.vscode
+/.zed
+/auth.json
+
+# ── Backups y archivos temporales ────────────────────────────────────────────
+*.zip
+*.bak
+*.backup
+backups/
+/storage/app/*.zip
+/storage/app/private/
+
+# ── Documentación de diseño (referencia interna — no va al repo de producción) ─
+/docs/ui-source/

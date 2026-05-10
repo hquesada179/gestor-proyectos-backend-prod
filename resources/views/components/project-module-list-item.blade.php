@@ -5,6 +5,7 @@
     'countIcon'   => 'tag',
     'actionLabel' => 'Entrar',
     'actionUrl'   => '#',
+    'coverPriority' => false,
 ])
 @php
     $colors = [
@@ -42,6 +43,10 @@
     $displayMembers = $proyecto->displayMembers();
     $visibleMembers = $displayMembers->take(3);
     $extraCount     = max(0, $displayMembers->count() - 3);
+    $coverUrl       = !empty($proyecto->cover_image)
+        ? asset('storage/'.$proyecto->cover_image).'?v='.(optional($proyecto->updated_at)->timestamp ?? '1')
+        : null;
+    $coverPriority  = (bool) $coverPriority;
 @endphp
 
 <div class="project-list-item"
@@ -55,23 +60,60 @@
         border: 1px solid rgba(255,255,255,0.07);
         background: #16213a;
         transition: border-color .15s, background .15s;
+        isolation: isolate;
+        contain: layout paint style;
+        width: 100%;
+        min-width: 0;
      "
      onmouseover="this.style.borderColor='rgba(255,255,255,0.18)';this.style.background='#1a2640'"
      onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.background='#16213a'">
 
     {{-- Avatar / thumbnail --}}
-    <div style="width:44px;height:44px;border-radius:10px;flex-shrink:0;overflow:hidden;
-                background:linear-gradient(135deg,{{ $c1 }},{{ $c2 }});">
-        @if(!empty($proyecto->cover_image))
-        <img src="{{ asset('storage/'.$proyecto->cover_image) }}"
-             alt="{{ $proyecto->nombre }}"
-             style="width:100%;height:100%;object-fit:cover;display:block;"
-             onerror="this.style.display='none'">
-        @else
-        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-                    font-size:13px;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:-1px;user-select:none;">
+    <div class="project-list-cover-frame"
+         style="width:52px;height:52px;min-width:52px;min-height:52px;border-radius:12px;flex-shrink:0;overflow:hidden;position:relative;
+                contain:layout paint style; isolation:isolate;
+                @if($coverUrl)
+                    background-color:#1b2440;
+                    background-image:url('{{ $coverUrl }}');
+                    background-size:cover;
+                    background-position:center;
+                    background-repeat:no-repeat;
+                @else
+                    background:linear-gradient(135deg,{{ $c1 }},{{ $c2 }});
+                @endif">
+        @unless($coverUrl)
+        <div id="list-thumb-fallback-{{ $proyecto->id }}"
+             style="
+                position:absolute; inset:0;
+                width:100%; height:100%;
+                display:flex;
+                align-items:center; justify-content:center;
+                font-size:13px;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:-1px;user-select:none;
+             ">
             {{ $ini }}
         </div>
+        @endunless
+        @if($coverUrl)
+        <img src="{{ $coverUrl }}"
+             alt="{{ $proyecto->nombre }}"
+             class="project-list-cover-img project-cover-image"
+             loading="{{ $coverPriority ? 'eager' : 'lazy' }}"
+             decoding="{{ $coverPriority ? 'sync' : 'async' }}"
+             fetchpriority="{{ $coverPriority ? 'high' : 'low' }}"
+             width="52"
+             height="52"
+             data-project-cover="true"
+             data-list-cover="true"
+             data-priority-cover="{{ $coverPriority ? 'true' : 'false' }}"
+             style="
+                position:absolute; inset:0;
+                width:100%; height:100%;
+                max-width:100%; max-height:100%;
+                object-fit:cover; display:block;
+                border:0; opacity:1; transform:none; filter:none;
+                transition:none; animation:none;
+             "
+             onerror="this.style.visibility='hidden';">
         @endif
     </div>
 

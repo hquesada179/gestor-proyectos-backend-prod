@@ -10,6 +10,10 @@
         color: #d4e4fa;
     }
 
+    html {
+        color-scheme: dark;
+    }
+
     .material-symbols-outlined {
         font-family: 'Material Symbols Outlined';
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -115,6 +119,121 @@
         background-color: #1c2b3c;
         color: #d4e4fa;
     }
+
+    .dark-input,
+    .dark-select,
+    .dark-textarea,
+    .dark-form-input,
+    .dark-form-select,
+    .dark-form-textarea {
+        background-color: #1e293b;
+        border: 1px solid #475569;
+        color: #f8fafc;
+        border-radius: 0.75rem;
+        outline: none;
+        color-scheme: dark;
+    }
+
+    .dark-input::placeholder,
+    .dark-textarea::placeholder,
+    .dark-form-input::placeholder,
+    .dark-form-textarea::placeholder {
+        color: #64748b;
+    }
+
+    .dark-input:focus,
+    .dark-select:focus,
+    .dark-textarea:focus,
+    .dark-form-input:focus,
+    .dark-form-select:focus,
+    .dark-form-textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35);
+    }
+
+    .dark-select option,
+    .dark-select optgroup,
+    .dark-form-select option,
+    .dark-form-select optgroup {
+        background-color: #0f172a;
+        color: #f8fafc;
+    }
+
+    .project-card,
+    .project-list-item {
+        min-width: 0;
+        overflow: hidden;
+        isolation: isolate;
+        contain: layout paint style;
+    }
+
+    .project-card img,
+    .project-list-item img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .project-cover-frame {
+        overflow: hidden;
+        background-color: #111827;
+        contain: layout paint;
+        isolation: isolate;
+    }
+
+    .project-list-cover-frame {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        min-height: 52px;
+        flex: 0 0 52px;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        background-color: #1b2440;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        contain: layout paint style;
+        isolation: isolate;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+
+    .project-list-cover-frame img,
+    .project-list-cover-frame .project-cover-image,
+    .project-list-cover-img {
+        display: block;
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        min-height: 52px;
+        object-fit: cover;
+        object-position: center;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+        animation: none !important;
+        backface-visibility: hidden;
+    }
+
+    .project-cover-image,
+    img[data-project-cover="true"] {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        display: block;
+        background-color: transparent;
+        opacity: 1 !important;
+        transform: translateZ(0) !important;
+        filter: none !important;
+        transition: none !important;
+        animation: none !important;
+        backface-visibility: hidden;
+    }
 }
 
 /* Custom scrollbar */
@@ -142,4 +261,142 @@ select.form-input {
     background-position: right 0.875rem center;
     padding-right: 2.5rem;
     cursor: pointer;
+}
+
+/* Dark compatibility for legacy Breeze-style screens and native select popups. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+textarea,
+select,
+.form-input,
+.ds-select,
+.sb-input,
+.sb-select,
+.my-task-input,
+.dark-form-input,
+.dark-form-select,
+.dark-form-textarea {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+    color-scheme: dark !important;
+    caret-color: #f8fafc;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="hidden"])::placeholder,
+textarea::placeholder,
+.form-input::placeholder,
+.ds-select::placeholder,
+.sb-input::placeholder,
+.my-task-input::placeholder,
+.dark-form-input::placeholder,
+.dark-form-textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="hidden"]):focus,
+textarea:focus,
+select:focus,
+.form-input:focus,
+.ds-select:focus,
+.sb-input:focus,
+.sb-select:focus,
+.my-task-input:focus,
+.dark-form-input:focus,
+.dark-form-select:focus,
+.dark-form-textarea:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
+    outline: none !important;
+}
+
+select,
+.dark-select,
+.dark-form-select,
+.ds-select,
+.sb-select,
+select.form-input,
+select.my-task-input {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    color-scheme: dark !important;
+}
+
+select option,
+select optgroup,
+.dark-select option,
+.dark-select optgroup,
+.dark-form-select option,
+.dark-form-select optgroup,
+.ds-select option,
+.ds-select optgroup,
+.sb-select option,
+.sb-select optgroup,
+select.form-input option,
+select.form-input optgroup,
+select.my-task-input option,
+select.my-task-input optgroup {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+select option:checked,
+.dark-select option:checked,
+.dark-form-select option:checked,
+.ds-select option:checked,
+.sb-select option:checked,
+select.form-input option:checked,
+select.my-task-input option:checked {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+}
+
+select option:disabled,
+.dark-select option:disabled,
+.dark-form-select option:disabled,
+.ds-select option:disabled,
+.sb-select option:disabled,
+select.form-input option:disabled,
+select.my-task-input option:disabled {
+    color: #94a3b8 !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    -webkit-text-fill-color: #f8fafc !important;
+    box-shadow: 0 0 0 1000px #1e293b inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.75);
+}
+
+html.dark .bg-white {
+    background-color: rgba(15, 23, 42, 0.82) !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-100 {
+    background-color: rgba(30, 41, 59, 0.68) !important;
+}
+
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300 {
+    border-color: rgba(71, 85, 105, 0.75) !important;
+}
+
+html.dark .text-gray-900,
+html.dark .text-gray-800,
+html.dark .text-gray-700 {
+    color: #f8fafc !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-500 {
+    color: #94a3b8 !important;
 }

@@ -3,7 +3,7 @@
         <span class="text-sm font-medium text-gray-400">{{ __('app.nav.projects') }}</span>
     </x-slot>
 
-    <div class="p-8 space-y-6 max-w-[1400px]">
+    <div class="p-4 md:p-8 space-y-6 max-w-[1400px]">
 
         {{-- ── Page header ──────────────────────────────────────────── --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -44,7 +44,8 @@
         {{-- ── Projects table ────────────────────────────────────────── --}}
         @else
             <div class="glass-panel rounded-2xl overflow-hidden">
-                <table class="ds-table w-full">
+                <div class="overflow-x-auto">
+                <table class="ds-table w-full min-w-[600px]">
                     <thead>
                         <tr>
                             <th>{{ __('app.projects.name_col') }}</th>
@@ -139,6 +140,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>{{-- overflow-x-auto --}}
             </div>
         @endif
 

@@ -7,11 +7,13 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'firebase_uid', 'email_verified_at', 'profile_photo_path'])]
+#[Fillable(['name', 'email', 'password', 'firebase_uid', 'email_verified_at', 'profile_photo_path', 'plan_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,6 +36,26 @@ class User extends Authenticatable
             : '';
     }
 
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    public function aiCredit(): HasOne
+    {
+        return $this->hasOne(UserAiCredit::class);
+    }
+
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function proyectos(): HasMany
     {
         return $this->hasMany(Proyecto::class);
@@ -42,5 +64,10 @@ class User extends Authenticatable
     public function activityLogs(): HasMany
     {
         return $this->hasMany(\App\Models\ProjectActivityLog::class);
+    }
+
+    public function projectMessages(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectMessage::class);
     }
 }

@@ -3,7 +3,7 @@
         <span class="text-sm font-medium text-gray-400">{{ __('app.nav.dashboard') }}</span>
     </x-slot>
 
-    <div class="p-8 space-y-8 max-w-[1400px]">
+    <div class="p-4 md:p-8 space-y-8 max-w-[1400px]">
 
         {{-- ── Bienvenida + CTA ─────────────────────────────────────── --}}
         <div class="glass-panel rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -16,7 +16,7 @@
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3">
-                <a href="{{ route('chat.index') }}"
+                <a href="{{ route('asistente-ia.index') }}"
                    class="flex items-center justify-center gap-2 bg-surface text-white px-5 py-2.5 rounded-xl border border-white/10
                           font-bold text-sm hover:bg-white/5 transition-all active:scale-95 w-full sm:w-auto">
                     <span class="material-symbols-outlined text-secondary-container" style="font-size: 16px;">smart_toy</span>
@@ -53,7 +53,7 @@
                 </div>
             </a>
 
-            <a href="{{ route('mis-tareas') }}"
+            <a href="{{ route('mis-tareas.index') }}"
                class="glass-panel-hover rounded-2xl p-6 block group">
                 <div class="flex items-start justify-between">
                     <div>

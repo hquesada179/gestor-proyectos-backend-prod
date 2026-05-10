@@ -26,11 +26,12 @@
         </div>
 
         {{-- Kanban columns --}}
-        <div class="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
-            <div class="flex gap-4 h-full px-6 py-5 min-w-max">
+        <div class="flex-1 min-h-0 w-full overflow-x-auto overflow-y-hidden">
+            <div class="kanban-grid"
+                 style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;height:100%;width:100%;min-width:1100px;padding:1.25rem 1.5rem;">
 
                 @foreach($statuses as $status)
-                <div class="kanban-col flex flex-col w-72 flex-shrink-0" style="height: 100%;">
+                <div class="kanban-col flex flex-col" style="height:100%;min-width:0;">
 
                     {{-- Column header --}}
                     <div class="flex items-center gap-2 mb-3 px-1 flex-shrink-0">

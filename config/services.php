@@ -38,7 +38,25 @@ return [
     'ollama' => [
         'url'     => env('OLLAMA_URL', 'http://127.0.0.1:11434'),
         'timeout' => (int) env('OLLAMA_TIMEOUT', 180),
-        'model'   => env('OLLAMA_MODEL', 'phi3'),
+        'model'   => env('OLLAMA_MODEL', 'phi3:latest'),
+    ],
+
+    'openai' => [
+        'key'   => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4.1-mini'),
+    ],
+
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'openai'),
+    ],
+
+    'wompi' => [
+        'env'              => env('WOMPI_ENV', 'sandbox'),
+        'public_key'       => env('WOMPI_PUBLIC_KEY', ''),
+        'private_key'      => env('WOMPI_PRIVATE_KEY', ''),
+        'integrity_secret' => env('WOMPI_INTEGRITY_SECRET', ''),
+        'events_secret'    => env('WOMPI_EVENTS_SECRET', ''),
+        'currency'         => env('WOMPI_CURRENCY', 'COP'),
     ],
 
 ];

@@ -104,7 +104,7 @@
                     <span class="material-symbols-outlined"
                           style="position:absolute;left:8px;top:50%;transform:translateY(-50%);
                                  font-size:14px;color:rgb(100,116,139);pointer-events:none;">folder_open</span>
-                    <select name="proyecto_id" onchange="this.form.submit()"
+                    <select name="proyecto_id" onchange="this.form.submit()" class="dark-form-select"
                             style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
                                    border-radius:8px; padding:6px 8px 6px 28px; font-size:12px;
                                    color:white; cursor:pointer; min-width:150px; outline:none;

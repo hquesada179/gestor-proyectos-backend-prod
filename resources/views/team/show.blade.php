@@ -71,13 +71,13 @@
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar miembro…"
                        class="sb-input" style="padding-left:32px; width:100%;" />
             </div>
-            <select name="role_id" class="sb-select">
+            <select name="role_id" class="sb-select dark-form-select">
                 <option value="">Todos los roles</option>
                 @foreach($roles as $r)
                 <option value="{{ $r->id }}" {{ request('role_id') == $r->id ? 'selected' : '' }}>{{ $r->name }}</option>
                 @endforeach
             </select>
-            <select name="status" class="sb-select">
+            <select name="status" class="sb-select dark-form-select">
                 <option value="">Todos los estados</option>
                 @foreach(['activo','inactivo','invitado','suspendido'] as $st)
                 <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ ucfirst($st) }}</option>
@@ -254,7 +254,7 @@
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:#94a3b8; display:block; margin-bottom:4px;">Rol</label>
-                        <select name="role_id" id="f-role" class="sb-select" style="width:100%;">
+                        <select name="role_id" id="f-role" class="sb-select dark-form-select" style="width:100%;">
                             <option value="">Sin rol asignado</option>
                             @foreach($roles as $r)
                             <option value="{{ $r->id }}">{{ $r->name }}</option>
@@ -267,7 +267,7 @@
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:#94a3b8; display:block; margin-bottom:4px;">Estado *</label>
-                        <select name="status" id="f-status" class="sb-select" style="width:100%;">
+                        <select name="status" id="f-status" class="sb-select dark-form-select" style="width:100%;">
                             <option value="activo">Activo</option>
                             <option value="invitado">Invitado</option>
                             <option value="inactivo">Inactivo</option>
@@ -276,7 +276,7 @@
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:#94a3b8; display:block; margin-bottom:4px;">Modo de trabajo</label>
-                        <select name="work_mode" id="f-work-mode" class="sb-select" style="width:100%;">
+                        <select name="work_mode" id="f-work-mode" class="sb-select dark-form-select" style="width:100%;">
                             <option value="">No especificado</option>
                             <option value="presencial">Presencial</option>
                             <option value="remoto">Remoto</option>

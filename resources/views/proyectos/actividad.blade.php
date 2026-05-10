@@ -57,13 +57,13 @@
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar actividad…"
                        class="sb-input" style="padding-left:28px; width:100%;" />
             </div>
-            <select name="user_id" class="sb-select" style="flex:1; min-width:140px;">
+            <select name="user_id" class="sb-select dark-form-select" style="flex:1; min-width:140px;">
                 <option value="">Todos los usuarios</option>
                 @foreach($actors as $actor)
                 <option value="{{ $actor->id }}" {{ request('user_id') == $actor->id ? 'selected' : '' }}>{{ $actor->name }}</option>
                 @endforeach
             </select>
-            <select name="module" class="sb-select" style="flex:1; min-width:130px;">
+            <select name="module" class="sb-select dark-form-select" style="flex:1; min-width:130px;">
                 <option value="">Todos los módulos</option>
                 @foreach($modules as $mod)
                 <option value="{{ $mod }}" {{ request('module') === $mod ? 'selected' : '' }}>
@@ -71,7 +71,7 @@
                 </option>
                 @endforeach
             </select>
-            <select name="action" class="sb-select" style="flex:1; min-width:130px;">
+            <select name="action" class="sb-select dark-form-select" style="flex:1; min-width:130px;">
                 <option value="">Todas las acciones</option>
                 @foreach($actions as $act)
                 <option value="{{ $act }}" {{ request('action') === $act ? 'selected' : '' }}>

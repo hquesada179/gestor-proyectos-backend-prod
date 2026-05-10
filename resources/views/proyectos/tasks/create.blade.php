@@ -32,7 +32,7 @@
             appearance: none;
             -webkit-appearance: none;
         }
-        .form-input::placeholder { color: #3f424e; }
+        .form-input::placeholder { color: #64748b; }
         .form-input:hover {
             border-color: rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.07);
@@ -71,6 +71,11 @@
                 <div class="p-6 sm:p-8">
                     <form method="POST" action="{{ route('proyectos.tasks.store', $proyecto) }}" class="space-y-6">
                         @csrf
+                        @php
+                            $defaultStatusId = $statuses->first(fn ($status) => str_contains(strtolower($status->nombre), 'pendiente'))?->id
+                                ?? $statuses->first()?->id;
+                            $selectedStatusId = old('task_status_id', $defaultStatusId);
+                        @endphp
 
                         <div>
                             <label for="titulo" class="block mb-2 text-sm font-medium text-gray-300">
@@ -97,12 +102,12 @@
                                 <label for="task_status_id" class="block mb-2 text-sm font-medium text-gray-300">
                                     Estado <span class="text-red-400">*</span>
                                 </label>
-                                <select id="task_status_id" name="task_status_id" class="form-input">
-                                    @foreach (['activo', 'pausado', 'completado', 'cancelado'] as $opcion)
-                                    <option value="{{ $opcion }}" {{ old('estado', 'activo') === $opcion ? 'selected' : '' }}>
-                                        {{ ucfirst($opcion) }}
-                                    </option>
-                                @endforeach
+                                <select id="task_status_id" name="task_status_id" class="form-input dark-form-select" required>
+                                    @foreach ($statuses as $status)
+                                        <option value="{{ $status->id }}" {{ (string) $selectedStatusId === (string) $status->id ? 'selected' : '' }}>
+                                            {{ $status->nombre }}
+                                        </option>
+                                    @endforeach
                                 </select>
                                 @error('task_status_id') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                             </div>
@@ -122,7 +127,7 @@
                                     <label for="user_story_id" class="block mb-2 text-sm font-medium text-gray-300">
                                         Historia de usuario <span class="text-gray-600 text-xs font-normal">(Opcional)</span>
                                     </label>
-                                    <select id="user_story_id" name="user_story_id" class="form-input">
+                                    <select id="user_story_id" name="user_story_id" class="form-input dark-form-select">
                                         <option value="">— Sin historia asociada —</option>
                                         @foreach ($userStories as $userStory)
                                             <option value="{{ $userStory->id }}" {{ old('user_story_id') == $userStory->id ? 'selected' : '' }}>
@@ -139,7 +144,7 @@
                                     <label for="sprint_id" class="block mb-2 text-sm font-medium text-gray-300">
                                         Sprint <span class="text-gray-600 text-xs font-normal">(Opcional)</span>
                                     </label>
-                                    <select id="sprint_id" name="sprint_id" class="form-input">
+                                    <select id="sprint_id" name="sprint_id" class="form-input dark-form-select">
                                         <option value="">— Sin sprint asociado —</option>
                                         @foreach ($sprints as $sprint)
                                             <option value="{{ $sprint->id }}" {{ old('sprint_id') == $sprint->id ? 'selected' : '' }}>
@@ -156,7 +161,7 @@
                             <label for="assigned_to" class="block mb-2 text-sm font-medium text-gray-300">
                                 Responsable <span class="text-gray-600 text-xs font-normal">(Opcional)</span>
                             </label>
-                            <select id="estado" name="estado" class="form-input" >
+                            <select id="assigned_to" name="assigned_to" class="form-input dark-form-select">
                                 <option value="">— Sin responsable —</option>
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>

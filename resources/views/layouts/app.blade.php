@@ -5,17 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- ── Pre-render sidebar state — MUST run before first paint ─────────── --}}
+    {{-- Prevents the flash/shift when the sidebar is in collapsed state:       --}}
+    {{-- without this, the page renders at margin-left:280px then snaps to 72px --}}
+    <script>
+    (function(){
+        try {
+            var projectViewMode = localStorage.getItem('projectViewMode') || 'grid';
+            document.cookie = 'project_view_mode=' + encodeURIComponent(projectViewMode) + ';path=/;max-age=31536000;SameSite=Lax';
+
+            if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth >= 768) {
+                var s = document.createElement('style');
+                s.id = 'sb-pre';
+                s.textContent =
+                    '#sidebar{width:72px!important;transition:none!important}' +
+                    '#mainContent{margin-left:72px!important;transition:none!important}';
+                document.head.appendChild(s);
+            }
+
+            if (projectViewMode === 'list') {
+                var pv = document.createElement('style');
+                pv.id = 'pv-pre';
+                pv.textContent =
+                    '#projectsGrid{display:grid!important;position:absolute!important;left:-10000px!important;top:0!important;width:100%!important;visibility:hidden!important;pointer-events:none!important}' +
+                    '#projectsList{display:flex!important;flex-direction:column!important;gap:.625rem!important}' +
+                    'html body #projectsList.pv-view-hidden{display:flex!important;position:static!important;left:auto!important;top:auto!important;width:100%!important;visibility:visible!important;pointer-events:auto!important}';
+                document.head.appendChild(pv);
+            }
+        } catch(e){}
+    })();
+    </script>
+
     <title>{{ config('app.name', 'GestorApp') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 
+    @stack('head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 
     {{-- ── Sidebar collapse system ────────────────────────────────────────── --}}
     <style>
+        html { color-scheme: dark; overflow-x: hidden; }
+        body { overflow-x: hidden; }
+
+        .dark-form-input,
+        .dark-form-select,
+        .dark-form-textarea,
+        .form-input,
+        .ds-select,
+        .sb-input,
+        .sb-select,
+        .my-task-input,
+        input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+        textarea,
+        select {
+            background-color: #111827 !important;
+            color: #f8fafc !important;
+            border: 1px solid #475569 !important;
+            border-radius: 0.75rem;
+            color-scheme: dark !important;
+            caret-color: #f8fafc;
+        }
+
+        .dark-form-input::placeholder,
+        .dark-form-textarea::placeholder,
+        .form-input::placeholder,
+        .sb-input::placeholder,
+        .my-task-input::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1;
+        }
+
+        .dark-form-input:focus,
+        .dark-form-select:focus,
+        .dark-form-textarea:focus,
+        .form-input:focus,
+        .ds-select:focus,
+        .sb-input:focus,
+        .sb-select:focus,
+        .my-task-input:focus,
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none !important;
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
+        }
+
+        .dark-form-select option,
+        .dark-form-select optgroup,
+        .form-input option,
+        .form-input optgroup,
+        .ds-select option,
+        .ds-select optgroup,
+        .sb-select option,
+        .sb-select optgroup,
+        .my-task-input option,
+        .my-task-input optgroup,
+        select option,
+        select optgroup {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        .dark-form-select option:checked,
+        .form-input option:checked,
+        .ds-select option:checked,
+        .sb-select option:checked,
+        .my-task-input option:checked,
+        select option:checked {
+            background-color: #4f46e5 !important;
+            color: #ffffff !important;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) opacity(0.75);
+        }
+
         /* Smooth transitions */
         #sidebar      { transition: width 280ms cubic-bezier(.4,0,.2,1); }
         #mainContent  { transition: margin-left 280ms cubic-bezier(.4,0,.2,1); }
@@ -152,6 +263,71 @@
         @media (max-width: 767px) {
             #sidebarToggle { display: none; }
         }
+
+        /* ── Mobile overlay ────────────────────────────────────────────── */
+        #sidebarOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            z-index: 48;
+            display: none;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+        #sidebarOverlay.active { display: block; }
+
+        /* ── Mobile sidebar as slide-in drawer ─────────────────────────── */
+        @media (max-width: 767px) {
+            #sidebar {
+                width: 280px !important;
+                transform: translateX(-100%);
+                transition: transform 280ms cubic-bezier(.4,0,.2,1) !important;
+            }
+            #sidebar.mobile-open {
+                transform: translateX(0) !important;
+                box-shadow: 4px 0 40px rgba(0,0,0,0.6) !important;
+            }
+            /* No collapsed state on mobile */
+            body.sidebar-collapsed #sidebar { width: 280px !important; }
+            body.sidebar-collapsed .sb-text  { opacity:1; max-width:180px; }
+            body.sidebar-collapsed .sb-section-label { opacity:1; max-height:40px; }
+            body.sidebar-collapsed .sb-nav-link  { justify-content:flex-start !important; padding-left:16px !important; padding-right:16px !important; gap:12px !important; }
+            body.sidebar-collapsed .sb-bottom-link { justify-content:flex-start !important; padding-left:16px !important; padding-right:16px !important; gap:12px !important; }
+            body.sidebar-collapsed .sb-logo-link { justify-content:flex-start !important; gap:12px !important; }
+            body.sidebar-collapsed .sb-new-btn { padding-left:16px !important; padding-right:16px !important; justify-content:flex-start !important; gap:8px !important; }
+            /* Main content full width on mobile */
+            #mainContent {
+                margin-left: 0 !important;
+                transition: none !important;
+                width: 100% !important;
+            }
+            /* Responsive header padding */
+            #topHeader { padding-left: 1rem !important; padding-right: 1rem !important; gap: 0.5rem !important; }
+            /* Dropdowns safe width on mobile */
+            .header-dropdown-panel { max-width: calc(100vw - 0.5rem) !important; }
+        }
+
+        /* ── Hamburger button (only on mobile) ─────────────────────────── */
+        #mobileMenuBtn { display: none; }
+        @media (max-width: 767px) { #mobileMenuBtn { display: flex; } }
+
+        /* ── Global responsive: content & tables ─────────────────────── */
+        @media (max-width: 767px) {
+            /* Panel horizontal scroll safety (tables inside glass-panel) */
+            .glass-panel { overflow-x: auto !important; }
+            /* Kanban / horizontal boards */
+            .kanban-board, [class*="kanban"] { overflow-x: auto; }
+            /* Content area: reduce padding from p-8 to 1rem on mobile */
+            main > div:first-child {
+                padding-left:  1rem !important;
+                padding-right: 1rem !important;
+                padding-top:   1rem !important;
+            }
+            /* Grids: force 1 column on very small screens */
+            main .grid-cols-3,
+            main .xl\:grid-cols-3 { grid-template-columns: 1fr !important; }
+            main .grid-cols-2     { grid-template-columns: 1fr 1fr !important; }
+        }
     </style>
 </head>
 <body class="h-full overflow-hidden bg-app-bg font-sans antialiased text-on-surface">
@@ -170,6 +346,9 @@
 @endphp
 
 <div class="flex h-full">
+
+    {{-- Mobile overlay (tap to close sidebar) --}}
+    <div id="sidebarOverlay" onclick="mobileSidebarClose()" role="button" aria-label="Cerrar menú"></div>
 
     {{-- ─── SIDEBAR ───────────────────────────────────────────────────── --}}
     <aside id="sidebar"
@@ -206,13 +385,14 @@
                 $isTareas       = str_starts_with($ruta, 'proyectos.tasks');
                 $isInputs       = str_starts_with($ruta, 'proyectos.inputs');
                 $isProyectos    = str_starts_with($ruta, 'proyectos.') && !$isReqs && !$isSprints && !$isTareas && !$isInputs;
-                $isMisTareas    = $ruta === 'mis-tareas';
+                $isMisTareas    = str_starts_with($ruta, 'mis-tareas');
                 $isScrumBoard   = str_starts_with($ruta, 'scrum-board');
                 $isCalendario   = $ruta === 'calendario.index';
                 $isAiAssist     = str_starts_with($ruta, 'asistente-ia');
                 $isTeam         = str_starts_with($ruta, 'team');
                 $isRoles        = str_starts_with($ruta, 'roles');
                 $isInvitations  = str_starts_with($ruta, 'invitations');
+                $isPlanes       = $ruta === 'planes.index';
                 $sbInvCount     = \App\Models\ProjectInvitation::where('invited_user_id', Auth::id())->where('status','pending')->count();
             @endphp
 
@@ -232,7 +412,7 @@
                 <span class="sb-text">{{ __('app.nav.projects') }}</span>
             </a>
 
-            <a href="{{ route('mis-tareas') }}"
+            <a href="{{ route('mis-tareas.index') }}"
                class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                       {{ $isMisTareas ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
                data-tip="{{ __('app.nav.my_tasks') }}">
@@ -305,6 +485,14 @@
                data-tip="{{ __('app.nav.ai_assistant') }}">
                 <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;font-variation-settings:'FILL' 1;">auto_awesome</span>
                 <span class="sb-text">{{ __('app.nav.ai_assistant') }}</span>
+            </a>
+
+            <a href="{{ route('planes.index') }}"
+               class="sb-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                      {{ $isPlanes ? 'nav-link-active' : 'nav-link-inactive hover:translate-x-0.5' }}"
+               data-tip="Planes">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:20px;">workspace_premium</span>
+                <span class="sb-text">Planes</span>
             </a>
 
             <div class="sb-separator my-3 mx-1 border-t border-white/5"></div>
@@ -387,13 +575,22 @@
     {{-- ─── MAIN CONTENT AREA ─────────────────────────────────────────── --}}
     <div id="mainContent"
          style="margin-left:280px;"
-         class="flex-1 flex flex-col h-full overflow-hidden">
+         class="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
 
         {{-- Topbar --}}
-        <header class="flex-shrink-0 h-16 bg-[#0F1117]/80 backdrop-blur-xl border-b border-white/10 z-40
+        <header id="topHeader"
+                class="flex-shrink-0 h-16 bg-[#0F1117]/80 backdrop-blur-xl border-b border-white/10 z-40
                        flex items-center justify-between px-8 gap-4">
 
-            <div class="flex items-center gap-3 min-w-0 flex-1">
+            {{-- Mobile hamburger (hidden on desktop via CSS) --}}
+            <button id="mobileMenuBtn"
+                    onclick="mobileSidebarToggle()"
+                    aria-label="Abrir menú"
+                    class="items-center justify-center w-9 h-9 rounded-xl hover:bg-white/5 transition-all flex-shrink-0">
+                <span class="material-symbols-outlined text-on-surface-variant" style="font-size:22px;">menu</span>
+            </button>
+
+            <div class="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                 @isset($header)
                     {{ $header }}
                 @endisset
@@ -440,7 +637,7 @@
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                     class="absolute right-0 top-full mt-3 w-[380px] z-[60] rounded-2xl overflow-hidden
+                     class="header-dropdown-panel absolute right-0 top-full mt-3 w-[380px] z-[60] rounded-2xl overflow-hidden
                             bg-[#1c2b3c] border border-white/10 shadow-2xl shadow-black/60"
                      style="display:none; box-shadow: 0 0 30px rgba(99,102,241,0.12), 0 25px 50px rgba(0,0,0,0.5);">
 
@@ -515,6 +712,8 @@
             </div>
             {{-- ─────────────────────────────────────────────────────────── --}}
 
+            @include('layouts.project-chat-panel')
+
             {{-- ─── PROFILE DROPDOWN ────────────────────────────────── --}}
             <div class="relative flex-shrink-0"
                  x-data="{ open: false, showLang: false }"
@@ -553,7 +752,7 @@
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                     class="absolute right-0 top-full mt-3 w-[360px] z-[60] rounded-2xl overflow-hidden
+                     class="header-dropdown-panel absolute right-0 top-full mt-3 w-[360px] z-[60] rounded-2xl overflow-hidden
                             bg-[#1c2b3c] border border-white/10 shadow-2xl shadow-black/60"
                      style="display:none; box-shadow: 0 0 30px rgba(167,75,254,0.12), 0 25px 50px rgba(0,0,0,0.5);">
 
@@ -748,7 +947,7 @@
         @endif
 
         {{-- Page content --}}
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
             {{ $slot }}
         </main>
 
@@ -767,53 +966,412 @@
     var sidebar     = document.getElementById('sidebar');
     var mainContent = document.getElementById('mainContent');
     var toggleIcon  = document.getElementById('sbToggleIcon');
+    var overlay     = document.getElementById('sidebarOverlay');
 
+    function isMobile() { return window.innerWidth < 768; }
+
+    // ── Desktop: width-based collapse ────────────────────────────────────
     function applyState(collapsed) {
+        if (isMobile()) return;
         var w = collapsed ? MINI_WIDTH : FULL_WIDTH;
-
-        if (sidebar)     sidebar.style.width       = w + 'px';
+        if (sidebar)     sidebar.style.width        = w + 'px';
         if (mainContent) mainContent.style.marginLeft = w + 'px';
-
-        if (collapsed) {
-            document.body.classList.add('sidebar-collapsed');
-        } else {
-            document.body.classList.remove('sidebar-collapsed');
-        }
-
-        if (toggleIcon) {
-            toggleIcon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
-        }
+        if (collapsed)  { document.body.classList.add('sidebar-collapsed'); }
+        else            { document.body.classList.remove('sidebar-collapsed'); }
+        if (toggleIcon) { toggleIcon.textContent = collapsed ? 'chevron_right' : 'chevron_left'; }
     }
 
     window.sidebarToggle = function () {
-        var isCollapsed = document.body.classList.contains('sidebar-collapsed');
-        var next = !isCollapsed;
+        if (isMobile()) { mobileSidebarToggle(); return; }
+        var next = !document.body.classList.contains('sidebar-collapsed');
         applyState(next);
         try { localStorage.setItem(LS_KEY, next ? 'true' : 'false'); } catch (e) {}
     };
 
-    // Restore saved state on load (no transition on first render)
+    // ── Mobile: slide-in drawer ───────────────────────────────────────────
+    window.mobileSidebarToggle = function () {
+        if (!sidebar) return;
+        if (sidebar.classList.contains('mobile-open')) {
+            mobileSidebarClose();
+        } else {
+            sidebar.classList.add('mobile-open');
+            if (overlay) overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    };
+
+    window.mobileSidebarClose = function () {
+        if (!sidebar) return;
+        sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    // Close mobile sidebar when a nav link is clicked
+    if (sidebar) {
+        sidebar.querySelectorAll('a').forEach(function (a) {
+            a.addEventListener('click', function () { if (isMobile()) mobileSidebarClose(); });
+        });
+    }
+
+    // Close mobile sidebar on resize to desktop
+    window.addEventListener('resize', function () {
+        if (!isMobile()) mobileSidebarClose();
+    });
+
+    // ── Initialization ────────────────────────────────────────────────────
     var saved = 'false';
     try { saved = localStorage.getItem(LS_KEY) || 'false'; } catch (e) {}
 
-    if (saved === 'true') {
-        // Apply instantly (before paint) to prevent flash
+    if (!isMobile() && saved === 'true') {
         if (sidebar)     sidebar.style.transition    = 'none';
         if (mainContent) mainContent.style.transition = 'none';
-
         applyState(true);
-
-        // Re-enable transitions after first frame
         requestAnimationFrame(function () {
             requestAnimationFrame(function () {
                 if (sidebar)     sidebar.style.transition    = '';
                 if (mainContent) mainContent.style.transition = '';
+                // Remove the pre-render <style> injected in <head> so the JS transitions work normally
+                var pre = document.getElementById('sb-pre');
+                if (pre) pre.parentNode.removeChild(pre);
             });
         });
+    } else {
+        // Even if not collapsed, clean up the pre-render style if it somehow exists
+        var pre = document.getElementById('sb-pre');
+        if (pre) pre.parentNode.removeChild(pre);
+    }
+
+    function warmProjectCoverImages() {
+        document.querySelectorAll('img[data-project-cover="true"][data-priority-cover="true"]').forEach(function (img) {
+            if (img.decode && (!img.complete || !img.naturalWidth)) {
+                img.decode().catch(function () {});
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', warmProjectCoverImages, { once: true });
+    } else {
+        warmProjectCoverImages();
     }
 })();
 </script>
 
 @stack('scripts')
+
+{{-- ── Chat Panel Alpine.js component ──────────────────────────────────── --}}
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+<script>
+function chatPanel() {
+    return {
+        open:       false,
+        view:       'projects',  // 'projects' | 'chat'
+        projects:   [],
+        selProject: null,
+        messages:   [],
+        newMsg:     '',
+        search:     '',
+        loading:    false,
+        sending:    false,
+        errMsg:     '',
+        currentUserId: null,
+        conversationMode: 'general',
+        selectedReceiverId: null,
+        _poll:      null,
+        _urlId:     null,
+        routes:     {
+            projects:    '/mensajes/proyectos',
+            projectBase: '/mensajes/proyectos',
+        },
+
+        get filteredProjects() {
+            if (!this.search.trim()) return this.projects;
+            var q = this.search.toLowerCase();
+            return this.projects.filter(function(p){ return p.nombre.toLowerCase().indexOf(q) !== -1; });
+        },
+
+        get privateMembers() {
+            if (!this.selProject || !Array.isArray(this.selProject.members)) return [];
+            var current = parseInt(this.currentUserId || 0);
+            return this.selProject.members.filter(function(member) {
+                return parseInt(member.id) !== current;
+            });
+        },
+
+        get selectedPrivateMember() {
+            if (!this.selectedReceiverId) return null;
+            var receiverId = parseInt(this.selectedReceiverId);
+            return this.privateMembers.find(function(member) {
+                return parseInt(member.id) === receiverId;
+            }) || null;
+        },
+
+        init() {
+            if (this.$el && this.$el.dataset) {
+                this.routes.projects = this.$el.dataset.projectsUrl || this.routes.projects;
+                this.routes.projectBase = this.$el.dataset.projectBaseUrl || this.routes.projectBase;
+                this.currentUserId = parseInt(this.$el.dataset.currentUserId || '0');
+            }
+
+            // Auto-detect project ID from current URL
+            var m = window.location.pathname.match(
+                /(?:\/equipo\/|\/scrum-board\/|\/proyectos\/)(\d+)/
+            );
+            this._urlId = m ? parseInt(m[1]) : null;
+        },
+
+        async toggleOpen() {
+            this.open = !this.open;
+            if (!this.open) { this.stopPoll(); return; }
+            if (!this.projects.length) await this.fetchProjects();
+            // Auto-open project chat if user is on a project page
+            if (this._urlId && this.projects.length) {
+                var p = this.projects.find(function(x){ return x.id === this._urlId; }.bind(this));
+                if (p) { await this.openChat(p); }
+            }
+        },
+
+        async fetchProjects() {
+            this.loading = true;
+            this.errMsg = '';
+            try {
+                var r = await fetch(this.routes.projects, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (!r.ok) throw new Error('projects');
+                this.projects = await r.json();
+            } catch(e) {
+                this.errMsg = 'No se pudieron cargar los proyectos.';
+            }
+            this.loading = false;
+        },
+
+        async openChat(project) {
+            this.selProject = project;
+            this.view = 'chat';
+            this.conversationMode = 'general';
+            this.selectedReceiverId = null;
+            this.messages = [];
+            this.errMsg = '';
+            this.loading = true;
+            await this.fetchMessages();
+            this.loading = false;
+            this.$nextTick(function(){ this.scrollBottom(); }.bind(this));
+            this.startPoll();
+        },
+
+        backToList() {
+            this.stopPoll();
+            this.view = 'projects';
+            this.selProject = null;
+            this.messages = [];
+            this.errMsg = '';
+            this.search = '';
+            this.conversationMode = 'general';
+            this.selectedReceiverId = null;
+        },
+
+        async switchConversation(mode) {
+            if (this.conversationMode === mode) return;
+
+            this.stopPoll();
+            this.conversationMode = mode;
+            this.messages = [];
+            this.errMsg = '';
+            this.newMsg = '';
+
+            if (mode === 'general') {
+                this.selectedReceiverId = null;
+                this.loading = true;
+                await this.fetchMessages();
+                this.loading = false;
+                this.$nextTick(function(){ this.scrollBottom(); }.bind(this));
+                this.startPoll();
+            }
+        },
+
+        async selectPrivateMember() {
+            this.stopPoll();
+            this.messages = [];
+            this.errMsg = '';
+
+            if (!this.selectedReceiverId) return;
+
+            this.loading = true;
+            await this.fetchMessages();
+            this.loading = false;
+            this.$nextTick(function(){ this.scrollBottom(); }.bind(this));
+            this.startPoll();
+        },
+
+        async fetchMessages() {
+            if (!this.selProject) return;
+            if (this.conversationMode === 'private' && !this.selectedReceiverId) return;
+            try {
+                var r = await fetch(this.messagesUrl(), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (r.status === 403) {
+                    this.errMsg = 'No tienes acceso a este chat.';
+                    this.messages = [];
+                    return;
+                }
+                if (!r.ok) throw new Error('messages');
+                this.messages = await r.json();
+            } catch(e) {
+                this.errMsg = 'No se pudieron cargar los mensajes.';
+            }
+        },
+
+        async pollMessages() {
+            if (!this.selProject) return;
+            if (this.conversationMode === 'private' && !this.selectedReceiverId) return;
+            var lastId = this.messages.length ? this.messages[this.messages.length - 1].id : 0;
+            var url    = this.messagesUrl(lastId);
+            try {
+                var r = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (r.ok) {
+                    var newMsgs = await r.json();
+                    if (newMsgs.length) {
+                        var wasBottom = this._isBottom();
+                        this.messages = this.messages.concat(newMsgs);
+                        if (wasBottom) this.$nextTick(function(){ this.scrollBottom(); }.bind(this));
+                    }
+                }
+            } catch(e) {}
+        },
+
+        async sendMsg() {
+            var txt = this.newMsg.trim();
+            if (!txt || this.sending) return;
+            if (this.conversationMode === 'private' && !this.selectedReceiverId) {
+                this.errMsg = 'Selecciona un integrante para el chat privado.';
+                return;
+            }
+            this.sending = true;
+            this.errMsg  = '';
+            var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+            try {
+                var r = await fetch(this.routes.projectBase + '/' + this.selProject.id, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':    'application/json',
+                        'X-CSRF-TOKEN':    csrf,
+                        'X-Requested-With':'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        message: txt,
+                        type: this.conversationMode,
+                        receiver_id: this.conversationMode === 'private' ? this.selectedReceiverId : null,
+                    }),
+                });
+                if (r.ok) {
+                    this.messages.push(await r.json());
+                    this.newMsg = '';
+                    this.$nextTick(function(){ this.scrollBottom(); }.bind(this));
+                } else {
+                    var d = {};
+                    try { d = await r.json(); } catch(e) {}
+                    this.errMsg = (d.errors && d.errors.message && d.errors.message[0])
+                        ? d.errors.message[0]
+                        : 'Error al enviar el mensaje.';
+                }
+            } catch(e) {
+                this.errMsg = 'Error de conexión.';
+            }
+            this.sending = false;
+        },
+
+        messagesUrl(afterId) {
+            var params = new URLSearchParams();
+            params.set('type', this.conversationMode);
+
+            if (this.conversationMode === 'private') {
+                params.set('receiver_id', this.selectedReceiverId || '');
+            }
+
+            if (afterId) {
+                params.set('after', afterId);
+            }
+
+            return this.routes.projectBase + '/' + this.selProject.id + '?' + params.toString();
+        },
+
+        chatSubtitle() {
+            if (this.view !== 'chat' || !this.selProject) return 'Mensajes por proyecto';
+            if (this.conversationMode === 'private') {
+                return this.selectedPrivateMember
+                    ? 'Privado con ' + this.selectedPrivateMember.name
+                    : 'Selecciona un integrante';
+            }
+            return 'Chat general del proyecto';
+        },
+
+        emptyTitle() {
+            if (this.conversationMode === 'private' && !this.selectedReceiverId) {
+                return 'Selecciona un integrante';
+            }
+            return 'Aun no hay mensajes';
+        },
+
+        emptyText() {
+            if (this.conversationMode === 'private' && !this.selectedReceiverId) {
+                return 'Elige una persona activa del proyecto para abrir una conversación privada.';
+            }
+            return this.conversationMode === 'private'
+                ? 'Escribe el primer mensaje privado.'
+                : 'Escribe el primer mensaje para este proyecto.';
+        },
+
+        inputPlaceholder() {
+            if (this.conversationMode === 'private' && !this.selectedReceiverId) {
+                return 'Selecciona un integrante...';
+            }
+            return this.conversationMode === 'private'
+                ? 'Escribe un mensaje privado...'
+                : 'Escribe un mensaje...';
+        },
+
+        startPoll() {
+            this.stopPoll();
+            var self = this;
+            this._poll = setInterval(function(){ self.pollMessages(); }, 5000);
+        },
+
+        stopPoll() {
+            if (this._poll) { clearInterval(this._poll); this._poll = null; }
+        },
+
+        scrollBottom() {
+            var el = this.$refs.msgBody;
+            if (el) el.scrollTop = el.scrollHeight;
+        },
+
+        _isBottom() {
+            var el = this.$refs.msgBody;
+            return el ? el.scrollTop >= el.scrollHeight - el.clientHeight - 60 : true;
+        },
+
+        avBg(uid) {
+            var p = [
+                '#6d28d9,#818cf8','#1e40af,#38bdf8','#065f46,#34d399','#9f1239,#f472b6',
+                '#92400e,#fb923c','#6b21a8,#c084fc','#0c4a6e,#60a5fa','#14532d,#86efac'
+            ];
+            return 'linear-gradient(135deg,' + p[uid % 8] + ')';
+        },
+
+        projBg(pid) {
+            var p = [
+                '#6d28d9,#818cf8','#1e40af,#38bdf8','#065f46,#34d399','#9f1239,#f472b6',
+                '#92400e,#fb923c','#6b21a8,#c084fc','#0c4a6e,#60a5fa','#14532d,#86efac'
+            ];
+            return 'linear-gradient(135deg,' + p[pid % 8] + ')';
+        },
+    };
+}
+</script>
 </body>
 </html>

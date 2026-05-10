@@ -8,32 +8,31 @@
                 <span class="text-xs text-gray-500">{{ __('app.ai.subtitle') }}</span>
             </div>
             <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full animate-pulse {{ $ollamaOnline ? 'bg-emerald-400' : 'bg-red-400' }}"></span>
-                <span class="text-xs {{ $ollamaOnline ? 'text-emerald-400' : 'text-red-400' }}">
-                    Ollama {{ $ollamaOnline ? __('app.ai.ollama_online') : __('app.ai.ollama_offline') }}
+                <span class="w-1.5 h-1.5 rounded-full animate-pulse {{ $aiOnline ? 'bg-emerald-400' : 'bg-red-400' }}"></span>
+                <span class="text-xs {{ $aiOnline ? 'text-emerald-400' : 'text-red-400' }}">
+                    {{ $aiOnline ? 'Asistente disponible' : 'Servicio no disponible' }}
                 </span>
             </div>
         </div>
     </x-slot>
 
-    <div class="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
+    <div class="h-[calc(100vh-64px)] flex flex-col overflow-hidden ai-assistant-wrapper">
 
         {{-- ══ MAIN AREA ═══════════════════════════════════════════════════════ --}}
-        <div class="flex-1 flex min-h-0 overflow-hidden">
+        <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden ai-panel-row">
 
             {{-- ── LEFT PANEL ──────────────────────────────────────────────────── --}}
-            <div class="w-[380px] flex-shrink-0 border-r border-white/6 overflow-y-auto"
+            <div class="ai-left-panel w-full md:w-[380px] md:flex-shrink-0 border-b md:border-b-0 md:border-r border-white/6 overflow-y-auto"
                  style="background:rgba(11,13,20,0.98);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent">
                 <div class="p-5 space-y-4">
 
-                    @unless($ollamaOnline)
+                    @unless($aiOnline)
                     <div class="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
                         <p class="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
-                            <span class="material-symbols-outlined" style="font-size:15px">warning</span>{{ __('app.ai.ollama_not_running') }}
+                            <span class="material-symbols-outlined" style="font-size:15px">warning</span>Asistente no disponible
                         </p>
                         <p class="text-[11px] text-amber-200/70 mt-1">
-                            Ejecuta <code class="bg-black/30 px-1 rounded font-mono">ollama serve</code>
-                            y luego <code class="bg-black/30 px-1 rounded font-mono">ollama pull gemma3</code>
+                            El servicio de generacion IA no esta activo. Contacta al administrador.
                         </p>
                     </div>
                     @endunless
@@ -85,7 +84,7 @@
                             <p class="text-xs text-gray-600 italic">{{ __('app.ai.no_projects') }}</p>
                         @else
                             <select id="proyecto-select"
-                                    class="w-full rounded-xl border border-white/10 px-3 py-2 text-sm text-white
+                                    class="dark-form-select w-full rounded-xl border border-white/10 px-3 py-2 text-sm text-white
                                            focus:outline-none focus:border-indigo-500/50 transition-colors"
                                     style="background:#111827">
                                 <option value="">{{ __('app.ai.select_project') }}</option>
@@ -95,36 +94,26 @@
                                 </option>
                                 @endforeach
                             </select>
-                            <p id="project-hint" class="text-[10px] text-amber-400/80 mt-1 hidden">
-                                {{ __('app.ai.select_hint') }}
-                            </p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <p id="project-hint" class="text-[10px] text-amber-400/80 hidden flex-1">
+                                    {{ __('app.ai.select_hint') }}
+                                </p>
+                                <button id="btn-load-structure" type="button"
+                                        class="hidden inline-flex items-center gap-1 rounded-lg border border-indigo-500/40 px-2.5 py-1 text-[11px] font-semibold text-indigo-300 transition hover:bg-indigo-500/10">
+                                    <span class="material-symbols-outlined" style="font-size:13px">download</span>
+                                    Cargar estructura
+                                </button>
+                            </div>
+                            {{-- Loaded project stats --}}
+                            <div id="project-loaded-info" class="hidden mt-2 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-3 py-2">
+                                <p class="text-[10px] font-bold text-emerald-400 mb-0.5">Estructura cargada</p>
+                                <p id="project-loaded-counts" class="text-[10px] text-slate-400 leading-relaxed"></p>
+                            </div>
                         @endif
                     </div>
 
-                    {{-- ── MODEL ────────────────────────────────────────────────────── --}}
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                            {{ __('app.ai.ai_model') }}
-                        </label>
-                        @if(count($models) > 0)
-                        <select id="model-select"
-                                class="w-full rounded-xl border border-white/10 px-3 py-2 text-sm text-white
-                                       focus:outline-none focus:border-indigo-500/50 transition-colors"
-                                style="background:#111827">
-                            @foreach($models as $m)
-                            <option value="{{ $m }}" {{ $m === $defaultModel || str_starts_with($m, $defaultModel) ? 'selected' : '' }}>
-                                {{ $m }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @else
-                        <input type="text" id="model-select" value="{{ $defaultModel }}"
-                               placeholder="ej: gemma3, phi3, llama3.2"
-                               class="w-full rounded-xl border border-white/10 px-3 py-2 text-sm text-white
-                                      placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
-                               style="background:#111827" />
-                        @endif
-                    </div>
+                    {{-- Model is resolved internally; not exposed to users --}}
+                    <input type="hidden" id="model-select" value="{{ $defaultModel }}">
 
                     {{-- ── PROMPT TEXTAREA ──────────────────────────────────────────── --}}
                     <div>
@@ -169,6 +158,84 @@
                         <span class="material-symbols-outlined" id="btn-icon" style="font-size:18px">auto_awesome</span>
                         <span id="btn-label">{{ __('app.ai.btn_gen_create') }}</span>
                     </button>
+
+                    {{-- ── Costo de la acción actual ──────────────────────── --}}
+                    <p class="text-[10px]" style="color:#374151">
+                        <span class="material-symbols-outlined align-middle"
+                              style="font-size:10px;color:#4b5563;font-variation-settings:'FILL' 1">stars</span>
+                        Costo: <span id="action-cost" class="font-semibold" style="color:#6366f1">10</span> créditos IA
+                    </p>
+
+                    {{-- ── Widget créditos IA ──────────────────────────────── --}}
+                    {{-- Ocupa el ancho del panel izquierdo (380 px en desktop, 100% en mobile) --}}
+                    {{-- El estilo diferenciado (fondo indigo sutil) lo hace visualmente compacto --}}
+                    <div id="credit-widget"
+                         class="rounded-2xl p-3 space-y-2"
+                         style="background:rgba(99,102,241,0.07);
+                                border:1px solid rgba(99,102,241,0.18);">
+
+                        {{-- Encabezado --}}
+                        <div class="flex items-center gap-1.5 mb-0.5">
+                            <span class="material-symbols-outlined"
+                                  style="font-size:13px;color:#818cf8;font-variation-settings:'FILL' 1">stars</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest"
+                                  style="color:#6366f1">Créditos IA</span>
+                        </div>
+
+                        {{-- Disponibles --}}
+                        <div>
+                            <span id="credit-available"
+                                  class="text-3xl font-black leading-none"
+                                  style="color:#fff">—</span>
+                            <span class="text-[11px] ml-1.5" style="color:#64748b">disponibles</span>
+                        </div>
+
+                        {{-- Barra de progreso --}}
+                        <div class="h-1.5 rounded-full overflow-hidden"
+                             style="background:rgba(255,255,255,0.07)">
+                            <div id="credit-bar"
+                                 class="h-full rounded-full transition-all duration-700"
+                                 style="width:0%;
+                                        background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
+                        </div>
+
+                        {{-- Usados --}}
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-[10px]" style="color:#475569">Usados:</span>
+                            <span id="credit-ratio"
+                                  class="text-[11px] font-bold"
+                                  style="color:#a5b4fc">— / —</span>
+                        </div>
+
+                        {{-- Separador + metadatos --}}
+                        <div class="pt-1.5 space-y-0.5"
+                             style="border-top:1px solid rgba(99,102,241,0.15)">
+                            <p class="text-[10px]" style="color:#475569">
+                                Plan: <span id="credit-plan"
+                                            class="font-semibold"
+                                            style="color:#818cf8">—</span>
+                            </p>
+                            <p class="text-[10px]" style="color:#475569">
+                                Vence: <span id="credit-ends"
+                                             style="color:#64748b">—</span>
+                            </p>
+                        </div>
+
+                        {{-- Nota --}}
+                        <p class="text-[9px] leading-relaxed" style="color:#374151">
+                            Solo se descuentan créditos cuando la IA responde correctamente.
+                        </p>
+
+                        {{-- Ver planes --}}
+                        <a href="{{ route('planes.index') }}"
+                           class="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80"
+                           style="background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.2);">
+                            <span class="material-symbols-outlined" style="font-size:12px;">workspace_premium</span>
+                            Ver planes
+                        </a>
+
+                        <span id="credit-today" class="hidden"></span>
+                    </div>
 
                     <p class="text-[10px] leading-relaxed" style="color:#374151">
                         {{ __('app.ai.disclaimer') }}
@@ -323,6 +390,33 @@
                         </div>
                     </div>
 
+                    <div id="draft-tools" class="hidden rounded-2xl border border-indigo-500/20 bg-indigo-500/5 px-4 py-3 space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-bold text-indigo-200">Ajustar borrador actual</p>
+                                <p class="text-[11px] text-slate-500">Pide cambios sin perder la propuesta visible.</p>
+                            </div>
+                            <span id="draft-status" class="hidden text-[11px] font-semibold text-indigo-300"></span>
+                        </div>
+                        <textarea id="draft-adjust-input" rows="2"
+                                  class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500"
+                                  placeholder="Ej: hazlo mas simple, agrega seguridad, reduce los sprints a 2..."></textarea>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="btn-refine-draft"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-indigo-500">
+                                <span class="material-symbols-outlined" style="font-size:15px">auto_fix_high</span>
+                                Pedir ajuste a la IA
+                                <span class="text-[9px] font-normal opacity-60">(4 créd.)</span>
+                            </button>
+                            <button id="btn-regenerate-draft"
+                                    class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-indigo-500/50 hover:text-indigo-200">
+                                <span class="material-symbols-outlined" style="font-size:15px">refresh</span>
+                                Regenerar propuesta completa
+                                <span class="text-[9px] font-normal opacity-50">(10 créd.)</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div id="prop-sections" class="space-y-3"></div>
 
                     <div id="prop-warnings" class="hidden rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
@@ -358,6 +452,32 @@
                         <a id="success-link" href="#" class="hidden mt-3 inline-block text-xs font-bold text-indigo-400 hover:text-indigo-300">
                             {{ __('app.ai.view_project') }}
                         </a>
+                    </div>
+                </div>
+
+                <div id="draft-modal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div class="w-full max-w-2xl mx-4 rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+                        <div class="mb-5 flex items-start justify-between gap-3">
+                            <div>
+                                <p id="draft-modal-title" class="text-sm font-bold text-white">Editar elemento</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Los cambios se aplican al borrador, no se guardan hasta confirmar.</p>
+                            </div>
+                            <button type="button" onclick="closeDraftModal()"
+                                    class="flex-shrink-0 rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-white">
+                                <span class="material-symbols-outlined" style="font-size:18px">close</span>
+                            </button>
+                        </div>
+                        <div id="draft-modal-fields" class="space-y-4"></div>
+                        <div class="mt-6 flex justify-end gap-2 border-t border-slate-700/60 pt-4">
+                            <button type="button" onclick="closeDraftModal()"
+                                    class="rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-slate-400 hover:text-white">
+                                Cancelar
+                            </button>
+                            <button type="button" onclick="saveDraftModal()"
+                                    class="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-indigo-500 active:scale-95">
+                                Guardar cambios
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -421,6 +541,28 @@
 
     </div>{{-- end outer --}}
 
+    @push('styles')
+    <style>
+        /* ── Asistente IA — responsive ─────────────────────────────────────── */
+        @media (max-width: 767px) {
+            .ai-assistant-wrapper {
+                height: auto !important;
+                min-height: calc(100vh - 64px);
+                overflow: visible !important;
+                overflow-y: auto !important;
+            }
+            .ai-panel-row {
+                overflow: visible !important;
+                min-height: 0;
+            }
+            .ai-left-panel {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+        }
+    </style>
+    @endpush
+
     @push('scripts')
     <style>
         /* ── Mode buttons ─────────────────────────────────────────────────── */
@@ -446,6 +588,12 @@
         .b-nofunc{ background:rgba(139,92,246,.12); color:rgb(196,181,253); border-color:rgba(139,92,246,.2); }
         .b-new   { background:rgba(16,185,129,.12); color:rgb(110,231,183); border-color:rgba(16,185,129,.2); }
         .b-upd   { background:rgba(245,158,11,.12); color:rgb(253,230,138); border-color:rgba(245,158,11,.2); }
+        .draft-mini-btn { display:inline-flex; align-items:center; gap:4px; border:1px solid rgba(148,163,184,.20); border-radius:8px; padding:4px 8px; font-size:10px; font-weight:700; color:#cbd5e1; background:rgba(15,23,42,.55); transition:all .15s; }
+        .draft-mini-btn:hover { border-color:rgba(129,140,248,.55); color:#c7d2fe; background:rgba(79,70,229,.12); }
+        .draft-icon-btn { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; color:#94a3b8; border:1px solid rgba(148,163,184,.14); background:rgba(15,23,42,.50); transition:all .15s; }
+        .draft-icon-btn:hover { color:#fff; border-color:rgba(129,140,248,.50); background:rgba(79,70,229,.12); }
+        .draft-icon-btn.danger:hover { color:#fecaca; border-color:rgba(248,113,113,.50); background:rgba(127,29,29,.20); }
+        .draft-icon-btn .material-symbols-outlined { font-size:15px; }
 
         /* ── History ────────────────────────────────────────────────────────── */
         .hist-filter-btn { padding:2px 10px; border-radius:6px; font-size:10px; font-weight:500; color:rgba(107,114,128,1); border:1px solid transparent; transition:all 0.15s; }
@@ -459,11 +607,29 @@
         .h-aplicado   { background:rgba(16,185,129,.12); color:rgb(110,231,183); border-color:rgba(16,185,129,.25); }
         .h-descartado { background:rgba(100,116,139,.1); color:rgb(148,163,184); border-color:rgba(100,116,139,.2); }
         .h-error      { background:rgba(239,68,68,.12);  color:rgb(252,165,165); border-color:rgba(239,68,68,.2);  }
+
+        /* ── Dark form selects (modal + sidebar) ────────────────────────────── */
+        .dark-form-select { background:#0f172a !important; color:#f1f5f9; }
+        .dark-form-select option { background:#0f172a; color:#f1f5f9; }
+
+        /* ── Modal form fields ──────────────────────────────────────────────── */
+        #draft-modal input, #draft-modal textarea, #draft-modal select {
+            background:#0f172a;
+            border-color:#334155;
+            color:#f1f5f9;
+        }
+        #draft-modal input::placeholder, #draft-modal textarea::placeholder { color:#475569; }
+        #draft-modal input:focus, #draft-modal textarea:focus, #draft-modal select:focus {
+            outline:none;
+            border-color:#6366f1;
+            box-shadow:0 0 0 1px #6366f1;
+        }
+        #draft-modal label > span { color:#94a3b8; }
     </style>
 
-    {{-- Pass PHP translations to JavaScript --}}
+    {{-- Pass only routes and UI translations to JavaScript — no provider/model names --}}
     @php
-    $_aiT = [
+    $aiConfig = array_merge($ai ?? [], [
         'btn_gen_create'      => __('app.ai.btn_gen_create'),
         'btn_gen_improve'     => __('app.ai.btn_gen_improve'),
         'btn_generating'      => __('app.ai.btn_generating'),
@@ -511,10 +677,10 @@
         'count_tasks_upd'     => __('app.ai.count_tasks_upd'),
         'count_sprints'       => __('app.ai.count_sprints'),
         'count_inputs'        => __('app.ai.count_inputs'),
-    ];
+    ]);
     @endphp
     <script>
-    const _ai = @json($_aiT);
+    const _ai = @json($aiConfig);
     </script>
 
     <script>
@@ -532,6 +698,9 @@
             historyOpen:   false,
             historyFilter: 'all',
             allItems:      [],        // full history list (for client-side filter)
+            generatedProposal: null,
+            generatedType: null,
+            modal: { section: null, index: null, mode: 'edit' },
         };
 
         // ── DOM ─────────────────────────────────────────────────────────────────
@@ -580,6 +749,7 @@
             if (cpBtn) cpBtn.classList.toggle('hidden', mode === 'crear' || !S.proyectoId);
 
             if (!keepContext) hideError();
+            updateActionCost(mode);
         };
 
         // Project selector
@@ -590,7 +760,55 @@
                 document.getElementById('project-hint')?.classList.add('hidden');
                 const cpBtn = document.getElementById('btn-clear-project');
                 if (cpBtn) cpBtn.classList.toggle('hidden', !S.proyectoId);
+                const lsBtn = document.getElementById('btn-load-structure');
+                if (lsBtn) lsBtn.classList.toggle('hidden', !S.proyectoId);
+                // Hide stale loaded info if project changes
+                document.getElementById('project-loaded-info')?.classList.add('hidden');
+                // Auto-load structure when project is selected in improve mode
+                if (S.proyectoId && S.mode === 'mejorar') {
+                    loadProjectStructure(S.proyectoId);
+                }
             });
+        }
+
+        // Load structure button
+        document.getElementById('btn-load-structure')?.addEventListener('click', function () {
+            if (S.proyectoId) loadProjectStructure(S.proyectoId);
+        });
+
+        // ── Load project structure into editable draft ─────────────────────────
+        async function loadProjectStructure(proyectoId) {
+            if (!proyectoId) return;
+            showPanel('loading');
+            hideError();
+            try {
+                const r = await fetch(`${_ai.routes.estructuraBase}/${proyectoId}/estructura`, {
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                });
+                const data = await r.json();
+                if (!data.ok) {
+                    showPanel('empty');
+                    showError(data.error || 'No se pudo cargar la estructura del proyecto.');
+                    return;
+                }
+                S.generatedProposal = normalizeDraft(data.data, 'project_edit');
+                S.generatedType     = 'project_edit';
+                S.pendingId         = data.chat_id;
+
+                // Show loaded counts in sidebar
+                const info = document.getElementById('project-loaded-info');
+                const cnt  = data.counts || {};
+                if (info) {
+                    document.getElementById('project-loaded-counts').textContent =
+                        `${cnt.requerimientos || 0} reqs · ${cnt.tareas || 0} tareas · ${cnt.sprints || 0} sprints · ${cnt.insumos || 0} insumos`;
+                    info.classList.remove('hidden');
+                }
+
+                renderEditableProposal({ proyecto_nombre: data.proyecto_nombre, counts: data.counts });
+            } catch (e) {
+                showPanel('empty');
+                showError('No se pudo cargar la estructura del proyecto. Intenta nuevamente.');
+            }
         }
 
         // ── Submit ────────────────────────────────────────────────────────────
@@ -603,6 +821,9 @@
             if (S.mode === 'mejorar' && !S.proyectoId) {
                 document.getElementById('project-hint')?.classList.remove('hidden');
                 showError(_ai.error_no_project);
+                return;
+            }
+            if (S.generatedProposal && !confirm('Si generas una propuesta nueva, se reemplazara el borrador actual.')) {
                 return;
             }
 
@@ -636,6 +857,7 @@
                 else                                   renderImproveProposal(data);
 
                 if (S.historyOpen) loadHistory();
+                loadCreditBalance();
             })
             .catch(() => { setLoading(false); showError(_ai.error_connection); });
         });
@@ -643,13 +865,15 @@
         // ── Confirm ───────────────────────────────────────────────────────────
         document.getElementById('btn-confirm').addEventListener('click', function () {
             if (!S.pendingId) return;
+            const draftError = validateDraftBeforeSave();
+            if (draftError) { showError(draftError); return; }
             this.disabled = true;
-            this.textContent = _ai.btn_saving;
+            this.textContent = 'Guardando proyecto...';
 
             fetch('{{ route("asistente-ia.apply") }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
-                body: JSON.stringify({ chat_id: S.pendingId, action: 'confirm' }),
+                body: JSON.stringify({ chat_id: S.pendingId, action: 'confirm', data: S.generatedProposal }),
             })
             .then(r => r.json())
             .then(data => {
@@ -660,7 +884,11 @@
                 S.pendingId = null;
                 if (S.historyOpen) loadHistory();
             })
-            .catch(() => { showError(_ai.error_connection); });
+            .catch(() => {
+                document.getElementById('btn-confirm').disabled = false;
+                document.getElementById('btn-confirm').innerHTML = '<span class="material-symbols-outlined" style="font-size:17px">check</span> ' + _ai.btn_confirm;
+                showError(_ai.error_connection);
+            });
         });
 
         // ── Cancel ────────────────────────────────────────────────────────────
@@ -673,7 +901,10 @@
                 });
                 S.pendingId = null;
             }
-            showPanel('context'); // go back to context if active, else empty
+            S.generatedProposal = null;
+            S.generatedType = null;
+            document.getElementById('draft-tools')?.classList.add('hidden');
+            document.getElementById('project-loaded-info')?.classList.add('hidden');
             if (S.parentChatId) showPanel('context');
             else showPanel('empty');
             if (S.historyOpen) loadHistory();
@@ -681,16 +912,7 @@
 
         // ── Edit instruction ──────────────────────────────────────────────────
         document.getElementById('btn-edit').addEventListener('click', function () {
-            if (S.pendingId) {
-                fetch('{{ route("asistente-ia.apply") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
-                    body: JSON.stringify({ chat_id: S.pendingId, action: 'discard' }),
-                });
-                S.pendingId = null;
-            }
-            if (S.parentChatId) showPanel('context');
-            else showPanel('empty');
+            showPanel('proposal');
             promptInput.focus();
         });
 
@@ -744,6 +966,63 @@
             navigator.clipboard?.writeText(document.getElementById('raw-content').textContent)
                 .then(() => alert('Copiado.'));
         };
+
+        // ── Créditos IA ───────────────────────────────────────────────────────
+        const CREDIT_COSTS_MODE = { crear: 10, mejorar: 8 };
+
+        async function loadCreditBalance() {
+            if (!_ai.routes.balance) return;
+            try {
+                const r = await fetch(_ai.routes.balance, { headers: { 'X-CSRF-TOKEN': csrf } });
+                if (!r.ok) return;
+                const data = await r.json();
+                if (data.ok) updateCreditWidget(data);
+            } catch (e) {}
+        }
+
+        function updateCreditWidget(d) {
+            const avail = d.credits_available ?? 0;
+            const used  = d.credits_used      ?? 0;
+            const total = d.credits_total      ?? 0;
+            const pct   = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+            const today = d.used_today         ?? 0;
+            const ends  = d.period_ends_at     ?? '—';
+
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            set('credit-available', avail);
+            set('credit-ratio',     used + ' / ' + total);
+            set('credit-plan',      d.plan_name ?? '—');
+            set('credit-today',     today);
+            set('credit-ends',      ends);
+
+            const bar = document.getElementById('credit-bar');
+            if (bar) {
+                bar.style.width      = pct + '%';
+                bar.style.background = avail < 10
+                    ? 'linear-gradient(90deg,#f59e0b,#ef4444)'
+                    : 'linear-gradient(90deg,#6366f1,#8b5cf6)';
+            }
+
+            // Color: warn if available credits < current action cost
+            const availEl = document.getElementById('credit-available');
+            const cost    = CREDIT_COSTS_MODE[S.mode] ?? 10;
+            if (availEl) {
+                availEl.style.color = avail < cost ? '#fbbf24' : '#ffffff';
+            }
+            updateActionCostStyle(avail);
+        }
+
+        function updateActionCost(mode) {
+            const cost = CREDIT_COSTS_MODE[mode] ?? 10;
+            const el   = document.getElementById('action-cost');
+            if (el) el.textContent = cost;
+        }
+
+        function updateActionCostStyle(avail) {
+            const el   = document.getElementById('action-cost');
+            const cost = CREDIT_COSTS_MODE[S.mode] ?? 10;
+            if (el) el.style.color = avail < cost ? '#f87171' : '#818cf8';
+        }
 
         // ── Render proposals ──────────────────────────────────────────────────
         function prioClass(p) {
@@ -896,21 +1175,518 @@
             return html || `<p style="font-size:12px;color:#475569;padding:8px 0">${_ai.no_concrete_improve}</p>`;
         }
 
+        function normalizeDraft(data, type) {
+            const d = JSON.parse(JSON.stringify(data || {}));
+            d._tipo = d._tipo || type || 'create';
+
+            if (d.project && typeof d.project === 'object') {
+                d.nombre = d.nombre || d.project.nombre || d.project.name || '';
+                d.descripcion = d.descripcion || d.project.descripcion || d.project.description || '';
+            }
+
+            if (d._tipo === 'improve') {
+                ['requerimientos_nuevos', 'tareas_nuevas', 'actualizaciones_tareas', 'sprints_nuevos', 'insumos_nuevos']
+                    .forEach(k => d[k] = Array.isArray(d[k]) ? d[k] : []);
+                return d;
+            }
+
+            d.nombre = d.nombre || '';
+            d.descripcion = d.descripcion || '';
+            ['requerimientos', 'tareas', 'sprints', 'insumos']
+                .forEach(k => d[k] = Array.isArray(d[k]) ? d[k] : []);
+
+            return d;
+        }
+
+        function renderCreateProposal(res) {
+            S.generatedType = 'create';
+            S.generatedProposal = normalizeDraft(res.data, 'create');
+            renderEditableProposal(res);
+        }
+
+        function renderImproveProposal(res) {
+            S.generatedType = 'improve';
+            S.generatedProposal = normalizeDraft(res.data, 'improve');
+            renderEditableProposal(res);
+        }
+
+        const sectionMeta = {
+            requerimientos: { icon: 'assignment', color: '#a5b4fc', title: 'Requerimientos', add: 'Agregar requerimiento', empty: 'Sin requerimientos.' },
+            tareas: { icon: 'check_box', color: '#6ee7b7', title: 'Tareas', add: 'Agregar tarea', empty: 'Sin tareas.' },
+            sprints: { icon: 'sprint', color: '#fbbf24', title: 'Sprints', add: 'Agregar sprint', empty: 'Sin sprints.' },
+            insumos: { icon: 'inventory_2', color: '#fb923c', title: 'Insumos', add: 'Agregar insumo', empty: 'Sin insumos.' },
+            requerimientos_nuevos: { icon: 'assignment', color: '#a5b4fc', title: 'Requerimientos a agregar', add: 'Agregar requerimiento', empty: 'Sin requerimientos.' },
+            tareas_nuevas: { icon: 'check_box', color: '#6ee7b7', title: 'Tareas a agregar', add: 'Agregar tarea', empty: 'Sin tareas.' },
+            actualizaciones_tareas: { icon: 'edit_note', color: '#fcd34d', title: 'Tareas a actualizar', add: 'Agregar actualizacion', empty: 'Sin actualizaciones.' },
+            sprints_nuevos: { icon: 'sprint', color: '#fbbf24', title: 'Sprints a agregar', add: 'Agregar sprint', empty: 'Sin sprints.' },
+            insumos_nuevos: { icon: 'inventory_2', color: '#fb923c', title: 'Insumos a agregar', add: 'Agregar insumo', empty: 'Sin insumos.' },
+        };
+
+        function attr(s) {
+            return esc(s).replace(/"/g, '&quot;');
+        }
+
+        function sectionsForCurrentDraft() {
+            return S.generatedProposal?._tipo === 'improve'
+                ? ['requerimientos_nuevos', 'tareas_nuevas', 'actualizaciones_tareas', 'sprints_nuevos', 'insumos_nuevos']
+                : ['requerimientos', 'tareas', 'sprints', 'insumos'];
+        }
+
+        function renderEditableProposal(res = {}) {
+            const d = S.generatedProposal || {};
+
+            showPanel('proposal');
+            document.getElementById('draft-tools')?.classList.remove('hidden');
+            document.getElementById('prop-warnings').classList.add('hidden');
+            document.getElementById('success-box').classList.add('hidden');
+            document.getElementById('btn-confirm').style.display = '';
+            document.getElementById('btn-cancel').style.display  = '';
+
+            if (d._tipo === 'improve') {
+                const projectName = res.proyecto_nombre ? ' — ' + res.proyecto_nombre : '';
+                document.getElementById('prop-type-badge').textContent = _ai.improve_badge + projectName;
+                document.getElementById('prop-nombre').textContent = 'Borrador de mejora';
+                document.getElementById('prop-descripcion').textContent = 'Edita las secciones propuestas antes de aplicar los cambios.';
+                document.getElementById('prop-resumen-wrap').classList.remove('hidden');
+                document.getElementById('prop-resumen').textContent = d.resumen || 'Resumen de cambios propuestos.';
+
+            } else if (d._tipo === 'project_edit') {
+                const projectName = res.proyecto_nombre || d.nombre || 'Proyecto';
+                const cnt = {
+                    requerimientos: (d.requerimientos || []).length,
+                    tareas:         (d.tareas || []).length,
+                    sprints:        (d.sprints || []).length,
+                    insumos:        (d.insumos || []).length,
+                };
+                document.getElementById('prop-type-badge').textContent = '✏️ Editando: ' + projectName;
+                document.getElementById('prop-resumen-wrap').classList.remove('hidden');
+                document.getElementById('prop-resumen').textContent =
+                    `${cnt.requerimientos} requerimientos · ${cnt.tareas} tareas · ${cnt.sprints} sprints · ${cnt.insumos} insumos — Edita o pide ajustes con IA antes de guardar.`;
+                document.getElementById('prop-nombre').innerHTML =
+                    `<span contenteditable="true" class="block rounded-lg border border-transparent px-2 py-1 outline-none hover:border-indigo-500/30 focus:border-indigo-400/60" oninput="updateProjectField('nombre', this.textContent)">${esc(d.nombre || projectName)}</span>`;
+                document.getElementById('prop-descripcion').innerHTML =
+                    `<span contenteditable="true" class="block min-h-[44px] rounded-lg border border-transparent px-2 py-1 outline-none hover:border-indigo-500/30 focus:border-indigo-400/60" oninput="updateProjectField('descripcion', this.textContent)">${esc(d.descripcion || '')}</span>`;
+
+            } else {
+                document.getElementById('prop-type-badge').textContent = _ai.new_project_badge;
+                document.getElementById('prop-resumen-wrap').classList.add('hidden');
+                document.getElementById('prop-nombre').innerHTML =
+                    `<span contenteditable="true" class="block rounded-lg border border-transparent px-2 py-1 outline-none hover:border-emerald-500/30 focus:border-emerald-400/60" oninput="updateProjectField('nombre', this.textContent)">${esc(d.nombre || 'Proyecto sin nombre')}</span>`;
+                document.getElementById('prop-descripcion').innerHTML =
+                    `<span contenteditable="true" class="block min-h-[44px] rounded-lg border border-transparent px-2 py-1 outline-none hover:border-emerald-500/30 focus:border-emerald-400/60" oninput="updateProjectField('descripcion', this.textContent)">${esc(d.descripcion || 'Describe el proyecto...')}</span>`;
+            }
+
+            document.getElementById('prop-sections').innerHTML = sectionsForCurrentDraft()
+                .map(renderEditableSection)
+                .join('');
+        }
+
+        window.updateProjectField = function (field, value) {
+            if (!S.generatedProposal) return;
+            S.generatedProposal[field] = String(value || '').trim();
+        };
+
+        function renderEditableSection(section) {
+            const meta = sectionMeta[section];
+            const items = Array.isArray(S.generatedProposal?.[section]) ? S.generatedProposal[section] : [];
+            const body = items.length
+                ? items.map((item, index) => renderEditableItem(section, item, index)).join('')
+                : `<div class="px-3 py-4 text-xs text-slate-500">${meta.empty}</div>`;
+
+            return `<div class="prop-section">
+                <div class="prop-section-hdr justify-between">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="material-symbols-outlined" style="font-size:15px;color:${meta.color}">${meta.icon}</span>
+                        <span style="font-size:11px;font-weight:700;color:${meta.color}">${meta.title}</span>
+                        <span style="font-size:10px;color:#64748b">(${items.length})</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" class="draft-mini-btn" onclick="openDraftItemModal('${section}', null, 'add')">
+                            <span class="material-symbols-outlined" style="font-size:13px">add</span>${meta.add}
+                        </button>
+                        <button type="button" class="draft-mini-btn" onclick="regenerateDraftSection('${section}')">
+                            <span class="material-symbols-outlined" style="font-size:13px">autorenew</span>Regenerar
+                        </button>
+                    </div>
+                </div>
+                <div class="prop-section-body space-y-2">${body}</div>
+            </div>`;
+        }
+
+        function renderEditableItem(section, item, index) {
+            return `<div class="rounded-xl border border-white/5 bg-slate-950/40 p-3 hover:border-indigo-500/20 transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        ${itemSummaryHtml(section, item)}
+                        <p class="mt-1 text-sm font-semibold text-slate-100">${esc(itemTitle(section, item))}</p>
+                        ${itemDescription(section, item) ? `<p class="mt-1 text-xs leading-relaxed text-slate-500">${esc(itemDescription(section, item))}</p>` : ''}
+                    </div>
+                    <div class="flex shrink-0 items-center gap-1">
+                        <button type="button" class="draft-icon-btn" title="Editar" onclick="openDraftItemModal('${section}', ${index}, 'edit')">
+                            <span class="material-symbols-outlined">edit</span>
+                        </button>
+                        <button type="button" class="draft-icon-btn" title="Duplicar" onclick="duplicateDraftItem('${section}', ${index})">
+                            <span class="material-symbols-outlined">content_copy</span>
+                        </button>
+                        <button type="button" class="draft-icon-btn" title="Regenerar con IA" onclick="regenerateDraftItem('${section}', ${index})">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                        </button>
+                        <button type="button" class="draft-icon-btn danger" title="Eliminar" onclick="deleteDraftItem('${section}', ${index})">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function itemSummaryHtml(section, item) {
+            if (section.includes('requerimientos')) {
+                return `<div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="bx ${item.tipo === 'no_funcional' ? 'b-nofunc' : 'b-func'}">${esc(item.tipo || 'funcional')}</span>
+                    <span class="${prioClass(item.prioridad)}">${esc(item.prioridad || 'media')}</span>
+                </div>`;
+            }
+            if (section === 'tareas' || section === 'tareas_nuevas') {
+                return `<div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="${prioClass(item.prioridad)}">${esc(item.prioridad || 'media')}</span>
+                    ${item.estado ? `<span class="bx b-func">${esc(item.estado)}</span>` : ''}
+                </div>`;
+            }
+            if (section.includes('sprints')) {
+                const weeks = item.semanas || item.duracion_semanas;
+                return weeks ? `<span class="text-[10px] font-semibold text-indigo-300">${esc(weeks)} semanas</span>` : '';
+            }
+            if (section.includes('insumos')) {
+                return item.tipo ? `<span class="text-[10px] font-semibold text-slate-400">[${esc(item.tipo)}]</span>` : '';
+            }
+            if (section === 'actualizaciones_tareas') {
+                return '<span class="bx b-upd">actualizar</span>';
+            }
+            return '';
+        }
+
+        function itemTitle(section, item) {
+            if (section === 'actualizaciones_tareas') return item.titulo_nuevo || item.titulo_actual || 'Actualizacion de tarea';
+            if (section.includes('sprints')) return item.nombre || item.titulo || 'Sprint sin nombre';
+            return item.titulo || item.nombre || 'Elemento sin titulo';
+        }
+
+        function itemDescription(section, item) {
+            if (section === 'actualizaciones_tareas') return item.descripcion_nueva || item.descripcion || '';
+            if (section.includes('sprints')) return item.objetivo || item.descripcion || '';
+            if (section.includes('insumos')) return item.contenido || item.descripcion || '';
+            return item.descripcion || '';
+        }
+
+        function validateDraftBeforeSave() {
+            if (!S.generatedProposal) return 'No hay un borrador editable para guardar.';
+
+            if (S.generatedProposal._tipo === 'improve') {
+                const hasChanges = sectionsForCurrentDraft().some(section => (S.generatedProposal[section] || []).length > 0);
+                return hasChanges ? null : 'Agrega al menos un cambio antes de aplicar la mejora.';
+            }
+
+            if (S.generatedProposal._tipo === 'project_edit') {
+                if (!S.generatedProposal._proyecto_id) return 'No se ha cargado un proyecto para editar.';
+                if (!S.pendingId) return 'El borrador no tiene un registro de sesion valido. Recarga la estructura.';
+                return null;
+            }
+
+            if (!String(S.generatedProposal.nombre || '').trim()) return 'El borrador necesita nombre del proyecto.';
+            if (!String(S.generatedProposal.descripcion || '').trim()) return 'El borrador necesita descripcion del proyecto.';
+            if (!(S.generatedProposal.requerimientos || []).length) return 'El borrador necesita al menos 1 requerimiento.';
+            if (!(S.generatedProposal.tareas || []).length) return 'El borrador necesita al menos 1 tarea.';
+
+            return null;
+        }
+
+        function setDraftStatus(message) {
+            const el = document.getElementById('draft-status');
+            if (!el) return;
+            el.textContent = message || '';
+            el.classList.toggle('hidden', !message);
+        }
+
+        async function postDraftAction(url, payload) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json().catch(() => ({ ok: false, error: _ai.error_connection }));
+            if (!response.ok || !data.ok) throw data;
+            return data;
+        }
+
+        async function refineCurrentDraft(instruction, statusText) {
+            if (!S.generatedProposal) return;
+            setDraftStatus(statusText || 'Ajustando borrador...');
+            hideError();
+            try {
+                const data = await postDraftAction(_ai.routes.refineProposal, {
+                    proposal: S.generatedProposal,
+                    instruction: instruction,
+                    model: document.getElementById('model-select').value.trim(),
+                });
+                S.generatedProposal = normalizeDraft(data.data, S.generatedProposal._tipo);
+                renderEditableProposal(data);
+                loadCreditBalance();
+            } catch (e) {
+                showError(
+                    (e.error || 'No se pudo ajustar el borrador.') + ' La propuesta actual se conserva.',
+                    e.raw || null
+                );
+            } finally {
+                setDraftStatus('');
+            }
+        }
+
+        document.getElementById('btn-refine-draft')?.addEventListener('click', async function () {
+            const btn = this;
+            const input = document.getElementById('draft-adjust-input');
+            const instruction = input.value.trim();
+            if (instruction.length < 5) {
+                showError('Escribe una instruccion de ajuste mas concreta (minimo 5 caracteres).');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin" style="font-size:15px">refresh</span> Ajustando borrador...';
+            await refineCurrentDraft(instruction, 'Ajustando borrador...');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px">auto_fix_high</span> Pedir ajuste a la IA';
+        });
+
+        document.getElementById('btn-regenerate-draft')?.addEventListener('click', function () {
+            if (!S.generatedProposal) return;
+            if (!confirm('Se reemplazara el borrador actual con una nueva version.')) return;
+            const prompt = promptInput.value.trim();
+            const instruction = prompt
+                ? 'Regenera la propuesta completa usando esta instruccion como referencia: ' + prompt
+                : 'Regenera la propuesta completa manteniendo el mismo alcance general.';
+            refineCurrentDraft(instruction, 'Regenerando propuesta...');
+        });
+
+        window.regenerateDraftSection = async function (section) {
+            if (!S.generatedProposal) return;
+            setDraftStatus('Regenerando ' + (sectionMeta[section]?.title || section) + '...');
+            hideError();
+            try {
+                const data = await postDraftAction(_ai.routes.regenerateSection, {
+                    proposal: S.generatedProposal,
+                    section: section,
+                    model: document.getElementById('model-select').value.trim(),
+                });
+                S.generatedProposal[section] = Array.isArray(data.items) ? data.items : [];
+                renderEditableProposal(data);
+                loadCreditBalance();
+            } catch (e) {
+                showError(e.error || 'No se pudo regenerar la seccion.', e.raw || null);
+            } finally {
+                setDraftStatus('');
+            }
+        };
+
+        window.regenerateDraftItem = async function (section, index) {
+            if (!S.generatedProposal?.[section]?.[index]) return;
+            setDraftStatus('Regenerando elemento...');
+            hideError();
+            try {
+                const data = await postDraftAction(_ai.routes.regenerateItem, {
+                    proposal: S.generatedProposal,
+                    section: section,
+                    item: S.generatedProposal[section][index],
+                    model: document.getElementById('model-select').value.trim(),
+                });
+                S.generatedProposal[section][index] = data.item || S.generatedProposal[section][index];
+                renderEditableProposal(data);
+                loadCreditBalance();
+            } catch (e) {
+                showError(e.error || 'No se pudo regenerar el elemento.', e.raw || null);
+            } finally {
+                setDraftStatus('');
+            }
+        };
+
+        window.deleteDraftItem = function (section, index) {
+            if (!S.generatedProposal?.[section]?.[index]) return;
+            if (!confirm('Eliminar este elemento del borrador?')) return;
+            S.generatedProposal[section].splice(index, 1);
+            renderEditableProposal();
+        };
+
+        window.duplicateDraftItem = function (section, index) {
+            if (!S.generatedProposal?.[section]?.[index]) return;
+            const copy = JSON.parse(JSON.stringify(S.generatedProposal[section][index]));
+            if (copy.titulo) copy.titulo += ' copia';
+            else if (copy.nombre) copy.nombre += ' copia';
+            S.generatedProposal[section].splice(index + 1, 0, copy);
+            renderEditableProposal();
+        };
+
+        window.openDraftItemModal = function (section, index = null, mode = 'edit') {
+            const item = index === null ? defaultItem(section) : (S.generatedProposal?.[section]?.[index] || defaultItem(section));
+            S.modal = { section, index, mode };
+            document.getElementById('draft-modal-title').textContent = mode === 'add'
+                ? (sectionMeta[section]?.add || 'Agregar elemento')
+                : 'Editar ' + (sectionMeta[section]?.title || 'elemento');
+            document.getElementById('draft-modal-fields').innerHTML = modalFields(section, item);
+            const modal = document.getElementById('draft-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closeDraftModal = function () {
+            const modal = document.getElementById('draft-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            S.modal = { section: null, index: null, mode: 'edit' };
+        };
+
+        window.saveDraftModal = function () {
+            const { section, index, mode } = S.modal;
+            if (!section || !S.generatedProposal) return;
+            const item = readDraftItem(section, mode === 'edit' && index !== null ? S.generatedProposal[section][index] : {});
+            if (!itemTitle(section, item).trim()) {
+                showError('El elemento necesita un titulo o nombre.');
+                return;
+            }
+            S.generatedProposal[section] = Array.isArray(S.generatedProposal[section]) ? S.generatedProposal[section] : [];
+            if (mode === 'add' || index === null) S.generatedProposal[section].push(item);
+            else S.generatedProposal[section][index] = item;
+            closeDraftModal();
+            renderEditableProposal();
+        };
+
+        function defaultItem(section) {
+            if (section.includes('requerimientos')) return { titulo: '', descripcion: '', tipo: 'funcional', prioridad: 'media' };
+            if (section === 'tareas' || section === 'tareas_nuevas') return { titulo: '', descripcion: '', prioridad: 'media', estado: 'pendiente' };
+            if (section.includes('sprints')) return { nombre: '', objetivo: '', semanas: 1 };
+            if (section.includes('insumos')) return { titulo: '', tipo: 'software', contenido: '' };
+            if (section === 'actualizaciones_tareas') return { titulo_actual: '', titulo_nuevo: '', descripcion_nueva: '' };
+            return { titulo: '', descripcion: '' };
+        }
+
+        function modalFields(section, item) {
+            if (section.includes('requerimientos')) {
+                return [
+                    modalInput('titulo', 'Titulo', item.titulo || item.nombre || ''),
+                    modalTextarea('descripcion', 'Descripcion', item.descripcion || ''),
+                    modalSelect('tipo', 'Tipo', item.tipo || 'funcional', [['funcional', 'Funcional'], ['no_funcional', 'No funcional']]),
+                    modalSelect('prioridad', 'Prioridad', item.prioridad || 'media', [['baja', 'Baja'], ['media', 'Media'], ['alta', 'Alta']]),
+                ].join('');
+            }
+            if (section === 'tareas' || section === 'tareas_nuevas') {
+                return [
+                    modalInput('titulo', 'Titulo', item.titulo || item.nombre || ''),
+                    modalTextarea('descripcion', 'Descripcion', item.descripcion || ''),
+                    modalSelect('prioridad', 'Prioridad', item.prioridad || 'media', [['baja', 'Baja'], ['media', 'Media'], ['alta', 'Alta']]),
+                    modalSelect('estado', 'Estado', item.estado || 'pendiente', [['pendiente', 'Pendiente'], ['en_progreso', 'En progreso'], ['en_revision', 'En revision'], ['completado', 'Completado']]),
+                ].join('');
+            }
+            if (section.includes('sprints')) {
+                return [
+                    modalInput('nombre', 'Nombre', item.nombre || item.titulo || ''),
+                    modalTextarea('objetivo', 'Objetivo', item.objetivo || item.descripcion || ''),
+                    modalInput('semanas', 'Duracion en semanas', item.semanas || item.duracion_semanas || 1, 'number', 'min="1"'),
+                ].join('');
+            }
+            if (section.includes('insumos')) {
+                return [
+                    modalInput('titulo', 'Titulo', item.titulo || item.nombre || ''),
+                    modalInput('tipo', 'Tipo', item.tipo || 'software'),
+                    modalTextarea('contenido', 'Contenido o descripcion', item.contenido || item.descripcion || ''),
+                ].join('');
+            }
+            if (section === 'actualizaciones_tareas') {
+                return [
+                    modalInput('titulo_actual', 'Titulo actual', item.titulo_actual || ''),
+                    modalInput('titulo_nuevo', 'Titulo nuevo', item.titulo_nuevo || item.titulo || ''),
+                    modalTextarea('descripcion_nueva', 'Descripcion nueva', item.descripcion_nueva || item.descripcion || ''),
+                ].join('');
+            }
+            return [
+                modalInput('titulo', 'Titulo', item.titulo || item.nombre || ''),
+                modalTextarea('descripcion', 'Descripcion', item.descripcion || ''),
+            ].join('');
+        }
+
+        function modalInput(name, label, value, type = 'text', extra = '') {
+            return `<label class="block">
+                <span class="mb-1 block text-xs font-semibold text-slate-300">${label}</span>
+                <input id="draft-field-${name}" type="${type}" value="${attr(value)}" ${extra}
+                       class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500">
+            </label>`;
+        }
+
+        function modalTextarea(name, label, value) {
+            return `<label class="block">
+                <span class="mb-1 block text-xs font-semibold text-slate-300">${label}</span>
+                <textarea id="draft-field-${name}" rows="4"
+                          class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500">${esc(value)}</textarea>
+            </label>`;
+        }
+
+        function modalSelect(name, label, value, options) {
+            return `<label class="block">
+                <span class="mb-1 block text-xs font-semibold text-slate-300">${label}</span>
+                <select id="draft-field-${name}"
+                        class="dark-form-select w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
+                    ${options.map(([v, t]) => `<option value="${attr(v)}" ${String(value) === String(v) ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+                </select>
+            </label>`;
+        }
+
+        function draftField(name) {
+            return document.getElementById('draft-field-' + name)?.value.trim() || '';
+        }
+
+        function readDraftItem(section, current = {}) {
+            const base = { ...current };
+            if (section.includes('requerimientos')) {
+                return { ...base, titulo: draftField('titulo'), descripcion: draftField('descripcion'), tipo: draftField('tipo') || 'funcional', prioridad: draftField('prioridad') || 'media' };
+            }
+            if (section === 'tareas' || section === 'tareas_nuevas') {
+                return { ...base, titulo: draftField('titulo'), descripcion: draftField('descripcion'), prioridad: draftField('prioridad') || 'media', estado: draftField('estado') || 'pendiente' };
+            }
+            if (section.includes('sprints')) {
+                return { ...base, nombre: draftField('nombre'), objetivo: draftField('objetivo'), semanas: Math.max(1, parseInt(draftField('semanas') || '1', 10)) };
+            }
+            if (section.includes('insumos')) {
+                return { ...base, titulo: draftField('titulo'), tipo: draftField('tipo') || 'software', contenido: draftField('contenido') };
+            }
+            if (section === 'actualizaciones_tareas') {
+                return { ...base, titulo_actual: draftField('titulo_actual'), titulo_nuevo: draftField('titulo_nuevo'), descripcion_nueva: draftField('descripcion_nueva') };
+            }
+            return { ...base, titulo: draftField('titulo'), descripcion: draftField('descripcion') };
+        }
+
         function showSuccess(data) {
             document.getElementById('btn-confirm').style.display = 'none';
             document.getElementById('btn-cancel').style.display  = 'none';
+            document.getElementById('draft-tools')?.classList.add('hidden');
+            document.querySelectorAll('#prop-sections button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-40', 'pointer-events-none');
+            });
+            S.generatedProposal = null;
+            S.generatedType = null;
             const sb = document.getElementById('success-box');
             sb.classList.remove('hidden');
             document.getElementById('success-msg').textContent = data.message || _ai.changes_saved;
             const c = data.counts || {};
             let html = '';
-            if (c.requerimientos)  html += `<p>📋 ${c.requerimientos} ${_ai.count_reqs}</p>`;
-            if (c.tareas)          html += `<p>✅ ${c.tareas} ${_ai.count_tasks}</p>`;
-            if (c.reqs_new)        html += `<p>📋 ${c.reqs_new} ${_ai.count_reqs_new}</p>`;
-            if (c.tasks_new)       html += `<p>✅ ${c.tasks_new} ${_ai.count_tasks_new}</p>`;
-            if (c.tasks_updated)   html += `<p>🔄 ${c.tasks_updated} ${_ai.count_tasks_upd}</p>`;
-            if (c.sprints)         html += `<p>🏃 ${c.sprints} ${_ai.count_sprints}</p>`;
-            if (c.insumos)         html += `<p>📦 ${c.insumos} ${_ai.count_inputs}</p>`;
+            if (c.requerimientos)    html += `<p>📋 ${c.requerimientos} ${_ai.count_reqs}</p>`;
+            if (c.tareas)            html += `<p>✅ ${c.tareas} ${_ai.count_tasks}</p>`;
+            if (c.reqs_new)          html += `<p>📋 ${c.reqs_new} ${_ai.count_reqs_new}</p>`;
+            if (c.reqs_updated)      html += `<p>📋 ${c.reqs_updated} requerimientos actualizados</p>`;
+            if (c.tasks_new)         html += `<p>✅ ${c.tasks_new} ${_ai.count_tasks_new}</p>`;
+            if (c.tasks_updated)     html += `<p>🔄 ${c.tasks_updated} ${_ai.count_tasks_upd}</p>`;
+            if (c.sprints_new)       html += `<p>🏃 ${c.sprints_new} sprints nuevos</p>`;
+            if (c.sprints_updated)   html += `<p>🏃 ${c.sprints_updated} sprints actualizados</p>`;
+            if (c.sprints)           html += `<p>🏃 ${c.sprints} ${_ai.count_sprints}</p>`;
+            if (c.insumos_new)       html += `<p>📦 ${c.insumos_new} insumos nuevos</p>`;
+            if (c.insumos_updated)   html += `<p>📦 ${c.insumos_updated} insumos actualizados</p>`;
+            if (c.insumos)           html += `<p>📦 ${c.insumos} ${_ai.count_inputs}</p>`;
             document.getElementById('success-counts').innerHTML = html;
             const link = document.getElementById('success-link');
             if (data.url) { link.href = data.url; link.classList.remove('hidden'); }
@@ -992,6 +1768,7 @@
                             <span>${esc(h.created_at_human)}</span>
                             <span>·</span>
                             <span>${esc(h.modo)}</span>
+                            ${h.credits_cost ? `<span>·</span><span style="color:#6366f1;font-weight:600">${h.credits_cost} créd.</span>` : ''}
                             ${h.proyecto_nombre ? `<span>·</span><a href="${esc(h.proyecto_url)}" style="color:#818cf8" onclick="event.stopPropagation()">${esc(h.proyecto_nombre)}</a>` : ''}
                         </div>
                         <p style="font-size:11px;color:#cbd5e1;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px"
@@ -1138,11 +1915,17 @@
                 } else ctxRespWrap.classList.add('hidden');
             } else ctxRespWrap.classList.add('hidden');
 
-            // 6. Show context panel + clear prompt
-            showPanel('context');
+            // 6. If the record has a full structured proposal, load it as editable draft
+            if (dd && dd._tipo && (dd.requerimientos || dd.tareas || dd.requerimientos_nuevos || dd.tareas_nuevas)) {
+                S.generatedProposal = normalizeDraft(dd, dd._tipo);
+                S.generatedType     = dd._tipo;
+                S.pendingId         = rec.estado === 'borrador' ? rec.id : null;
+                renderEditableProposal({ proyecto_nombre: rec.proyecto_nombre });
+            } else {
+                showPanel('context');
+            }
             promptInput.value = '';
             promptInput.dispatchEvent(new Event('input'));
-            promptInput.focus();
 
             // 7. Refresh history list to highlight active item
             if (S.historyOpen) filterHistoryItems();
@@ -1215,6 +1998,10 @@
             el.style.color  = styles[estado] || '#94a3b8';
             el.style.fontWeight = '700';
         }
+
+        // ── Init: load credit balance on page ready ───────────────────────────
+        loadCreditBalance();
+        updateActionCost(S.mode);
 
     })();
     </script>
