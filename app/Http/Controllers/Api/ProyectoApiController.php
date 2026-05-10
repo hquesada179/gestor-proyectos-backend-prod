@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProyectoApiController extends Controller
 {
     public function index(): JsonResponse
     {
-        $proyectos = Proyecto::withCount(['tasks', 'sprints'])
+        $proyectos = Proyecto::accessibleBy(Auth::id())
+            ->withCount(['tasks', 'sprints'])
             ->latest()
             ->get()
             ->map(fn(Proyecto $p) => [
@@ -29,7 +32,8 @@ class ProyectoApiController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $proyecto = Proyecto::withCount(['tasks', 'sprints'])
+        $proyecto = Proyecto::accessibleBy(Auth::id())
+            ->withCount(['tasks', 'sprints'])
             ->with([
                 'sprints' => fn($q) => $q->withCount('tasks')->orderBy('nombre'),
                 'tasks.status',
@@ -37,7 +41,7 @@ class ProyectoApiController extends Controller
             ->find($id);
 
         if (! $proyecto) {
-            return response()->json(['message' => 'Proyecto no encontrado.'], 404);
+            return response()->json(['message' => 'Proyecto no encontrado o sin acceso.'], 404);
         }
 
         return response()->json([

@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Proyecto;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class TareaApiController extends Controller
 {
     public function index(int $id): JsonResponse
     {
-        $proyecto = Proyecto::find($id);
+        $proyecto = Proyecto::accessibleBy(Auth::id())->find($id);
 
         if (! $proyecto) {
-            return response()->json(['message' => 'Proyecto no encontrado.'], 404);
+            return response()->json(['message' => 'Proyecto no encontrado o sin acceso.'], 404);
         }
 
         $tareas = Task::with(['status', 'sprint', 'assignedTo'])
@@ -45,7 +46,10 @@ class TareaApiController extends Controller
 
     public function all(): JsonResponse
     {
+        $proyectoIds = Proyecto::accessibleBy(Auth::id())->pluck('id');
+
         $tareas = Task::with(['status', 'sprint', 'assignedTo', 'proyecto'])
+            ->whereIn('proyecto_id', $proyectoIds)
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn(Task $t) => [

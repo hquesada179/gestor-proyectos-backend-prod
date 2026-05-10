@@ -1,28 +1,45 @@
 <?php
 
 use App\Http\Controllers\Api\AiApiController;
+use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
 use App\Http\Controllers\Api\ProyectoApiController;
+use App\Http\Controllers\Api\ScrumBoardApiController;
 use App\Http\Controllers\Api\SprintApiController;
 use App\Http\Controllers\Api\TareaApiController;
+use App\Http\Controllers\Api\UserApiController;
 use Illuminate\Support\Facades\Route;
 
-// ── Firebase Auth para Android ────────────────────────────────────────────
-// Recibe el Firebase ID Token y devuelve usuario + Sanctum Bearer token
+// ── Público: Android envía Firebase ID Token y recibe Bearer token ─────────────
 Route::post('/auth/firebase-login', [FirebaseApiAuthController::class, 'login']);
 
-Route::middleware('auth')->prefix('ai')->name('api.ai.')->group(function () {
-    Route::post('/generate-project', [AiApiController::class, 'generateProject'])->name('generate-project');
-    Route::post('/improve-project', [AiApiController::class, 'improveProject'])->name('improve-project');
-    Route::post('/chat', [AiApiController::class, 'chat'])->name('chat');
-    Route::post('/refine-proposal', [AiApiController::class, 'refineProposal'])->name('refine-proposal');
-    Route::post('/regenerate-section', [AiApiController::class, 'regenerateSection'])->name('regenerate-section');
-    Route::post('/regenerate-item', [AiApiController::class, 'regenerateItem'])->name('regenerate-item');
+// ── Protegidas: requieren Authorization: Bearer <sanctum-token> ────────────────
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Usuario autenticado
+    Route::get('/user', [UserApiController::class, 'show']);
+
+    // Dashboard / métricas
+    Route::get('/dashboard', [DashboardApiController::class, 'index']);
+
+    // Proyectos
+    Route::get('/proyectos', [ProyectoApiController::class, 'index']);
+    Route::get('/proyectos/{id}', [ProyectoApiController::class, 'show']);
+    Route::get('/proyectos/{id}/tareas', [TareaApiController::class, 'index']);
+    Route::get('/proyectos/{id}/sprints', [SprintApiController::class, 'index']);
+    Route::get('/proyectos/{id}/scrum-board', [ScrumBoardApiController::class, 'show']);
+
+    // Tareas globales del usuario
+    Route::get('/tareas', [TareaApiController::class, 'all']);
+
+    // IA
+    Route::prefix('ai')->name('api.ai.')->group(function () {
+        Route::get('/credits', [AiApiController::class, 'credits'])->name('credits');
+        Route::post('/generate-project', [AiApiController::class, 'generateProject'])->name('generate-project');
+        Route::post('/improve-project', [AiApiController::class, 'improveProject'])->name('improve-project');
+        Route::post('/chat', [AiApiController::class, 'chat'])->name('chat');
+        Route::post('/refine-proposal', [AiApiController::class, 'refineProposal'])->name('refine-proposal');
+        Route::post('/regenerate-section', [AiApiController::class, 'regenerateSection'])->name('regenerate-section');
+        Route::post('/regenerate-item', [AiApiController::class, 'regenerateItem'])->name('regenerate-item');
+    });
 });
-
-Route::get('/proyectos', [ProyectoApiController::class, 'index']);
-Route::get('/proyectos/{id}', [ProyectoApiController::class, 'show']);
-Route::get('/proyectos/{id}/tareas', [TareaApiController::class, 'index']);
-Route::get('/proyectos/{id}/sprints', [SprintApiController::class, 'index']);
-
-Route::get('/tareas', [TareaApiController::class, 'all']);

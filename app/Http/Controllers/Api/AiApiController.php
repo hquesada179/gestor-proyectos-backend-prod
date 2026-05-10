@@ -15,6 +15,17 @@ class AiApiController extends Controller
         private readonly AiProposalEditorService $proposalEditor,
     ) {}
 
+    public function credits(Request $request): JsonResponse
+    {
+        $user = $request->user()->load('aiCredit');
+
+        return response()->json([
+            'available'      => $user->aiCredit?->credits_available ?? 0,
+            'used'           => $user->aiCredit?->credits_used ?? 0,
+            'period_ends_at' => $user->aiCredit?->period_ends_at?->toDateString(),
+        ]);
+    }
+
     public function generateProject(Request $request): JsonResponse
     {
         return $this->generateFromRequest($request);

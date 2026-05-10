@@ -66,6 +66,8 @@ class FirebaseApiAuthController extends Controller
         $user->tokens()->where('name', 'android-app')->delete();
         $token = $user->createToken('android-app')->plainTextToken;
 
+        $user->load(['plan', 'aiCredit']);
+
         return response()->json([
             'user' => [
                 'id'           => $user->id,
@@ -73,6 +75,19 @@ class FirebaseApiAuthController extends Controller
                 'email'        => $user->email,
                 'firebase_uid' => $user->firebase_uid,
                 'plan_id'      => $user->plan_id,
+                'plan'         => $user->plan ? [
+                    'id'                 => $user->plan->id,
+                    'name'               => $user->plan->name,
+                    'slug'               => $user->plan->slug,
+                    'monthly_price'      => $user->plan->monthly_price,
+                    'max_projects'       => $user->plan->max_projects,
+                    'monthly_ai_credits' => $user->plan->monthly_ai_credits,
+                ] : null,
+                'ai_credits' => $user->aiCredit ? [
+                    'available'      => $user->aiCredit->credits_available,
+                    'used'           => $user->aiCredit->credits_used,
+                    'period_ends_at' => $user->aiCredit->period_ends_at?->toDateString(),
+                ] : null,
             ],
             'token'      => $token,
             'token_type' => 'Bearer',
