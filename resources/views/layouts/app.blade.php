@@ -14,7 +14,11 @@
             var projectViewMode = localStorage.getItem('projectViewMode') || 'grid';
             document.cookie = 'project_view_mode=' + encodeURIComponent(projectViewMode) + ';path=/;max-age=31536000;SameSite=Lax';
 
-            if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth >= 768) {
+            var _sc  = localStorage.getItem('sidebarCollapsed');
+            var _mid = window.innerWidth >= 768 && window.innerWidth < 1200;
+            // Collapse on load if: stored as true, OR medium screen with no explicit preference
+            if (window.innerWidth >= 768 && (_sc === 'true' || (_sc === null && _mid))) {
+                document.body.classList.add('sidebar-collapsed');
                 var s = document.createElement('style');
                 s.id = 'sb-pre';
                 s.textContent =
@@ -135,8 +139,9 @@
         .sb-text {
             overflow: hidden;
             white-space: nowrap;
-            transition: opacity 150ms ease, max-width 260ms cubic-bezier(.4,0,.2,1);
-            max-width: 180px;
+            /* Delay opacity on EXPAND so text only appears when sidebar is almost fully open */
+            transition: opacity 150ms ease 250ms, max-width 280ms cubic-bezier(.4,0,.2,1);
+            max-width: 200px;
             opacity: 1;
             display: inline-block;
             vertical-align: middle;
@@ -144,20 +149,26 @@
         .sidebar-collapsed .sb-text {
             opacity: 0;
             max-width: 0;
+            /* Fast fade-out on COLLAPSE — no delay needed */
+            transition: opacity 80ms ease, max-width 240ms cubic-bezier(.4,0,.2,1);
             pointer-events: none;
             user-select: none;
         }
 
         /* Section labels */
         .sb-section-label {
-            transition: opacity 150ms ease, max-height 260ms ease;
+            /* Delay opacity on EXPAND so label only appears when sidebar is wide enough */
+            transition: opacity 150ms ease 250ms, max-height 280ms ease;
             max-height: 40px;
             overflow: hidden;
+            white-space: nowrap;
             opacity: 1;
         }
         .sidebar-collapsed .sb-section-label {
             opacity: 0;
             max-height: 0;
+            /* Fast collapse — no delay */
+            transition: opacity 100ms ease, max-height 200ms ease;
             padding-top: 0 !important;
             padding-bottom: 0 !important;
         }
@@ -1020,10 +1031,14 @@
     });
 
     // ── Initialization ────────────────────────────────────────────────────
-    var saved = 'false';
-    try { saved = localStorage.getItem(LS_KEY) || 'false'; } catch (e) {}
+    var saved = null;
+    try { saved = localStorage.getItem(LS_KEY); } catch (e) {}
 
-    if (!isMobile() && saved === 'true') {
+    // Medium screen (768-1199px): collapse by default unless user explicitly expanded
+    var isMediumScreen = !isMobile() && window.innerWidth < 1200;
+    var shouldCollapse  = !isMobile() && (saved === 'true' || (saved === null && isMediumScreen));
+
+    if (shouldCollapse) {
         if (sidebar)     sidebar.style.transition    = 'none';
         if (mainContent) mainContent.style.transition = 'none';
         applyState(true);
@@ -1031,13 +1046,11 @@
             requestAnimationFrame(function () {
                 if (sidebar)     sidebar.style.transition    = '';
                 if (mainContent) mainContent.style.transition = '';
-                // Remove the pre-render <style> injected in <head> so the JS transitions work normally
                 var pre = document.getElementById('sb-pre');
                 if (pre) pre.parentNode.removeChild(pre);
             });
         });
     } else {
-        // Even if not collapsed, clean up the pre-render style if it somehow exists
         var pre = document.getElementById('sb-pre');
         if (pre) pre.parentNode.removeChild(pre);
     }
