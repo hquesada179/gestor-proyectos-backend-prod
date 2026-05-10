@@ -39,6 +39,24 @@ class ScrumBoardController extends Controller
     {
         abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
+        // Guarantee the 4 canonical Kanban columns always exist.
+        // The seeder defines them but may not have run in all environments.
+        $canonical = [
+            ['nombre' => 'Pendiente',   'color' => '#6B7280', 'orden' => 1],
+            ['nombre' => 'En progreso', 'color' => '#3B82F6', 'orden' => 2],
+            ['nombre' => 'En revisión', 'color' => '#F59E0B', 'orden' => 3],
+            ['nombre' => 'Completado',  'color' => '#10B981', 'orden' => 4],
+        ];
+
+        if (TaskStatus::count() < count($canonical)) {
+            foreach ($canonical as $data) {
+                TaskStatus::firstOrCreate(
+                    ['nombre' => $data['nombre']],
+                    ['color'  => $data['color'], 'orden' => $data['orden']]
+                );
+            }
+        }
+
         $statuses = TaskStatus::orderBy('orden')->get();
 
         $tasks = $proyecto->tasks()
