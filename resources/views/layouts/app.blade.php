@@ -155,22 +155,33 @@
             user-select: none;
         }
 
-        /* Section labels */
+        /* Section labels — display toggle, sin animación de max-height ni opacidad */
         .sb-section-label {
-            /* Delay opacity on EXPAND so label only appears when sidebar is wide enough */
-            transition: opacity 150ms ease 250ms, max-height 280ms ease;
-            max-height: 40px;
-            overflow: hidden;
-            white-space: nowrap;
+            display: block;
+            visibility: visible;
             opacity: 1;
+            max-height: none;
+            overflow: visible;
+            white-space: nowrap;
         }
-        .sidebar-collapsed .sb-section-label {
-            opacity: 0;
-            max-height: 0;
-            /* Fast collapse — no delay */
-            transition: opacity 100ms ease, max-height 200ms ease;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
+        /* Sidebar expandido: labels completamente visibles */
+        body:not(.sidebar-collapsed) .sb-section-label {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            white-space: nowrap !important;
+        }
+        /* Sidebar colapsado: labels completamente ocultos, sin rayas ni intermedios */
+        body.sidebar-collapsed .sb-section-label {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        /* Separadores también ocultos cuando colapsado (evita líneas finas visibles) */
+        body.sidebar-collapsed .sb-separator {
+            display: none !important;
         }
 
         /* Nav link: center icon when collapsed */
