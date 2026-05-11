@@ -4,6 +4,9 @@ use App\Http\Controllers\Api\AiApiController;
 use App\Http\Controllers\Api\AiProjectApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
+use App\Http\Controllers\Api\InvitacionApiController;
+use App\Http\Controllers\Api\MessageApiController;
+use App\Http\Controllers\Api\NotificacionApiController;
 use App\Http\Controllers\Api\ProyectoApiController;
 use App\Http\Controllers\Api\ScrumBoardApiController;
 use App\Http\Controllers\Api\SprintApiController;
@@ -30,6 +33,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/proyectos/{id}/tareas', [TareaApiController::class, 'index']);
     Route::get('/proyectos/{id}/sprints', [SprintApiController::class, 'index']);
     Route::get('/proyectos/{id}/scrum-board', [ScrumBoardApiController::class, 'show']);
+    Route::get('/proyectos/{id}/messages', [MessageApiController::class, 'projectMessages']);
+    Route::post('/proyectos/{id}/messages', [MessageApiController::class, 'store']);
+
+    // Mensajes — resumen de conversaciones
+    Route::get('/messages', [MessageApiController::class, 'index']);
+
+    // Invitaciones
+    Route::get('/invitaciones', [InvitacionApiController::class, 'index']);
+    Route::post('/invitaciones/{id}/aceptar', [InvitacionApiController::class, 'accept']);
+    Route::post('/invitaciones/{id}/rechazar', [InvitacionApiController::class, 'reject']);
+
+    // Notificaciones
+    Route::get('/notificaciones', [NotificacionApiController::class, 'index']);
+    Route::post('/notificaciones/leer-todas', [NotificacionApiController::class, 'markAllRead']);
+    Route::post('/notificaciones/{id}/leer', [NotificacionApiController::class, 'markRead']);
 
     // Tareas globales del usuario
     Route::get('/tareas', [TareaApiController::class, 'all']);
