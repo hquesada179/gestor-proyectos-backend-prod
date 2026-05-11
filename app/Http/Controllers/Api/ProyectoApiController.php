@@ -7,6 +7,7 @@ use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ProyectoApiController extends Controller
 {
@@ -28,6 +29,51 @@ class ProyectoApiController extends Controller
             ]);
 
         return response()->json($proyectos);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'nombre'      => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:5000'],
+            'estado'      => ['nullable', 'string', 'in:activo,pausado,completado,cancelado'],
+            'fecha_inicio'=> ['nullable', 'date_format:Y-m-d'],
+            'fecha_fin'   => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        if (
+            !empty($validated['fecha_inicio']) &&
+            !empty($validated['fecha_fin']) &&
+            $validated['fecha_fin'] < $validated['fecha_inicio']
+        ) {
+            throw ValidationException::withMessages([
+                'fecha_fin' => ['La fecha de fin no puede ser anterior a la fecha de inicio.'],
+            ]);
+        }
+
+        try {
+            $proyecto = Auth::user()->proyectos()->create([
+                'nombre'             => $validated['nombre'],
+                'descripcion'        => $validated['descripcion'] ?? null,
+                'estado'             => $validated['estado'] ?? 'activo',
+                'fecha_inicio'       => $validated['fecha_inicio'] ?? null,
+                'fecha_fin_estimada' => $validated['fecha_fin'] ?? null,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Error al crear el proyecto.'], 500);
+        }
+
+        return response()->json([
+            'message' => 'Proyecto creado correctamente',
+            'project' => [
+                'id'                 => $proyecto->id,
+                'nombre'             => $proyecto->nombre,
+                'descripcion'        => $proyecto->descripcion,
+                'estado'             => $proyecto->estado,
+                'fecha_inicio'       => $proyecto->fecha_inicio?->toDateString(),
+                'fecha_fin_estimada' => $proyecto->fecha_fin_estimada?->toDateString(),
+            ],
+        ], 201);
     }
 
     public function show(int $id): JsonResponse
