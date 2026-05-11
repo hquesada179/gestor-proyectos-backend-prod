@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AiApiController;
+use App\Http\Controllers\Api\AiProjectApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
 use App\Http\Controllers\Api\ProyectoApiController;
@@ -36,11 +37,22 @@ Route::middleware('auth:sanctum')->group(function () {
     // IA
     Route::prefix('ai')->name('api.ai.')->group(function () {
         Route::get('/credits', [AiApiController::class, 'credits'])->name('credits');
-        Route::post('/generate-project', [AiApiController::class, 'generateProject'])->name('generate-project');
-        Route::post('/improve-project', [AiApiController::class, 'improveProject'])->name('improve-project');
-        Route::post('/chat', [AiApiController::class, 'chat'])->name('chat');
-        Route::post('/refine-proposal', [AiApiController::class, 'refineProposal'])->name('refine-proposal');
+        Route::get('/history', [AiProjectApiController::class, 'history'])->name('history');
+
+        // Flujo Android: generar → ajustar → confirmar
+        Route::prefix('projects')->name('projects.')->group(function () {
+            Route::post('/generate',   [AiProjectApiController::class, 'generate'])->name('generate');
+            Route::post('/regenerate', [AiProjectApiController::class, 'regenerate'])->name('regenerate');
+            Route::post('/adjust',     [AiProjectApiController::class, 'adjust'])->name('adjust');
+            Route::post('/confirm',    [AiProjectApiController::class, 'confirm'])->name('confirm');
+        });
+
+        // Rutas heredadas (usadas por Laravel web via API)
+        Route::post('/generate-project',   [AiApiController::class, 'generateProject'])->name('generate-project');
+        Route::post('/improve-project',    [AiApiController::class, 'improveProject'])->name('improve-project');
+        Route::post('/chat',               [AiApiController::class, 'chat'])->name('chat');
+        Route::post('/refine-proposal',    [AiApiController::class, 'refineProposal'])->name('refine-proposal');
         Route::post('/regenerate-section', [AiApiController::class, 'regenerateSection'])->name('regenerate-section');
-        Route::post('/regenerate-item', [AiApiController::class, 'regenerateItem'])->name('regenerate-item');
+        Route::post('/regenerate-item',    [AiApiController::class, 'regenerateItem'])->name('regenerate-item');
     });
 });

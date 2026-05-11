@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\Ai\AiAssistantService;
+use App\Services\Ai\AiCreditService;
 use App\Services\Ai\AiProposalEditorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,18 +12,23 @@ use Illuminate\Http\Request;
 class AiApiController extends Controller
 {
     public function __construct(
-        private readonly AiAssistantService $aiAssistant,
+        private readonly AiAssistantService      $aiAssistant,
         private readonly AiProposalEditorService $proposalEditor,
+        private readonly AiCreditService         $aiCredits,
     ) {}
 
     public function credits(Request $request): JsonResponse
     {
-        $user = $request->user()->load('aiCredit');
+        $balance = $this->aiCredits->getBalance($request->user()->id);
 
         return response()->json([
-            'available'      => $user->aiCredit?->credits_available ?? 0,
-            'used'           => $user->aiCredit?->credits_used ?? 0,
-            'period_ends_at' => $user->aiCredit?->period_ends_at?->toDateString(),
+            'credits' => [
+                'available'  => $balance['credits_available'],
+                'used'       => $balance['credits_used'],
+                'total'      => $balance['credits_total'],
+                'plan'       => $balance['plan_name'],
+                'expires_at' => $balance['period_ends_at'],
+            ],
         ]);
     }
 
