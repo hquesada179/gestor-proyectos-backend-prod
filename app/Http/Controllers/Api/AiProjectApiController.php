@@ -283,18 +283,213 @@ class AiProjectApiController extends Controller
 
         return response()->json([
             'ok'      => true,
-            'history' => $records->map(fn(AiProjectChat $r) => [
-                'id'               => $r->id,
-                'tipo_accion'      => $r->tipo_accion,
-                'modo'             => $r->tipo_accion === 'crear_proyecto' ? 'Crear proyecto' : 'Mejorar proyecto',
-                'prompt_usuario'   => Str::limit($r->prompt_usuario, 100),
-                'estado'           => $r->estado,
-                'proyecto_id'      => $r->proyecto_id,
-                'proyecto_nombre'  => $r->proyecto?->nombre,
-                'created_at_full'  => $r->created_at->format('d/m/Y H:i'),
-                'created_at_human' => $r->created_at->diffForHumans(),
-            ]),
+            'history' => $records
+                ->map(fn(AiProjectChat $record) => $this->formatHistoryRecord($record))
+                ->values(),
         ]);
+    }
+
+    /**
+     * GET /api/ai/history/{id}
+     * Devuelve el detalle completo de un historial IA del usuario autenticado.
+     */
+    public function historyDetail(Request $request, int $id): JsonResponse
+    {
+        $record = AiProjectChat::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->with('proyecto:id,nombre,estado,descripcion')
+            ->first();
+
+        if (!$record) {
+            return response()->json([
+                'ok'    => false,
+                'error' => 'Historial IA no encontrado.',
+            ], 404);
+        }
+
+        $payload = $this->formatHistoryRecord($record, true);
+
+        return response()->json([
+            'ok'     => true,
+            'record' => $payload,
+        ]);
+    }
+
+    private function formatHistoryRecord(AiProjectChat $record, bool $includeRawResponse = false): array
+    {
+        $proposal = $this->extractStoredProposal($record);
+        $response = $proposal ?? $this->decodeJsonValue($record->respuesta_ia);
+        $credits  = $this->creditsForHistoryAction($record->tipo_accion);
+
+        $payload = [
+            'id'                => $record->id,
+            'chat_id'           => $record->id,
+            'session_id'        => (string) $record->id,
+            'action'            => $record->tipo_accion,
+            'tipo_accion'       => $record->tipo_accion,
+            'mode'              => $record->tipo_accion === 'crear_proyecto' ? 'create' : 'improve',
+            'modo'              => $record->tipo_accion === 'crear_proyecto' ? 'Crear proyecto' : 'Mejorar proyecto',
+            'status'            => $record->estado,
+            'estado'            => $record->estado,
+            'prompt'            => $record->prompt_usuario,
+            'prompt_usuario'    => $record->prompt_usuario,
+            'prompt_resumen'    => Str::limit($record->prompt_usuario, 100),
+            'credits_used'      => $credits,
+            'credits_cost'      => $credits,
+            'project_id'        => $record->proyecto_id,
+            'proyecto_id'       => $record->proyecto_id,
+            'project_name'      => $record->proyecto?->nombre,
+            'proyecto_nombre'   => $record->proyecto?->nombre,
+            'created_at'        => $record->created_at?->toISOString(),
+            'created_at_full'   => $record->created_at?->format('d/m/Y H:i'),
+            'created_at_human'  => $record->created_at?->diffForHumans(),
+            'has_proposal'      => $proposal !== null,
+            'proposal_message'  => $proposal === null
+                ? 'Este historial no tiene propuesta completa registrada.'
+                : null,
+
+            // Aliases consumed by Android and kept intentionally redundant.
+            'proposal'          => $proposal,
+            'propuesta'         => $proposal,
+            'payload'           => $proposal,
+            'data'              => $proposal,
+            'result'            => $proposal,
+            'resultado'         => $proposal,
+            'draft'             => $proposal,
+            'borrador'          => $proposal,
+            'response'          => $response,
+            'respuesta_ia'      => $response,
+        ];
+
+        if ($includeRawResponse) {
+            $payload['raw_response'] = $record->respuesta_ia;
+            $payload['datos_detectados'] = $record->datos_detectados;
+            $payload['parent_chat_id'] = $record->parent_chat_id;
+            $payload['project'] = $record->proyecto ? [
+                'id'          => $record->proyecto->id,
+                'name'        => $record->proyecto->nombre,
+                'nombre'      => $record->proyecto->nombre,
+                'status'      => $record->proyecto->estado,
+                'estado'      => $record->proyecto->estado,
+                'description' => $record->proyecto->descripcion,
+                'descripcion' => $record->proyecto->descripcion,
+            ] : null;
+        }
+
+        return $payload;
+    }
+
+    private function extractStoredProposal(AiProjectChat $record): ?array
+    {
+        $stored = $record->datos_detectados;
+
+        if (is_string($stored)) {
+            $stored = $this->decodeJsonValue($stored);
+        }
+
+        if (!is_array($stored) || empty($stored)) {
+            $stored = $this->decodeJsonValue($record->respuesta_ia);
+        }
+
+        if (!is_array($stored) || empty($stored)) {
+            return null;
+        }
+
+        return $this->withProposalAliases($stored, $record);
+    }
+
+    private function withProposalAliases(array $data, AiProjectChat $record): array
+    {
+        $proposal = $data;
+
+        if (isset($proposal['project']) && is_array($proposal['project'])) {
+            $proposal['nombre'] = $proposal['nombre']
+                ?? $proposal['project']['nombre']
+                ?? $proposal['project']['name']
+                ?? $proposal['project']['title']
+                ?? null;
+            $proposal['descripcion'] = $proposal['descripcion']
+                ?? $proposal['project']['descripcion']
+                ?? $proposal['project']['description']
+                ?? null;
+        }
+
+        if (
+            empty($proposal['requerimientos'])
+            && (
+                !empty($proposal['requerimientos_funcionales'])
+                || !empty($proposal['requerimientos_no_funcionales'])
+                || isset($proposal['sprint_sugerido'])
+            )
+        ) {
+            $proposal = array_replace($proposal, $this->normalizeCreateProposal($proposal));
+        }
+
+        $requirements = $proposal['requirements']
+            ?? $proposal['requerimientos']
+            ?? $proposal['requerimientos_nuevos']
+            ?? [];
+        $tasks = $proposal['tasks']
+            ?? $proposal['tareas']
+            ?? $proposal['tareas_nuevas']
+            ?? $proposal['tareas_sugeridas']
+            ?? [];
+        $sprints = $proposal['sprints']
+            ?? $proposal['sprints_nuevos']
+            ?? [];
+        $inputs = $proposal['inputs']
+            ?? $proposal['insumos']
+            ?? $proposal['insumos_nuevos']
+            ?? [];
+
+        $title = $proposal['title']
+            ?? $proposal['nombre']
+            ?? $proposal['name']
+            ?? $record->proyecto?->nombre
+            ?? 'Proyecto sin nombre';
+        $description = $proposal['description']
+            ?? $proposal['descripcion']
+            ?? $proposal['resumen']
+            ?? $record->proyecto?->descripcion
+            ?? '';
+
+        return array_replace($proposal, [
+            '_chat_id'       => $record->id,
+            '_tipo'          => $proposal['_tipo'] ?? ($record->tipo_accion === 'crear_proyecto' ? 'create' : 'improve'),
+            '_proyecto_id'   => $proposal['_proyecto_id'] ?? $record->proyecto_id,
+            'title'          => $title,
+            'name'           => $proposal['name'] ?? $title,
+            'nombre'         => $proposal['nombre'] ?? $title,
+            'description'    => $description,
+            'descripcion'    => $proposal['descripcion'] ?? $description,
+            'requirements'   => is_array($requirements) ? array_values($requirements) : [],
+            'requerimientos' => is_array($requirements) ? array_values($requirements) : [],
+            'tasks'          => is_array($tasks) ? array_values($tasks) : [],
+            'tareas'         => is_array($tasks) ? array_values($tasks) : [],
+            'sprints'        => is_array($sprints) ? array_values($sprints) : [],
+            'inputs'         => is_array($inputs) ? array_values($inputs) : [],
+            'insumos'        => is_array($inputs) ? array_values($inputs) : [],
+        ]);
+    }
+
+    private function decodeJsonValue(?string $value): mixed
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        $decoded = json_decode($value, true);
+
+        return json_last_error() === JSON_ERROR_NONE ? $decoded : null;
+    }
+
+    private function creditsForHistoryAction(?string $action): int
+    {
+        return match ($action) {
+            'crear_proyecto'  => 10,
+            'editar_proyecto' => 8,
+            default           => 0,
+        };
     }
 
     private function normalizeCreateProposal(array $data): array

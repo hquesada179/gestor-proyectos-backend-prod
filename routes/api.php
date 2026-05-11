@@ -38,6 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('ai')->name('api.ai.')->group(function () {
         Route::get('/credits', [AiApiController::class, 'credits'])->name('credits');
         Route::get('/history', [AiProjectApiController::class, 'history'])->name('history');
+        Route::get('/history/{id}', [AiProjectApiController::class, 'historyDetail'])
+            ->whereNumber('id')
+            ->name('history.show');
 
         // Flujo Android: generar → ajustar → confirmar
         Route::prefix('projects')->name('projects.')->group(function () {
