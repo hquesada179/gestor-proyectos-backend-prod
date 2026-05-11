@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\FirebaseApiAuthController;
 use App\Http\Controllers\Api\InvitacionApiController;
 use App\Http\Controllers\Api\MessageApiController;
 use App\Http\Controllers\Api\NotificacionApiController;
+use App\Http\Controllers\Api\PrivateMessageApiController;
 use App\Http\Controllers\Api\ProyectoApiController;
 use App\Http\Controllers\Api\ScrumBoardApiController;
 use App\Http\Controllers\Api\SprintApiController;
@@ -35,9 +36,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/proyectos/{id}/scrum-board', [ScrumBoardApiController::class, 'show']);
     Route::get('/proyectos/{id}/messages', [MessageApiController::class, 'projectMessages']);
     Route::post('/proyectos/{id}/messages', [MessageApiController::class, 'store']);
+    Route::get('/proyectos/{id}/members/chat', [PrivateMessageApiController::class, 'projectMembers']);
 
-    // Mensajes — resumen de conversaciones
+    // Mensajes grupales — resumen de conversaciones
     Route::get('/messages', [MessageApiController::class, 'index']);
+
+    // Mensajes privados 1 a 1
+    // IMPORTANTE: /start y /{id}/read antes de /{id} para evitar colisiones de ruta
+    Route::get('/private-messages', [PrivateMessageApiController::class, 'index']);
+    Route::post('/private-messages/start', [PrivateMessageApiController::class, 'start']);
+    Route::get('/private-messages/{id}', [PrivateMessageApiController::class, 'show'])->whereNumber('id');
+    Route::post('/private-messages/{id}', [PrivateMessageApiController::class, 'store'])->whereNumber('id');
+    Route::post('/private-messages/{id}/read', [PrivateMessageApiController::class, 'markRead'])->whereNumber('id');
 
     // Invitaciones
     Route::get('/invitaciones', [InvitacionApiController::class, 'index']);
