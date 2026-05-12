@@ -18,6 +18,7 @@ class Requirement extends Model
         'descripcion',
         'tipo',
         'prioridad',
+        'estado',
     ];
 
     public function proyecto(): BelongsTo

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\MessageApiController;
 use App\Http\Controllers\Api\NotificacionApiController;
 use App\Http\Controllers\Api\PrivateMessageApiController;
 use App\Http\Controllers\Api\ProyectoApiController;
+use App\Http\Controllers\Api\RequerimientoApiController;
 use App\Http\Controllers\Api\ScrumBoardApiController;
 use App\Http\Controllers\Api\SprintApiController;
 use App\Http\Controllers\Api\TareaApiController;
@@ -37,6 +38,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/proyectos/{id}/messages', [MessageApiController::class, 'projectMessages']);
     Route::post('/proyectos/{id}/messages', [MessageApiController::class, 'store']);
     Route::get('/proyectos/{id}/members/chat', [PrivateMessageApiController::class, 'projectMembers']);
+    Route::get('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'index']);
+    Route::post('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'store']);
+
+    // Requerimientos individuales
+    Route::get('/requerimientos/{requirement}', [RequerimientoApiController::class, 'show'])->whereNumber('requirement');
+    Route::put('/requerimientos/{requirement}', [RequerimientoApiController::class, 'update'])->whereNumber('requirement');
+    Route::patch('/requerimientos/{requirement}', [RequerimientoApiController::class, 'update'])->whereNumber('requirement');
+    Route::delete('/requerimientos/{requirement}', [RequerimientoApiController::class, 'destroy'])->whereNumber('requirement');
+    Route::post('/requerimientos/{requirement}/status', [RequerimientoApiController::class, 'updateStatus'])->whereNumber('requirement');
 
     // Mensajes grupales — resumen de conversaciones
     Route::get('/messages', [MessageApiController::class, 'index']);
