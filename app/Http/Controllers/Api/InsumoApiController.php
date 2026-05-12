@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Insumo;
+use App\Models\ProjectInput;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,19 +19,17 @@ class InsumoApiController extends Controller
             return response()->json(['message' => 'Proyecto no encontrado o sin acceso.'], 404);
         }
 
-        $insumos = Insumo::where('proyecto_id', $project)
-            ->orderBy('created_at', 'desc')
+        $inputs = ProjectInput::where('proyecto_id', $project)
+            ->latest()
             ->get();
 
-        $data = $insumos->map(fn(Insumo $i) => $this->formatInsumo($i));
-
         return response()->json([
-            'data'    => $data,
+            'data'    => $inputs->map(fn(ProjectInput $i) => $this->formatInsumo($i)),
             'summary' => [
-                'total'       => $insumos->count(),
-                'activos'     => $insumos->where('estado', 'activo')->count(),
-                'agotados'    => $insumos->where('estado', 'agotado')->count(),
-                'costo_total' => $insumos->sum('costo'),
+                'total'       => $inputs->count(),
+                'activos'     => $inputs->count(),
+                'agotados'    => 0,
+                'costo_total' => 0,
             ],
         ]);
     }
@@ -48,24 +46,24 @@ class InsumoApiController extends Controller
             'nombre'      => 'required|string|max:255',
             'descripcion' => 'sometimes|nullable|string',
             'tipo'        => 'sometimes|nullable|string|max:100',
-            'cantidad'    => 'sometimes|nullable|numeric|min:0',
-            'unidad'      => 'sometimes|nullable|string|max:50',
-            'costo'       => 'sometimes|nullable|numeric|min:0',
-            'proveedor'   => 'sometimes|nullable|string|max:255',
-            'estado'      => 'sometimes|nullable|string|max:50',
         ]);
 
-        $insumo = Insumo::create(array_merge($validated, ['proyecto_id' => $project]));
+        $input = ProjectInput::create([
+            'proyecto_id' => $project,
+            'titulo'      => $validated['nombre'],
+            'contenido'   => $validated['descripcion'] ?? null,
+            'tipo'        => $validated['tipo'] ?? 'otro',
+        ]);
 
         return response()->json([
             'message' => 'Insumo creado correctamente',
-            'data'    => $this->formatInsumo($insumo),
+            'data'    => $this->formatInsumo($input),
         ], 201);
     }
 
     public function show(int $insumo): JsonResponse
     {
-        $item = Insumo::find($insumo);
+        $item = ProjectInput::find($insumo);
 
         if (! $item) {
             return response()->json(['message' => 'Insumo no encontrado.'], 404);
@@ -81,7 +79,7 @@ class InsumoApiController extends Controller
 
     public function update(Request $request, int $insumo): JsonResponse
     {
-        $item = Insumo::find($insumo);
+        $item = ProjectInput::find($insumo);
 
         if (! $item) {
             return response()->json(['message' => 'Insumo no encontrado.'], 404);
@@ -96,14 +94,14 @@ class InsumoApiController extends Controller
             'nombre'      => 'sometimes|string|max:255',
             'descripcion' => 'sometimes|nullable|string',
             'tipo'        => 'sometimes|nullable|string|max:100',
-            'cantidad'    => 'sometimes|nullable|numeric|min:0',
-            'unidad'      => 'sometimes|nullable|string|max:50',
-            'costo'       => 'sometimes|nullable|numeric|min:0',
-            'proveedor'   => 'sometimes|nullable|string|max:255',
-            'estado'      => 'sometimes|nullable|string|max:50',
         ]);
 
-        $item->update($validated);
+        $updates = [];
+        if (isset($validated['nombre']))                   $updates['titulo']    = $validated['nombre'];
+        if (array_key_exists('descripcion', $validated))   $updates['contenido'] = $validated['descripcion'];
+        if (isset($validated['tipo']))                     $updates['tipo']      = $validated['tipo'];
+
+        $item->update($updates);
 
         return response()->json([
             'message' => 'Insumo actualizado correctamente',
@@ -113,7 +111,7 @@ class InsumoApiController extends Controller
 
     public function destroy(int $insumo): JsonResponse
     {
-        $item = Insumo::find($insumo);
+        $item = ProjectInput::find($insumo);
 
         if (! $item) {
             return response()->json(['message' => 'Insumo no encontrado.'], 404);
@@ -129,27 +127,27 @@ class InsumoApiController extends Controller
         return response()->json(['message' => 'Insumo eliminado correctamente']);
     }
 
-    private function formatInsumo(Insumo $i): array
+    private function formatInsumo(ProjectInput $i): array
     {
         return [
             'id'          => $i->id,
             'project_id'  => $i->proyecto_id,
-            'nombre'      => $i->nombre,
-            'name'        => $i->nombre,
-            'descripcion' => $i->descripcion,
-            'description' => $i->descripcion,
+            'nombre'      => $i->titulo,
+            'name'        => $i->titulo,
+            'descripcion' => $i->contenido,
+            'description' => $i->contenido,
             'tipo'        => $i->tipo,
             'type'        => $i->tipo,
-            'cantidad'    => $i->cantidad,
-            'quantity'    => $i->cantidad,
-            'unidad'      => $i->unidad,
-            'unit'        => $i->unidad,
-            'costo'       => $i->costo,
-            'cost'        => $i->costo,
-            'proveedor'   => $i->proveedor,
-            'supplier'    => $i->proveedor,
-            'estado'      => $i->estado,
-            'status'      => $i->estado,
+            'cantidad'    => null,
+            'quantity'    => null,
+            'unidad'      => null,
+            'unit'        => null,
+            'costo'       => null,
+            'cost'        => null,
+            'proveedor'   => null,
+            'supplier'    => null,
+            'estado'      => 'activo',
+            'status'      => 'activo',
             'created_at'  => $i->created_at?->toDateTimeString(),
             'updated_at'  => $i->updated_at?->toDateTimeString(),
         ];
