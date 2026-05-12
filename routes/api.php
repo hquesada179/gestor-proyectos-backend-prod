@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AiApiController;
 use App\Http\Controllers\Api\AiProjectApiController;
+use App\Http\Controllers\Api\CalendarEventApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
 use App\Http\Controllers\Api\InsumoApiController;
@@ -36,6 +37,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/proyectos/{id}/tareas', [TareaApiController::class, 'index']);
     Route::get('/proyectos/{id}/sprints', [SprintApiController::class, 'index']);
     Route::get('/proyectos/{id}/scrum-board', [ScrumBoardApiController::class, 'show']);
+    Route::get('/proyectos/{project}/calendar', [CalendarEventApiController::class, 'projectCalendar'])->whereNumber('project');
+    Route::get('/proyectos/{project}/eventos', [CalendarEventApiController::class, 'projectCalendar'])->whereNumber('project');
+    Route::post('/proyectos/{project}/eventos', [CalendarEventApiController::class, 'store'])->whereNumber('project');
     Route::get('/proyectos/{id}/messages', [MessageApiController::class, 'projectMessages']);
     Route::post('/proyectos/{id}/messages', [MessageApiController::class, 'store']);
     Route::get('/proyectos/{id}/members/chat', [PrivateMessageApiController::class, 'projectMembers']);
@@ -75,6 +79,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Tareas globales del usuario
     Route::get('/tareas', [TareaApiController::class, 'all']);
     Route::patch('/tareas/{tarea}', [TareaApiController::class, 'update'])->whereNumber('tarea');
+
+    // Calendario / eventos
+    Route::get('/calendar', [CalendarEventApiController::class, 'index']);
+    Route::get('/eventos', [CalendarEventApiController::class, 'index']);
+    Route::get('/eventos/{event}', [CalendarEventApiController::class, 'show'])->whereNumber('event');
+    Route::patch('/eventos/{event}', [CalendarEventApiController::class, 'update'])->whereNumber('event');
+    Route::delete('/eventos/{event}', [CalendarEventApiController::class, 'destroy'])->whereNumber('event');
 
     // Insumos individuales — plural y singular para compatibilidad con Android
     Route::get('/insumos/{id}', [InsumoApiController::class, 'show'])->whereNumber('id');
