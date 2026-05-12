@@ -76,10 +76,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tareas', [TareaApiController::class, 'all']);
     Route::patch('/tareas/{tarea}', [TareaApiController::class, 'update'])->whereNumber('tarea');
 
-    // Insumos individuales
-    Route::get('/insumos/{insumo}', [InsumoApiController::class, 'show'])->whereNumber('insumo');
-    Route::patch('/insumos/{insumo}', [InsumoApiController::class, 'update'])->whereNumber('insumo');
-    Route::delete('/insumos/{insumo}', [InsumoApiController::class, 'destroy'])->whereNumber('insumo');
+    // Insumos individuales — plural y singular para compatibilidad con Android
+    Route::get('/insumos/{id}', [InsumoApiController::class, 'show'])->whereNumber('id');
+    Route::patch('/insumos/{id}', [InsumoApiController::class, 'update'])->whereNumber('id');
+    Route::delete('/insumos/{id}', [InsumoApiController::class, 'destroy'])->whereNumber('id');
+    Route::get('/insumo/{id}', [InsumoApiController::class, 'show'])->whereNumber('id');
+    Route::patch('/insumo/{id}', [InsumoApiController::class, 'update'])->whereNumber('id');
+    Route::delete('/insumo/{id}', [InsumoApiController::class, 'destroy'])->whereNumber('id');
 
     // IA
     Route::prefix('ai')->name('api.ai.')->group(function () {

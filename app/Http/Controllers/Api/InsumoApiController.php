@@ -24,7 +24,7 @@ class InsumoApiController extends Controller
             ->get();
 
         return response()->json([
-            'data'    => $inputs->map(fn(ProjectInput $i) => $this->formatInsumo($i)),
+            'data'    => $inputs->map(fn(ProjectInput $i) => $this->format($i)),
             'summary' => [
                 'total'       => $inputs->count(),
                 'activos'     => $inputs->count(),
@@ -43,27 +43,30 @@ class InsumoApiController extends Controller
         }
 
         $validated = $request->validate([
-            'nombre'      => 'required|string|max:255',
+            'nombre'      => 'required_without:name|string|max:255',
+            'name'        => 'required_without:nombre|string|max:255',
             'descripcion' => 'sometimes|nullable|string',
+            'description' => 'sometimes|nullable|string',
             'tipo'        => 'sometimes|nullable|string|max:100',
+            'type'        => 'sometimes|nullable|string|max:100',
         ]);
 
         $input = ProjectInput::create([
             'proyecto_id' => $project,
-            'titulo'      => $validated['nombre'],
-            'contenido'   => $validated['descripcion'] ?? null,
-            'tipo'        => $validated['tipo'] ?? 'otro',
+            'titulo'      => $validated['nombre'] ?? $validated['name'],
+            'contenido'   => $validated['descripcion'] ?? $validated['description'] ?? null,
+            'tipo'        => $validated['tipo'] ?? $validated['type'] ?? 'otro',
         ]);
 
         return response()->json([
             'message' => 'Insumo creado correctamente',
-            'data'    => $this->formatInsumo($input),
+            'data'    => $this->format($input),
         ], 201);
     }
 
-    public function show(int $insumo): JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $item = ProjectInput::find($insumo);
+        $item = ProjectInput::find($id);
 
         if (! $item) {
             return response()->json(['message' => 'Insumo no encontrado.'], 404);
@@ -74,12 +77,12 @@ class InsumoApiController extends Controller
             return response()->json(['message' => 'No tienes permiso para ver este insumo.'], 403);
         }
 
-        return response()->json(['data' => $this->formatInsumo($item)]);
+        return response()->json(['data' => $this->format($item)]);
     }
 
-    public function update(Request $request, int $insumo): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
-        $item = ProjectInput::find($insumo);
+        $item = ProjectInput::find($id);
 
         if (! $item) {
             return response()->json(['message' => 'Insumo no encontrado.'], 404);
@@ -92,26 +95,34 @@ class InsumoApiController extends Controller
 
         $validated = $request->validate([
             'nombre'      => 'sometimes|string|max:255',
+            'name'        => 'sometimes|string|max:255',
             'descripcion' => 'sometimes|nullable|string',
+            'description' => 'sometimes|nullable|string',
             'tipo'        => 'sometimes|nullable|string|max:100',
+            'type'        => 'sometimes|nullable|string|max:100',
         ]);
 
-        $updates = [];
-        if (isset($validated['nombre']))                   $updates['titulo']    = $validated['nombre'];
-        if (array_key_exists('descripcion', $validated))   $updates['contenido'] = $validated['descripcion'];
-        if (isset($validated['tipo']))                     $updates['tipo']      = $validated['tipo'];
+        if (isset($validated['nombre']) || isset($validated['name'])) {
+            $item->titulo = $validated['nombre'] ?? $validated['name'];
+        }
+        if (array_key_exists('descripcion', $validated) || array_key_exists('description', $validated)) {
+            $item->contenido = $validated['descripcion'] ?? $validated['description'];
+        }
+        if (isset($validated['tipo']) || isset($validated['type'])) {
+            $item->tipo = $validated['tipo'] ?? $validated['type'];
+        }
 
-        $item->update($updates);
+        $item->save();
 
         return response()->json([
             'message' => 'Insumo actualizado correctamente',
-            'data'    => $this->formatInsumo($item->fresh()),
+            'data'    => $this->format($item),
         ]);
     }
 
-    public function destroy(int $insumo): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
-        $item = ProjectInput::find($insumo);
+        $item = ProjectInput::find($id);
 
         if (! $item) {
             return response()->json(['message' => 'Insumo no encontrado.'], 404);
@@ -127,11 +138,12 @@ class InsumoApiController extends Controller
         return response()->json(['message' => 'Insumo eliminado correctamente']);
     }
 
-    private function formatInsumo(ProjectInput $i): array
+    private function format(ProjectInput $i): array
     {
         return [
             'id'          => $i->id,
             'project_id'  => $i->proyecto_id,
+            'proyecto_id' => $i->proyecto_id,
             'nombre'      => $i->titulo,
             'name'        => $i->titulo,
             'descripcion' => $i->contenido,
