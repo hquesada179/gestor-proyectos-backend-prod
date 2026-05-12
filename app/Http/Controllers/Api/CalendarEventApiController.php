@@ -44,7 +44,30 @@ class CalendarEventApiController extends Controller
         return $this->calendarResponse($request, $project);
     }
 
+    public function storeGlobal(Request $request): JsonResponse
+    {
+        $projectId = $request->input('project_id', $request->input('proyecto_id'));
+
+        $validator = Validator::make(['project_id' => $projectId], [
+            'project_id' => ['required', 'integer'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'El proyecto es obligatorio para crear un evento.',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        return $this->storeForProject($request, (int) $projectId);
+    }
+
     public function store(Request $request, int $project): JsonResponse
+    {
+        return $this->storeForProject($request, $project);
+    }
+
+    private function storeForProject(Request $request, int $project): JsonResponse
     {
         $proyecto = $this->findProjectForUser($project);
         if ($proyecto instanceof JsonResponse) {

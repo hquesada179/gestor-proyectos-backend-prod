@@ -83,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Calendario / eventos
     Route::get('/calendar', [CalendarEventApiController::class, 'index']);
     Route::get('/eventos', [CalendarEventApiController::class, 'index']);
+    Route::post('/eventos', [CalendarEventApiController::class, 'storeGlobal']);
     Route::get('/eventos/{event}', [CalendarEventApiController::class, 'show'])->whereNumber('event');
     Route::patch('/eventos/{event}', [CalendarEventApiController::class, 'update'])->whereNumber('event');
     Route::delete('/eventos/{event}', [CalendarEventApiController::class, 'destroy'])->whereNumber('event');
