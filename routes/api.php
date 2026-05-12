@@ -71,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tareas globales del usuario
     Route::get('/tareas', [TareaApiController::class, 'all']);
+    Route::patch('/tareas/{tarea}', [TareaApiController::class, 'update'])->whereNumber('tarea');
 
     // IA
     Route::prefix('ai')->name('api.ai.')->group(function () {
