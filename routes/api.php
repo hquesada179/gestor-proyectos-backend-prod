@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AiApiController;
 use App\Http\Controllers\Api\AiProjectApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
+use App\Http\Controllers\Api\InsumoApiController;
 use App\Http\Controllers\Api\InvitacionApiController;
 use App\Http\Controllers\Api\MessageApiController;
 use App\Http\Controllers\Api\NotificacionApiController;
@@ -40,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/proyectos/{id}/members/chat', [PrivateMessageApiController::class, 'projectMembers']);
     Route::get('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'index']);
     Route::post('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'store']);
+    Route::get('/proyectos/{project}/insumos', [InsumoApiController::class, 'index'])->whereNumber('project');
+    Route::post('/proyectos/{project}/insumos', [InsumoApiController::class, 'store'])->whereNumber('project');
 
     // Requerimientos individuales
     Route::get('/requerimientos/{requirement}', [RequerimientoApiController::class, 'show'])->whereNumber('requirement');
@@ -72,6 +75,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Tareas globales del usuario
     Route::get('/tareas', [TareaApiController::class, 'all']);
     Route::patch('/tareas/{tarea}', [TareaApiController::class, 'update'])->whereNumber('tarea');
+
+    // Insumos individuales
+    Route::get('/insumos/{insumo}', [InsumoApiController::class, 'show'])->whereNumber('insumo');
+    Route::patch('/insumos/{insumo}', [InsumoApiController::class, 'update'])->whereNumber('insumo');
+    Route::delete('/insumos/{insumo}', [InsumoApiController::class, 'destroy'])->whereNumber('insumo');
 
     // IA
     Route::prefix('ai')->name('api.ai.')->group(function () {
