@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CalendarEventApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\EquipoApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
+use App\Http\Controllers\Api\RolApiController;
 use App\Http\Controllers\Api\InsumoApiController;
 use App\Http\Controllers\Api\InvitacionApiController;
 use App\Http\Controllers\Api\MessageApiController;
@@ -106,6 +107,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/insumo/{id}', [InsumoApiController::class, 'show'])->whereNumber('id');
     Route::patch('/insumo/{id}', [InsumoApiController::class, 'update'])->whereNumber('id');
     Route::delete('/insumo/{id}', [InsumoApiController::class, 'destroy'])->whereNumber('id');
+
+    // Roles y Permisos
+    Route::get('/roles', [RolApiController::class, 'index']);
+    Route::post('/roles', [RolApiController::class, 'store']);
+    Route::get('/roles/{role}', [RolApiController::class, 'show'])->whereNumber('role');
+    Route::patch('/roles/{role}', [RolApiController::class, 'update'])->whereNumber('role');
+    Route::delete('/roles/{role}', [RolApiController::class, 'destroy'])->whereNumber('role');
+    Route::patch('/roles/{role}/permisos', [RolApiController::class, 'updatePermissions'])->whereNumber('role');
+    Route::get('/permisos', [RolApiController::class, 'permisos']);
+    Route::get('/permissions', [RolApiController::class, 'permisos']);
 
     // IA
     Route::prefix('ai')->name('api.ai.')->group(function () {
