@@ -28,6 +28,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Usuario autenticado
     Route::get('/user', [UserApiController::class, 'show']);
+    Route::get('/profile', [UserApiController::class, 'show']);
+    Route::patch('/profile', [UserApiController::class, 'update']);
+    Route::post('/profile/photo', [UserApiController::class, 'updatePhoto']);
+    Route::delete('/profile/photo', [UserApiController::class, 'deletePhoto']);
 
     // Dashboard / métricas
     Route::get('/dashboard', [DashboardApiController::class, 'index']);
@@ -42,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/proyectos/{project}/calendar', [CalendarEventApiController::class, 'projectCalendar'])->whereNumber('project');
     Route::get('/proyectos/{project}/eventos', [CalendarEventApiController::class, 'projectCalendar'])->whereNumber('project');
     Route::post('/proyectos/{project}/eventos', [CalendarEventApiController::class, 'store'])->whereNumber('project');
+    Route::post('/proyectos/{project}/image', [ProyectoApiController::class, 'updateImage'])->whereNumber('project');
+    Route::delete('/proyectos/{project}/image', [ProyectoApiController::class, 'deleteImage'])->whereNumber('project');
     Route::get('/proyectos/{id}/messages', [MessageApiController::class, 'projectMessages']);
     Route::post('/proyectos/{id}/messages', [MessageApiController::class, 'store']);
 
