@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AiApiController;
 use App\Http\Controllers\Api\AiProjectApiController;
 use App\Http\Controllers\Api\CalendarEventApiController;
 use App\Http\Controllers\Api\DashboardApiController;
+use App\Http\Controllers\Api\EquipoApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
 use App\Http\Controllers\Api\InsumoApiController;
 use App\Http\Controllers\Api\InvitacionApiController;
@@ -42,6 +43,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/proyectos/{project}/eventos', [CalendarEventApiController::class, 'store'])->whereNumber('project');
     Route::get('/proyectos/{id}/messages', [MessageApiController::class, 'projectMessages']);
     Route::post('/proyectos/{id}/messages', [MessageApiController::class, 'store']);
+
+    // Equipo / Miembros — IMPORTANTE: /members antes de /members/chat para evitar colisiones
+    Route::get('/proyectos/{project}/members', [EquipoApiController::class, 'members'])->whereNumber('project');
+    Route::get('/proyectos/{project}/equipo', [EquipoApiController::class, 'equipo'])->whereNumber('project');
+    Route::patch('/proyectos/{project}/members/{userId}', [EquipoApiController::class, 'updateMember'])->whereNumber(['project', 'userId']);
+    Route::delete('/proyectos/{project}/members/{userId}', [EquipoApiController::class, 'removeMember'])->whereNumber(['project', 'userId']);
+    Route::get('/proyectos/{project}/invitaciones', [EquipoApiController::class, 'invitaciones'])->whereNumber('project');
+    Route::post('/proyectos/{project}/invitaciones', [EquipoApiController::class, 'sendInvitacion'])->whereNumber('project');
+
     Route::get('/proyectos/{id}/members/chat', [PrivateMessageApiController::class, 'projectMembers']);
     Route::get('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'index']);
     Route::post('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'store']);
@@ -70,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invitaciones', [InvitacionApiController::class, 'index']);
     Route::post('/invitaciones/{id}/aceptar', [InvitacionApiController::class, 'accept']);
     Route::post('/invitaciones/{id}/rechazar', [InvitacionApiController::class, 'reject']);
+    Route::delete('/invitaciones/{id}', [EquipoApiController::class, 'cancelInvitacion'])->whereNumber('id');
 
     // Notificaciones
     Route::get('/notificaciones', [NotificacionApiController::class, 'index']);
