@@ -54,17 +54,23 @@ class PrivateMessageApiController extends Controller
     /**
      * POST /api/private-messages/start
      * Create or retrieve a private conversation between two project members.
+     * Accepts recipient_id OR user_id as the target user (Android may send either or both).
      */
     public function start(Request $request): JsonResponse
     {
-        $request->validate([
-            'project_id' => ['required', 'integer'],
-            'user_id'    => ['required', 'integer'],
-        ]);
+        \Log::info('[PrivateChat][start] request', $request->only(['user_id', 'recipient_id', 'project_id']));
 
-        $authId    = request()->user()->id;
+        // Accept recipient_id OR user_id — prefer recipient_id when available
+        $otherId = (int) ($request->input('recipient_id') ?? $request->input('user_id'));
+
+        if (!$otherId || !$request->filled('project_id')) {
+            return response()->json([
+                'message' => 'Se requiere project_id y recipient_id (o user_id).',
+            ], 422);
+        }
+
+        $authId    = $request->user()->id;
         $projectId = (int) $request->project_id;
-        $otherId   = (int) $request->user_id;
 
         if ($otherId === $authId) {
             return response()->json(['message' => 'No puedes iniciar un chat contigo mismo.'], 400);
@@ -93,9 +99,17 @@ class PrivateMessageApiController extends Controller
             'user_two_id' => $userTwoId,
         ]);
 
+        \Log::info('[PrivateChat][start] conversation', [
+            'id'      => $conversation->id,
+            'created' => $conversation->wasRecentlyCreated,
+        ]);
+
         return response()->json([
-            'message'         => 'Conversación lista.',
-            'conversation_id' => $conversation->id,
+            'message' => 'Conversación lista.',
+            'data'    => [
+                'id'              => $conversation->id,
+                'conversation_id' => $conversation->id,
+            ],
         ]);
     }
 
@@ -106,7 +120,10 @@ class PrivateMessageApiController extends Controller
     public function show(int $id): JsonResponse
     {
         $authId = request()->user()->id;
-        $conv   = PrivateConversation::with(['project', 'userOne', 'userTwo'])->find($id);
+
+        \Log::info('[PrivateChat][show] request', ['conversation_id' => $id, 'auth_id' => $authId]);
+
+        $conv = PrivateConversation::with(['project', 'userOne', 'userTwo'])->find($id);
 
         if (!$conv) {
             return response()->json(['message' => 'Conversación no encontrada.'], 404);
@@ -126,8 +143,14 @@ class PrivateMessageApiController extends Controller
             ->reverse()
             ->values();
 
+        \Log::info('[PrivateChat][show] messages returned', ['count' => $msgs->count()]);
+
+        $formattedMsgs = $msgs->map(function ($msg) use ($conv) {
+            return $this->formatMessage($msg, $conv->id);
+        })->values();
+
         return response()->json([
-            'conversation' => [
+            'data' => [
                 'id'                => $conv->id,
                 'project_id'        => $conv->project_id,
                 'project_name'      => $conv->project?->nombre ?? '',
@@ -136,19 +159,26 @@ class PrivateMessageApiController extends Controller
                 'other_user_avatar' => $other?->profile_photo_path
                     ? asset('storage/' . $other->profile_photo_path)
                     : null,
+                'messages'          => $formattedMsgs,
             ],
-            'messages' => $msgs->map(fn ($msg) => $this->formatMessage($msg, $authId))->values(),
         ]);
     }
 
     /**
      * POST /api/private-messages/{id}
      * Send a message in a private conversation.
+     * Accepts body, message, mensaje, or contenido as the text field.
      */
     public function store(Request $request, int $id): JsonResponse
     {
-        $authId = request()->user()->id;
-        $conv   = PrivateConversation::with(['userOne', 'userTwo'])->find($id);
+        $authId = $request->user()->id;
+
+        \Log::info('[PrivateChat][store] request', [
+            'conversation_id' => $id,
+            'fields_received' => array_keys($request->all()),
+        ]);
+
+        $conv = PrivateConversation::with(['userOne', 'userTwo'])->find($id);
 
         if (!$conv) {
             return response()->json(['message' => 'Conversación no encontrada.'], 404);
@@ -158,30 +188,42 @@ class PrivateMessageApiController extends Controller
             return response()->json(['message' => 'No tienes acceso a esta conversación.'], 403);
         }
 
-        $request->validate([
-            'body' => ['required', 'string', 'max:2000'],
-        ]);
+        // Accept any common field name Android might send
+        $body = $request->input('body')
+            ?? $request->input('message')
+            ?? $request->input('mensaje')
+            ?? $request->input('contenido');
+
+        if (!$body || trim($body) === '') {
+            return response()->json([
+                'message' => 'El mensaje no puede estar vacío. Envía el texto en el campo body, message, mensaje o contenido.',
+            ], 422);
+        }
 
         $msg = $conv->messages()->create([
             'sender_id' => $authId,
-            'body'      => strip_tags(trim($request->body)),
+            'body'      => strip_tags(trim($body)),
         ]);
 
         $conv->update(['last_message_at' => now()]);
+
+        \Log::info('[PrivateChat][store] message saved', ['message_id' => $msg->id]);
 
         // Notify the receiver
         $receiver = $conv->user_one_id === $authId ? $conv->userTwo : $conv->userOne;
         if ($receiver) {
             $receiver->notify(new PrivateMessageNotification(
-                request()->user()->name,
+                $request->user()->name,
                 $conv->id,
                 $conv->project_id,
             ));
         }
 
+        $msg->load('sender');
+
         return response()->json([
             'message' => 'Mensaje enviado correctamente.',
-            'data'    => $this->formatMessage($msg->load('sender'), $authId),
+            'data'    => $this->formatMessage($msg, $conv->id),
         ], 201);
     }
 
@@ -258,21 +300,27 @@ class PrivateMessageApiController extends Controller
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private function formatMessage($msg, int $authId): array
+    private function formatMessage($msg, int $conversationId): array
     {
         $sender = $msg->sender;
+        $avatar = $sender?->profile_photo_path
+            ? asset('storage/' . $sender->profile_photo_path)
+            : null;
 
         return [
-            'id'            => $msg->id,
-            'sender_id'     => $msg->sender_id,
-            'sender_name'   => $sender?->name ?? 'Usuario',
-            'sender_avatar' => $sender?->profile_photo_path
-                ? asset('storage/' . $sender->profile_photo_path)
-                : null,
-            'body'          => $msg->body,
-            'mine'          => $msg->sender_id === $authId,
-            'read_at'       => $msg->read_at?->toIso8601String(),
-            'created_at'    => $msg->created_at->toIso8601String(),
+            'id'              => $msg->id,
+            'conversation_id' => $conversationId,
+            'user_id'         => $msg->sender_id,
+            'message'         => $msg->body,
+            'read_at'         => $msg->read_at?->toIso8601String(),
+            'created_at'      => $msg->created_at->toIso8601String(),
+            'user'            => [
+                'id'        => $sender?->id,
+                'name'      => $sender?->name ?? 'Usuario',
+                'email'     => $sender?->email ?? '',
+                'avatar'    => $avatar,
+                'photo_url' => $avatar,
+            ],
         ];
     }
 
