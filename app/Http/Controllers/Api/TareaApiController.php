@@ -75,6 +75,18 @@ class TareaApiController extends Controller
         ]);
     }
 
+    private function isProjectMember(Proyecto $proyecto, int $userId): bool
+    {
+        if ((int) $proyecto->user_id === $userId) {
+            return true;
+        }
+
+        return $proyecto->members()
+            ->where('user_id', $userId)
+            ->where('status', 'activo')
+            ->exists();
+    }
+
     public function update(Request $request, int $tarea): JsonResponse
     {
         $task = Task::find($tarea);
@@ -96,6 +108,15 @@ class TareaApiController extends Controller
             'responsable_id' => 'sometimes|nullable|integer|exists:users,id',
             'fecha_limite'   => 'sometimes|nullable|date',
         ]);
+
+        // Validate that the assigned user belongs to the project
+        if (!empty($validated['responsable_id'])) {
+            if (!$this->isProjectMember($proyecto, (int) $validated['responsable_id'])) {
+                return response()->json([
+                    'message' => 'El responsable seleccionado no pertenece a este proyecto.',
+                ], 422);
+            }
+        }
 
         // Mapper Android → task_statuses.nombre
         $estadoToNombre = [

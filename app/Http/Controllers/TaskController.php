@@ -107,7 +107,7 @@ class TaskController extends Controller
         $statuses    = TaskStatus::orderBy('orden')->get();
         $userStories = $this->userStoriesForProject($proyecto);
         $sprints     = $proyecto->sprints()->orderBy('created_at')->get();
-        $users       = User::orderBy('name')->get();
+        $users       = $this->projectMemberUsers($proyecto);
 
         return view('proyectos.tasks.create', compact('proyecto', 'statuses', 'userStories', 'sprints', 'users'));
     }
@@ -149,7 +149,7 @@ class TaskController extends Controller
         $statuses    = TaskStatus::orderBy('orden')->get();
         $userStories = $this->userStoriesForProject($proyecto);
         $sprints     = $proyecto->sprints()->orderBy('created_at')->get();
-        $users       = User::orderBy('name')->get();
+        $users       = $this->projectMemberUsers($proyecto);
 
         return view('proyectos.tasks.edit', compact('proyecto', 'task', 'statuses', 'userStories', 'sprints', 'users'));
     }
@@ -226,13 +226,15 @@ class TaskController extends Controller
             }
         };
 
+        $validMemberIds = $this->projectMemberUsers($proyecto)->pluck('id')->all();
+
         return [
             'titulo'         => ['required', 'string', 'max:255'],
             'descripcion'    => ['nullable', 'string', 'max:5000'],
             'task_status_id' => ['required', 'exists:task_statuses,id'],
             'user_story_id'  => ['nullable', Rule::in($validUserStoryIds)],
             'sprint_id'      => ['nullable', Rule::in($validSprintIds)],
-            'assigned_to'    => ['nullable', 'exists:users,id'],
+            'assigned_to'    => ['nullable', Rule::in($validMemberIds)],
             'fecha_limite'   => ['nullable', 'date', $sprintDateRule],
         ];
     }
@@ -246,8 +248,38 @@ class TaskController extends Controller
             'task_status_id.exists'   => 'El estado seleccionado no es válido.',
             'user_story_id.in'        => 'La historia de usuario seleccionada no es válida.',
             'sprint_id.in'            => 'El sprint seleccionado no es válido.',
+            'assigned_to.in'          => 'El responsable seleccionado no pertenece a este proyecto.',
             'fecha_limite.date'       => 'La fecha límite no tiene un formato válido.',
         ];
+    }
+
+    /**
+     * Returns only the users who are members of the given project:
+     * the project owner + active members with accounts, deduplicated and sorted by name.
+     */
+    private function projectMemberUsers(Proyecto $proyecto): \Illuminate\Support\Collection
+    {
+        $members = collect();
+
+        // Project owner
+        $owner = User::find($proyecto->user_id);
+        if ($owner) {
+            $members->push($owner);
+        }
+
+        // Active project members with user accounts
+        $proyecto->members()
+            ->where('status', 'activo')
+            ->whereNotNull('user_id')
+            ->with('user')
+            ->get()
+            ->each(function ($member) use ($members) {
+                if ($member->user && !$members->contains('id', $member->user->id)) {
+                    $members->push($member->user);
+                }
+            });
+
+        return $members->sortBy('name')->values();
     }
 
     private function userStoriesForProject(Proyecto $proyecto)
