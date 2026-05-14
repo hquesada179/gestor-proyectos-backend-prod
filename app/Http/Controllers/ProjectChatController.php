@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrivateConversation;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -75,6 +76,9 @@ class ProjectChatController extends Controller
             if ($receiverError) {
                 return $receiverError;
             }
+
+            // Route private chat through private_conversations + private_messages
+            return $this->privateMessages($request, $proyecto, $receiverId);
         }
 
         $query = $this->conversationQuery($proyecto, $type, $receiverId)
@@ -97,18 +101,57 @@ class ProjectChatController extends Controller
         return response()->json($this->format($msgs));
     }
 
+    /** Load private messages from private_conversations / private_messages. */
+    private function privateMessages(Request $request, Proyecto $proyecto, int $receiverId): JsonResponse
+    {
+        $authId    = Auth::id();
+        $userOneId = min($authId, $receiverId);
+        $userTwoId = max($authId, $receiverId);
+
+        $conv = PrivateConversation::firstOrCreate([
+            'project_id'  => $proyecto->id,
+            'user_one_id' => $userOneId,
+            'user_two_id' => $userTwoId,
+        ]);
+
+        $query = $conv->messages()->with('sender');
+
+        if ($request->filled('after')) {
+            $msgs = $query
+                ->where('id', '>', (int) $request->after)
+                ->orderBy('id')
+                ->get();
+        } else {
+            $msgs = $query
+                ->orderByDesc('id')
+                ->limit(80)
+                ->get()
+                ->reverse()
+                ->values();
+        }
+
+        \Log::info('[PrivateChat][web_load]', [
+            'conversation_id' => $conv->id,
+            'auth_id'         => $authId,
+            'receiver_id'     => $receiverId,
+            'count'           => $msgs->count(),
+        ]);
+
+        return response()->json($this->formatPrivate($msgs, $authId));
+    }
+
     /** POST /mensajes/proyectos/{proyecto} — send a message. */
     public function store(Request $request, Proyecto $proyecto): JsonResponse
     {
         abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
 
         $request->validate([
-            'message' => ['required', 'string', 'max:2000'],
-            'type' => ['nullable', 'string', 'in:general,private'],
+            'message'     => ['required', 'string', 'max:2000'],
+            'type'        => ['nullable', 'string', 'in:general,private'],
             'receiver_id' => ['nullable', 'integer'],
         ]);
 
-        $type = $request->input('type', 'general');
+        $type       = $request->input('type', 'general');
         $receiverId = $type === 'private' ? (int) $request->input('receiver_id') : null;
 
         if ($type === 'private') {
@@ -116,13 +159,16 @@ class ProjectChatController extends Controller
             if ($receiverError) {
                 return $receiverError;
             }
+
+            // Store private message in private_conversations / private_messages
+            return $this->storePrivate($request, $proyecto, $receiverId);
         }
 
         $msg = $proyecto->messages()->create([
             'user_id'     => Auth::id(),
             'sender_id'   => Auth::id(),
-            'receiver_id' => $type === 'private' ? $receiverId : null,
-            'type'        => $type,
+            'receiver_id' => null,
+            'type'        => 'general',
             'message'     => strip_tags(trim($request->message)),
         ]);
 
@@ -131,12 +177,44 @@ class ProjectChatController extends Controller
         return response()->json($this->format(collect([$msg]))[0], 201);
     }
 
-    // ── Helper ────────────────────────────────────────────────────────────────
+    /** Save a private message into private_conversations / private_messages. */
+    private function storePrivate(Request $request, Proyecto $proyecto, int $receiverId): JsonResponse
+    {
+        $authId    = Auth::id();
+        $userOneId = min($authId, $receiverId);
+        $userTwoId = max($authId, $receiverId);
+
+        $conv = PrivateConversation::firstOrCreate([
+            'project_id'  => $proyecto->id,
+            'user_one_id' => $userOneId,
+            'user_two_id' => $userTwoId,
+        ]);
+
+        $msg = $conv->messages()->create([
+            'sender_id' => $authId,
+            'body'      => strip_tags(trim($request->message)),
+        ]);
+
+        $conv->update(['last_message_at' => now()]);
+
+        $msg->load('sender');
+
+        \Log::info('[PrivateChat][web_store]', [
+            'auth_id'         => $authId,
+            'conversation_id' => $conv->id,
+            'body'            => $msg->body,
+            'message_id'      => $msg->id,
+        ]);
+
+        return response()->json($this->formatPrivate(collect([$msg]), $authId)[0], 201);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function format($messages): array
     {
         return $messages->map(function ($msg) {
-            $sender = $msg->sender ?: $msg->user;
+            $sender   = $msg->sender ?: $msg->user;
             $senderId = (int) ($msg->sender_id ?? $msg->user_id);
 
             return [
@@ -162,24 +240,39 @@ class ProjectChatController extends Controller
         })->values()->all();
     }
 
+    /** Format PrivateMessage records into the same shape the web frontend expects. */
+    private function formatPrivate($messages, int $authId): array
+    {
+        return $messages->map(function ($msg) use ($authId) {
+            $sender   = $msg->sender;
+            $senderId = (int) $msg->sender_id;
+
+            return [
+                'id'           => $msg->id,
+                'user_id'      => $senderId,
+                'sender_id'    => $senderId,
+                'receiver_id'  => null,
+                'type'         => 'private',
+                'user_name'    => $sender?->name ?? 'Usuario',
+                'user_photo'   => $sender?->profile_photo_path
+                    ? asset('storage/' . $sender->profile_photo_path)
+                    : null,
+                'user_initial' => mb_strtoupper(mb_substr($sender?->name ?? 'U', 0, 1)),
+                'message'      => $msg->body,
+                'is_mine'      => $senderId === $authId,
+                'time'         => $msg->created_at->format('H:i'),
+                'date_label'   => $msg->created_at->isToday()
+                    ? 'Hoy'
+                    : ($msg->created_at->isYesterday()
+                        ? 'Ayer'
+                        : $msg->created_at->format('d/m/Y')),
+            ];
+        })->values()->all();
+    }
+
     private function conversationQuery(Proyecto $proyecto, string $type, ?int $receiverId)
     {
-        if ($type === 'private') {
-            $userId = Auth::id();
-
-            return $proyecto->messages()
-                ->where('type', 'private')
-                ->where(function ($q) use ($userId, $receiverId) {
-                    $q->where(function ($inner) use ($userId, $receiverId) {
-                        $inner->where('sender_id', $userId)
-                              ->where('receiver_id', $receiverId);
-                    })->orWhere(function ($inner) use ($userId, $receiverId) {
-                        $inner->where('sender_id', $receiverId)
-                              ->where('receiver_id', $userId);
-                    });
-                });
-        }
-
+        // Private mode is handled separately via privateMessages() / storePrivate()
         return $proyecto->messages()
             ->where('type', 'general')
             ->whereNull('receiver_id');

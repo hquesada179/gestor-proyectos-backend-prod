@@ -121,7 +121,7 @@ class PrivateMessageApiController extends Controller
     {
         $authId = request()->user()->id;
 
-        \Log::info('[PrivateChat][show] request', ['conversation_id' => $id, 'auth_id' => $authId]);
+        \Log::info('[PrivateChat][api_load] request', ['conversation_id' => $id, 'auth_id' => $authId]);
 
         $conv = PrivateConversation::with(['project', 'userOne', 'userTwo'])->find($id);
 
@@ -143,7 +143,7 @@ class PrivateMessageApiController extends Controller
             ->reverse()
             ->values();
 
-        \Log::info('[PrivateChat][show] messages returned', ['count' => $msgs->count()]);
+        \Log::info('[PrivateChat][api_load] messages returned', ['count' => $msgs->count()]);
 
         $formattedMsgs = $msgs->map(function ($msg) use ($conv) {
             return $this->formatMessage($msg, $conv->id);
@@ -173,7 +173,7 @@ class PrivateMessageApiController extends Controller
     {
         $authId = $request->user()->id;
 
-        \Log::info('[PrivateChat][store] request', [
+        \Log::info('[PrivateChat][api_store] request', [
             'conversation_id' => $id,
             'fields_received' => array_keys($request->all()),
         ]);
@@ -207,7 +207,12 @@ class PrivateMessageApiController extends Controller
 
         $conv->update(['last_message_at' => now()]);
 
-        \Log::info('[PrivateChat][store] message saved', ['message_id' => $msg->id]);
+        \Log::info('[PrivateChat][api_store] message saved', [
+            'auth_id'         => $authId,
+            'conversation_id' => $id,
+            'body'            => $msg->body,
+            'message_id'      => $msg->id,
+        ]);
 
         // Notify the receiver
         $receiver = $conv->user_one_id === $authId ? $conv->userTwo : $conv->userOne;
