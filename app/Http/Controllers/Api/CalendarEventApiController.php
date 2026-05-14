@@ -187,26 +187,50 @@ class CalendarEventApiController extends Controller
             $projectIds = Proyecto::accessibleBy($userId)->pluck('id');
         }
 
-        $start = !empty($filters['start']) ? Carbon::parse($filters['start'])->startOfDay() : null;
-        $end = !empty($filters['end']) ? Carbon::parse($filters['end'])->endOfDay() : null;
+        // Default to current month when no range is provided
+        $start = !empty($filters['start'])
+            ? Carbon::parse($filters['start'])->startOfDay()
+            : Carbon::now()->startOfMonth()->startOfDay();
+        $end = !empty($filters['end'])
+            ? Carbon::parse($filters['end'])->endOfDay()
+            : Carbon::now()->endOfMonth()->endOfDay();
+
         $type = $filters['type'] ?? null;
 
+        $manualEvts  = $this->manualEvents($projectIds, $userId, $project?->id, $start, $end, $type);
+        $sprintEvts  = $this->sprintEvents($projectIds, $start, $end, $type);
+        $projectEvts = $this->projectEvents($projectIds, $start, $end, $type);
+        $taskEvts    = $this->taskEvents($projectIds, $start, $end, $type);
+
+        \Log::info('[CalendarApi] endpoint=' . request()->path(), [
+            'start_param'         => $filters['start'] ?? null,
+            'end_param'           => $filters['end'] ?? null,
+            'start_used'          => $start->toDateString(),
+            'end_used'            => $end->toDateString(),
+            'manual_events_count' => $manualEvts->count(),
+            'sprints_count'       => $sprintEvts->count(),
+            'projects_count'      => $projectEvts->count(),
+            'tasks_table'         => 'tasks',
+            'tasks_count'         => $taskEvts->count(),
+            'total_events_count'  => $manualEvts->count() + $sprintEvts->count() + $projectEvts->count() + $taskEvts->count(),
+        ]);
+
         $events = collect()
-            ->merge($this->manualEvents($projectIds, $userId, $project?->id, $start, $end, $type))
-            ->merge($this->taskEvents($projectIds, $start, $end, $type))
-            ->merge($this->sprintEvents($projectIds, $start, $end, $type))
-            ->merge($this->projectEvents($projectIds, $start, $end, $type))
-            ->sortBy(fn(array $event) => $event['start_at'] ?? $event['date'] ?? '')
+            ->merge($manualEvts)
+            ->merge($taskEvts)
+            ->merge($sprintEvts)
+            ->merge($projectEvts)
+            ->sortBy(fn(array $event) => $event['start'] ?? $event['start_at'] ?? $event['date'] ?? '')
             ->values();
 
         return response()->json([
             'data'    => $events,
             'summary' => [
                 'total'     => $events->count(),
-                'tareas'    => $events->where('source_type', 'tarea')->count(),
-                'sprints'   => $events->where('source_type', 'sprint')->count(),
-                'eventos'   => $events->where('source_type', 'evento')->count(),
-                'proyectos' => $events->where('source_type', 'proyecto')->count(),
+                'tareas'    => $events->where('source', 'tarea')->count(),
+                'sprints'   => $events->where('source', 'sprint')->count(),
+                'eventos'   => $events->where('source', 'evento')->count(),
+                'proyectos' => $events->where('source', 'proyecto')->count(),
             ],
             'project' => $project ? [
                 'id'     => $project->id,
@@ -285,50 +309,36 @@ class CalendarEventApiController extends Controller
             return collect();
         }
 
-        $events = collect();
-
-        Sprint::with('proyecto:id,nombre')
+        return Sprint::with('proyecto:id,nombre')
             ->whereIn('proyecto_id', $projectIds)
             ->get()
-            ->each(function (Sprint $sprint) use ($events, $start, $end) {
-                if ($this->dateInRange($sprint->fecha_inicio, $start, $end)) {
-                    $events->push($this->baseEventPayload([
-                        'id'           => 'sprint-' . $sprint->id . '-start',
-                        'source_id'    => $sprint->id,
-                        'source_type'  => 'sprint',
-                        'project_id'   => $sprint->proyecto_id,
-                        'project_name' => $sprint->proyecto?->nombre,
-                        'title'        => $sprint->nombre . ' - Inicio',
-                        'description'  => $sprint->objetivo,
-                        'type'         => 'sprint',
-                        'status'       => $this->normalizeStatus($sprint->estado),
-                        'date'         => $sprint->fecha_inicio?->toDateString(),
-                        'start_at'     => $sprint->fecha_inicio?->startOfDay()->toDateTimeString(),
-                        'end_at'       => null,
-                        'all_day'      => true,
-                    ]));
-                }
+            ->filter(function (Sprint $sprint) use ($start, $end) {
+                // Include sprint if its period overlaps the filter range
+                $sprintStart = $sprint->fecha_inicio ? Carbon::parse($sprint->fecha_inicio)->startOfDay() : null;
+                $sprintEnd   = $sprint->fecha_fin   ? Carbon::parse($sprint->fecha_fin)->endOfDay()     : $sprintStart;
 
-                if ($this->dateInRange($sprint->fecha_fin, $start, $end)) {
-                    $events->push($this->baseEventPayload([
-                        'id'           => 'sprint-' . $sprint->id . '-end',
-                        'source_id'    => $sprint->id,
-                        'source_type'  => 'sprint',
-                        'project_id'   => $sprint->proyecto_id,
-                        'project_name' => $sprint->proyecto?->nombre,
-                        'title'        => $sprint->nombre . ' - Fin',
-                        'description'  => $sprint->objetivo,
-                        'type'         => 'sprint',
-                        'status'       => $this->normalizeStatus($sprint->estado),
-                        'date'         => $sprint->fecha_fin?->toDateString(),
-                        'start_at'     => $sprint->fecha_fin?->startOfDay()->toDateTimeString(),
-                        'end_at'       => null,
-                        'all_day'      => true,
-                    ]));
-                }
+                return $this->eventOverlapsRange($sprintStart, $sprintEnd, $start, $end);
+            })
+            ->map(function (Sprint $sprint) {
+                $sprintStart = $sprint->fecha_inicio ? Carbon::parse($sprint->fecha_inicio) : null;
+                $sprintEnd   = $sprint->fecha_fin   ? Carbon::parse($sprint->fecha_fin)    : null;
+
+                return $this->baseEventPayload([
+                    'id'           => 'sprint-' . $sprint->id,
+                    'source_id'    => $sprint->id,
+                    'source_type'  => 'sprint',
+                    'project_id'   => $sprint->proyecto_id,
+                    'project_name' => $sprint->proyecto?->nombre,
+                    'title'        => $sprint->nombre,
+                    'description'  => $sprint->objetivo,
+                    'type'         => 'sprint',
+                    'status'       => $this->normalizeStatus($sprint->estado),
+                    'date'         => $sprintStart?->toDateString(),
+                    'start_at'     => $sprintStart?->startOfDay()->toDateTimeString(),
+                    'end_at'       => $sprintEnd?->endOfDay()->toDateTimeString(),
+                    'all_day'      => true,
+                ]);
             });
-
-        return $events;
     }
 
     private function projectEvents($projectIds, ?Carbon $start, ?Carbon $end, ?string $type)
@@ -337,49 +347,35 @@ class CalendarEventApiController extends Controller
             return collect();
         }
 
-        $events = collect();
-
-        Proyecto::whereIn('id', $projectIds)
+        return Proyecto::whereIn('id', $projectIds)
             ->get(['id', 'nombre', 'descripcion', 'estado', 'fecha_inicio', 'fecha_fin_estimada'])
-            ->each(function (Proyecto $project) use ($events, $start, $end) {
-                if ($this->dateInRange($project->fecha_inicio, $start, $end)) {
-                    $events->push($this->baseEventPayload([
-                        'id'           => 'project-' . $project->id . '-start',
-                        'source_id'    => $project->id,
-                        'source_type'  => 'proyecto',
-                        'project_id'   => $project->id,
-                        'project_name' => $project->nombre,
-                        'title'        => $project->nombre . ' - Inicio',
-                        'description'  => $project->descripcion,
-                        'type'         => 'proyecto',
-                        'status'       => $this->normalizeStatus($project->estado),
-                        'date'         => $project->fecha_inicio?->toDateString(),
-                        'start_at'     => $project->fecha_inicio?->startOfDay()->toDateTimeString(),
-                        'end_at'       => null,
-                        'all_day'      => true,
-                    ]));
-                }
+            ->filter(function (Proyecto $project) use ($start, $end) {
+                // Include project if its period overlaps the filter range
+                $projStart = $project->fecha_inicio        ? Carbon::parse($project->fecha_inicio)->startOfDay()        : null;
+                $projEnd   = $project->fecha_fin_estimada  ? Carbon::parse($project->fecha_fin_estimada)->endOfDay()    : $projStart;
 
-                if ($this->dateInRange($project->fecha_fin_estimada, $start, $end)) {
-                    $events->push($this->baseEventPayload([
-                        'id'           => 'project-' . $project->id . '-end',
-                        'source_id'    => $project->id,
-                        'source_type'  => 'proyecto',
-                        'project_id'   => $project->id,
-                        'project_name' => $project->nombre,
-                        'title'        => $project->nombre . ' - Fin estimado',
-                        'description'  => $project->descripcion,
-                        'type'         => 'proyecto',
-                        'status'       => $this->normalizeStatus($project->estado),
-                        'date'         => $project->fecha_fin_estimada?->toDateString(),
-                        'start_at'     => $project->fecha_fin_estimada?->startOfDay()->toDateTimeString(),
-                        'end_at'       => null,
-                        'all_day'      => true,
-                    ]));
-                }
+                return $this->eventOverlapsRange($projStart, $projEnd, $start, $end);
+            })
+            ->map(function (Proyecto $project) {
+                $projStart = $project->fecha_inicio       ? Carbon::parse($project->fecha_inicio)       : null;
+                $projEnd   = $project->fecha_fin_estimada ? Carbon::parse($project->fecha_fin_estimada) : null;
+
+                return $this->baseEventPayload([
+                    'id'           => 'project-' . $project->id,
+                    'source_id'    => $project->id,
+                    'source_type'  => 'proyecto',
+                    'project_id'   => $project->id,
+                    'project_name' => $project->nombre,
+                    'title'        => $project->nombre,
+                    'description'  => $project->descripcion,
+                    'type'         => 'proyecto',
+                    'status'       => $this->normalizeStatus($project->estado),
+                    'date'         => $projStart?->toDateString(),
+                    'start_at'     => $projStart?->startOfDay()->toDateTimeString(),
+                    'end_at'       => $projEnd?->endOfDay()->toDateTimeString(),
+                    'all_day'      => true,
+                ]);
             });
-
-        return $events;
     }
 
     private function formatManualEvent(CalendarEvent $event): array
@@ -408,6 +404,11 @@ class CalendarEventApiController extends Controller
     private function baseEventPayload(array $event): array
     {
         return array_merge($event, [
+            // Android-friendly aliases
+            'start'           => $event['start_at'] ?? null,
+            'end'             => $event['end_at'] ?? null,
+            'source'          => $event['source_type'] ?? null,
+            // Spanish aliases for web
             'titulo'          => $event['title'] ?? null,
             'descripcion'     => $event['description'] ?? null,
             'tipo'            => $event['type'] ?? null,
