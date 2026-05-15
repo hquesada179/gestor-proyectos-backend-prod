@@ -252,6 +252,15 @@
                             {{ $plan->isFree() ? 'Cambiar a Gratis' : 'Seleccionar' }}
                         </button>
                     </form>
+                    {{-- Nota de precio COP para planes de pago --}}
+                    @if(!$plan->isFree() && $plan->price_cop > 0)
+                    <p class="mt-2 text-center" style="font-size:11px;color:#475569;">
+                        Pago con Wompi Colombia:
+                        <span style="color:#94a3b8;font-weight:600;">
+                            ${{ number_format($plan->price_cop, 0, ',', '.') }} COP
+                        </span>
+                    </p>
+                    @endif
                 @endif
 
             </div>

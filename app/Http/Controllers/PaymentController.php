@@ -56,7 +56,9 @@ class PaymentController extends Controller
 
         // Create pending payment record
         $reference    = $this->wompi->generateReference($user->id, $plan->id);
-        $amountCents  = $this->wompi->amountInCents($plan);
+        $amountCents  = $this->wompi->amountInCents($plan);   // price_cop * 100
+        $amountCop    = $plan->price_cop;                      // e.g. 119900
+        $amountUsd    = (float) $plan->monthly_price;          // e.g. 29.99
 
         // Build checkout URL before persisting so it's saved for audit/retry
         $redirectUrl = route('pagos.resultado');
@@ -67,17 +69,27 @@ class PaymentController extends Controller
             'plan_id'      => $plan->id,
             'provider'     => 'wompi',
             'reference'    => $reference,
-            'amount'       => $amountCents,
+            'amount'       => $amountCents,                    // COP cents for Wompi
             'currency'     => config('services.wompi.currency', 'COP'),
             'status'       => 'pending',
             'checkout_url' => $checkoutUrl,
+            'raw_payload'  => [                                // pricing audit trail
+                'amount_cop'       => $amountCop,
+                'amount_in_cents'  => $amountCents,
+                'amount_usd'       => $amountUsd,
+                'currency'         => 'COP',
+                'provider'         => 'wompi',
+                'pricing_note'     => "USD {$amountUsd} ≈ COP {$amountCop} (precio fijo Colombia)",
+            ],
         ]);
 
         Log::info('PaymentController: checkout initiated', [
-            'user_id'   => $user->id,
-            'plan'      => $plan->slug,
-            'reference' => $reference,
-            'amount'    => $amountCents,
+            'user_id'         => $user->id,
+            'plan'            => $plan->slug,
+            'reference'       => $reference,
+            'amount_in_cents' => $amountCents,
+            'amount_cop'      => $amountCop,
+            'amount_usd'      => $amountUsd,
         ]);
 
         return redirect()->away($checkoutUrl);

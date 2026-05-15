@@ -39,12 +39,17 @@ class WompiPaymentService
     }
 
     /**
-     * Convert plan price (stored in USD/COP) to integer cents for Wompi.
-     * For sandbox: treats monthly_price as-is * 100 (e.g. 9.99 → 999 cents).
-     * For production: plans should have COP pricing.
+     * Return the Wompi amount_in_cents for a plan.
+     * Uses the fixed COP price (price_cop * 100) when set.
+     * Examples: 39900 COP → 3.990.000 cents | 119900 COP → 11.990.000 cents.
      */
     public function amountInCents(Plan $plan): int
     {
+        if ($plan->price_cop > 0) {
+            return $plan->price_cop * 100;
+        }
+
+        // Fallback for plans without COP price (sandbox / free plan edge case)
         return (int) round($plan->monthly_price * 100);
     }
 
