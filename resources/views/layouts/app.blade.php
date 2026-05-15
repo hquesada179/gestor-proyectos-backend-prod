@@ -40,7 +40,10 @@
     })();
     </script>
 
-    <title>{{ config('app.name', 'GestorApp') }}</title>
+    <title>{{ config('app.name', 'Scrumter') }}</title>
+
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -386,12 +389,12 @@
         {{-- ── Logo ────────────────────────────────────────────────────── --}}
         <div class="sb-logo-wrap px-6 mb-6">
             <a href="{{ route('dashboard') }}" class="sb-logo-link flex items-center gap-3 group">
-                <div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-white"
-                          style="font-size:17px;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;">rocket_launch</span>
-                </div>
+                <img src="{{ asset('brand/scrumter-logo.png') }}"
+                     alt="Scrumter"
+                     class="flex-shrink-0 object-contain"
+                     style="width:32px;height:32px;border-radius:6px;">
                 <span class="sb-text text-base font-black text-white tracking-tight">
-                    {{ config('app.name', 'GestorApp') }}
+                    Scrumter
                 </span>
             </a>
         </div>

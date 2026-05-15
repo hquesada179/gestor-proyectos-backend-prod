@@ -18,14 +18,12 @@
 
             {{-- ── Marca ─────────────────────────────────────────────────────── --}}
             <div class="flex flex-col items-center text-center mb-8">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4 flex-shrink-0"
-                     style="background:linear-gradient(135deg,#3422cc,#6366f1);
-                            box-shadow:0 0 24px rgba(99,102,241,0.35);">
-                    <span class="material-symbols-outlined text-white"
-                          style="font-size:22px;font-variation-settings:'FILL' 1,'wght' 500">rocket_launch</span>
-                </div>
+                <img src="{{ asset('brand/scrumter-logo.png') }}"
+                     alt="Scrumter"
+                     class="mb-4 object-contain"
+                     style="width:56px;height:56px;border-radius:12px;">
                 <h1 class="text-xl font-black text-white tracking-tight leading-none mb-1">
-                    {{ config('app.name', 'Gestor de Proyectos') }}
+                    Scrumter
                 </h1>
                 <p class="text-xs leading-relaxed mt-1" style="color:#475569;max-width:280px;">
                     Gestiona proyectos, sprints, tareas y créditos IA desde una sola plataforma.
