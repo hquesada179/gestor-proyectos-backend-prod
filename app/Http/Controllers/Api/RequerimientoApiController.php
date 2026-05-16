@@ -21,6 +21,7 @@ class RequerimientoApiController extends Controller
         }
 
         $requirements = $proyecto->requirements()
+            ->withCount('userStories')
             ->orderByRaw("CASE prioridad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 WHEN 'baja' THEN 3 END")
             ->orderBy('created_at', 'desc')
             ->get();
@@ -40,7 +41,7 @@ class RequerimientoApiController extends Controller
 
     public function show(int $requirement): JsonResponse
     {
-        $req = Requirement::find($requirement);
+        $req = Requirement::withCount('userStories')->find($requirement);
 
         if (! $req) {
             return response()->json(['message' => 'Requerimiento no encontrado.'], 404);
@@ -180,23 +181,24 @@ class RequerimientoApiController extends Controller
     private function format(Requirement $r): array
     {
         return [
-            'id'          => $r->id,
-            'project_id'  => $r->proyecto_id,
-            'proyecto_id' => $r->proyecto_id,
-            'codigo'      => $r->codigo,
-            'code'        => $r->codigo,
-            'titulo'      => $r->titulo,
-            'title'       => $r->titulo,
-            'descripcion' => $r->descripcion,
-            'description' => $r->descripcion,
-            'tipo'        => $r->tipo,
-            'type'        => $r->tipo,
-            'prioridad'   => $r->prioridad,
-            'priority'    => $r->prioridad,
-            'estado'      => $r->estado ?? 'pendiente',
-            'status'      => $r->estado ?? 'pendiente',
-            'created_at'  => $r->created_at?->toDateTimeString(),
-            'updated_at'  => $r->updated_at?->toDateTimeString(),
+            'id'                 => $r->id,
+            'project_id'         => $r->proyecto_id,
+            'proyecto_id'        => $r->proyecto_id,
+            'codigo'             => $r->codigo,
+            'code'               => $r->codigo,
+            'titulo'             => $r->titulo,
+            'title'              => $r->titulo,
+            'descripcion'        => $r->descripcion,
+            'description'        => $r->descripcion,
+            'tipo'               => $r->tipo,
+            'type'               => $r->tipo,
+            'prioridad'          => $r->prioridad,
+            'priority'           => $r->prioridad,
+            'estado'             => $r->estado ?? 'pendiente',
+            'status'             => $r->estado ?? 'pendiente',
+            'user_stories_count' => $r->user_stories_count ?? 0,
+            'created_at'         => $r->created_at?->toDateTimeString(),
+            'updated_at'         => $r->updated_at?->toDateTimeString(),
         ];
     }
 

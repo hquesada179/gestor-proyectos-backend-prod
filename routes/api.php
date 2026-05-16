@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\NotificacionApiController;
 use App\Http\Controllers\Api\PrivateMessageApiController;
 use App\Http\Controllers\Api\ProyectoApiController;
 use App\Http\Controllers\Api\RequerimientoApiController;
+use App\Http\Controllers\Api\UserStoryApiController;
 use App\Http\Controllers\Api\ScrumBoardApiController;
 use App\Http\Controllers\Api\SprintApiController;
 use App\Http\Controllers\Api\TareaApiController;
@@ -64,6 +65,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/proyectos/{id}/requerimientos', [RequerimientoApiController::class, 'store']);
     Route::get('/proyectos/{project}/insumos', [InsumoApiController::class, 'index'])->whereNumber('project');
     Route::post('/proyectos/{project}/insumos', [InsumoApiController::class, 'store'])->whereNumber('project');
+
+    // Historias de usuario (anidadas bajo proyecto → requerimiento)
+    Route::get('/proyectos/{projectId}/requerimientos/{requirementId}/historias', [UserStoryApiController::class, 'index'])->whereNumber(['projectId', 'requirementId']);
+    Route::post('/proyectos/{projectId}/requerimientos/{requirementId}/historias', [UserStoryApiController::class, 'store'])->whereNumber(['projectId', 'requirementId']);
+    Route::get('/proyectos/{projectId}/requerimientos/{requirementId}/historias/{userStoryId}', [UserStoryApiController::class, 'show'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+    Route::patch('/proyectos/{projectId}/requerimientos/{requirementId}/historias/{userStoryId}', [UserStoryApiController::class, 'update'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+    Route::put('/proyectos/{projectId}/requerimientos/{requirementId}/historias/{userStoryId}', [UserStoryApiController::class, 'update'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+    Route::delete('/proyectos/{projectId}/requerimientos/{requirementId}/historias/{userStoryId}', [UserStoryApiController::class, 'destroy'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+
+    // Alias en inglés (compatibilidad Android)
+    Route::get('/proyectos/{projectId}/requirements/{requirementId}/user-stories', [UserStoryApiController::class, 'index'])->whereNumber(['projectId', 'requirementId']);
+    Route::post('/proyectos/{projectId}/requirements/{requirementId}/user-stories', [UserStoryApiController::class, 'store'])->whereNumber(['projectId', 'requirementId']);
+    Route::get('/proyectos/{projectId}/requirements/{requirementId}/user-stories/{userStoryId}', [UserStoryApiController::class, 'show'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+    Route::patch('/proyectos/{projectId}/requirements/{requirementId}/user-stories/{userStoryId}', [UserStoryApiController::class, 'update'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+    Route::put('/proyectos/{projectId}/requirements/{requirementId}/user-stories/{userStoryId}', [UserStoryApiController::class, 'update'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
+    Route::delete('/proyectos/{projectId}/requirements/{requirementId}/user-stories/{userStoryId}', [UserStoryApiController::class, 'destroy'])->whereNumber(['projectId', 'requirementId', 'userStoryId']);
 
     // Requerimientos individuales
     Route::get('/requerimientos/{requirement}', [RequerimientoApiController::class, 'show'])->whereNumber('requirement');
