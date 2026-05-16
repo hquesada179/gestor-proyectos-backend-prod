@@ -50,6 +50,10 @@ return [
         'provider' => env('AI_PROVIDER', 'openai'),
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+    ],
+
     'wompi' => [
         'env'              => env('WOMPI_ENV', 'sandbox'),
         'public_key'       => env('WOMPI_PUBLIC_KEY', ''),
