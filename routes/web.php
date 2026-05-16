@@ -118,7 +118,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
     Route::resource('proyectos.requirements', RequirementController::class);
-    Route::resource('proyectos.requirements.user-stories', UserStoryController::class);
+    Route::get('proyectos/{proyecto}/requirements/{requirement}/user-stories/create', [UserStoryController::class, 'create'])
+        ->name('proyectos.requirements.user-stories.create');
+    Route::post('proyectos/{proyecto}/requirements/{requirement}/user-stories', [UserStoryController::class, 'store'])
+        ->name('proyectos.requirements.user-stories.store');
+    Route::get('proyectos/{proyecto}/requirement/{requirement}/user-stories/create', [UserStoryController::class, 'create'])
+        ->name('proyectos.requirement.user-stories.create');
+    Route::post('proyectos/{proyecto}/requirement/{requirement}/user-stories', [UserStoryController::class, 'store'])
+        ->name('proyectos.requirement.user-stories.store');
+    Route::resource('proyectos.requirements.user-stories', UserStoryController::class)
+        ->except(['create', 'store']);
     Route::get('proyectos/{proyecto}/tasks/export', [TaskController::class, 'export'])->name('proyectos.tasks.export');
     Route::resource('proyectos.tasks', TaskController::class);
     Route::resource('proyectos.sprints', SprintController::class);
