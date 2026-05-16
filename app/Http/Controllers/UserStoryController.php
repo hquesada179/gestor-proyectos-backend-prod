@@ -13,7 +13,7 @@ class UserStoryController extends Controller
 {
     public function index(Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         $userStories = $requirement->userStories()->latest()->get();
@@ -23,7 +23,7 @@ class UserStoryController extends Controller
 
     public function create(Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         return view('proyectos.requirements.user-stories.create', compact('proyecto', 'requirement'));
@@ -31,7 +31,7 @@ class UserStoryController extends Controller
 
     public function store(Request $request, Proyecto $proyecto, Requirement $requirement)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
 
         $validated = $request->validate(
@@ -52,7 +52,7 @@ class UserStoryController extends Controller
 
     public function show(Proyecto $proyecto, Requirement $requirement, UserStory $userStory)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
         abort_if($userStory->requirement_id !== $requirement->id, 404);
 
@@ -61,7 +61,7 @@ class UserStoryController extends Controller
 
     public function edit(Proyecto $proyecto, Requirement $requirement, UserStory $userStory)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
         abort_if($userStory->requirement_id !== $requirement->id, 404);
 
@@ -70,7 +70,7 @@ class UserStoryController extends Controller
 
     public function update(Request $request, Proyecto $proyecto, Requirement $requirement, UserStory $userStory)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
         abort_if($userStory->requirement_id !== $requirement->id, 404);
 
@@ -87,7 +87,7 @@ class UserStoryController extends Controller
 
     public function destroy(Proyecto $proyecto, Requirement $requirement, UserStory $userStory)
     {
-        abort_if($proyecto->user_id !== Auth::id(), 403);
+        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($requirement->proyecto_id !== $proyecto->id, 404);
         abort_if($userStory->requirement_id !== $requirement->id, 404);
 
