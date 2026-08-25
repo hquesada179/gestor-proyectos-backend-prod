@@ -26,6 +26,25 @@
         direction: ltr;
         vertical-align: middle;
     }
+
+    /* Foco visible global para navegación por teclado (WCAG 2.1 - 2.4.7).
+       Indicador azul claro con buen contraste sobre el fondo oscuro (#051424).
+       No se aplica border-radius para no alterar el radio del elemento al enfocar:
+       el outline ya sigue el radio del elemento en navegadores modernos. */
+    :focus-visible {
+        outline: 2px solid rgb(96, 165, 250);
+        outline-offset: 2px;
+    }
+
+    /* Los campos de formulario ya indican foco con border-color + box-shadow
+       (regla de focus de inputs más abajo). Se excluyen del anillo doble para
+       evitar duplicación visual. Los checkboxes/radios, botones y enlaces
+       conservan el anillo azul de :focus-visible. */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="hidden"]):focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+        outline: none;
+    }
 }
 
 @layer components {
@@ -307,7 +326,6 @@ select:focus,
 .dark-form-textarea:focus {
     border-color: #6366f1 !important;
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
-    outline: none !important;
 }
 
 select,

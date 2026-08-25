@@ -52,3 +52,4 @@ backups/
 # ── Documentación de diseño (referencia interna — no va al repo de producción) ─
 /docs/ui-source/
 /Docs
+/.opencode

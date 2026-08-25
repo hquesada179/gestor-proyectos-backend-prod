@@ -99,7 +99,6 @@
         input:focus,
         textarea:focus,
         select:focus {
-            outline: none !important;
             border-color: #6366f1 !important;
             box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
         }
@@ -382,7 +381,10 @@
                   flex flex-col py-6 shadow-2xl shadow-black/50">
 
         {{-- Toggle button (positioned on right edge) --}}
-        <button id="sidebarToggle" onclick="sidebarToggle()" title="Colapsar/Expandir">
+        <button id="sidebarToggle" onclick="sidebarToggle()" title="Colapsar/Expandir"
+                aria-label="Colapsar menú lateral"
+                aria-expanded="true"
+                aria-controls="sidebar">
             <span class="material-symbols-outlined" id="sbToggleIcon">chevron_left</span>
         </button>
 
@@ -611,6 +613,8 @@
             <button id="mobileMenuBtn"
                     onclick="mobileSidebarToggle()"
                     aria-label="Abrir menú"
+                    aria-expanded="false"
+                    aria-controls="sidebar"
                     class="items-center justify-center w-9 h-9 rounded-xl hover:bg-white/5 transition-all flex-shrink-0">
                 <span class="material-symbols-outlined text-on-surface-variant" style="font-size:22px;">menu</span>
             </button>
@@ -642,6 +646,9 @@
 
                 {{-- Bell button --}}
                 <button @click="bellOpen = !bellOpen"
+                        aria-label="Notificaciones"
+                        aria-haspopup="true"
+                        :aria-expanded="bellOpen.toString()"
                         class="relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-white/5 transition-all duration-150 outline-none focus:ring-2 focus:ring-blue-500/40"
                         title="Invitaciones">
                     <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">notifications</span>
@@ -850,33 +857,16 @@
                             <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">manage_accounts</span>
                             <span class="text-sm font-medium">{{ __('app.profile.account_settings') }}</span>
                         </a>
-                        <a href="#"
-                           class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
-                            <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">tune</span>
-                            <span class="text-sm font-medium">{{ __('app.profile.preferences') }}</span>
-                        </a>
-                        <a href="#"
-                           class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
-                            <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">security</span>
-                            <span class="text-sm font-medium">{{ __('app.profile.security') }}</span>
-                        </a>
-                        <a href="#"
-                           class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all text-on-surface-variant hover:text-white group">
-                            <span class="material-symbols-outlined group-hover:text-blue-400 transition-colors" style="font-size:20px;">notifications_active</span>
-                            <span class="text-sm font-medium">{{ __('app.profile.notifications') }}</span>
-                        </a>
                     </div>
 
                     {{-- ── Preferencias visuales ──────────────────── --}}
                     <div class="px-3 py-3 space-y-1 border-b border-white/5">
-                        <div class="flex items-center justify-between px-3 py-1.5">
+                        <div class="flex items-center justify-between px-3 py-1.5 cursor-default select-none">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-blue-400" style="font-size:20px;">dark_mode</span>
                                 <span class="text-sm text-on-surface-variant">{{ __('app.profile.dark_mode') }}</span>
                             </div>
-                            <div class="w-10 h-5 bg-blue-500 rounded-full relative cursor-default flex-shrink-0">
-                                <div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
-                            </div>
+                            <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">{{ __('app.profile.active') }}</span>
                         </div>
 
                         {{-- ── Selector de idioma ─────────────────── --}}
@@ -965,6 +955,7 @@
             <span class="material-symbols-outlined" style="font-size:16px;color:#34d399;">check_circle</span>
             <span style="font-size:13px;color:#34d399;flex:1;">{{ session('profile_photo_success') }}</span>
             <button onclick="document.getElementById('flash-photo').remove()"
+                    aria-label="Cerrar aviso"
                     style="background:none;border:none;cursor:pointer;color:#64748b;display:flex;align-items:center;">
                 <span class="material-symbols-outlined" style="font-size:16px;">close</span>
             </button>
@@ -996,6 +987,14 @@
     function isMobile() { return window.innerWidth < 768; }
 
     // ── Desktop: width-based collapse ────────────────────────────────────
+    var toggleBtn = document.getElementById('sidebarToggle');
+
+    function syncToggleA11y(collapsed) {
+        if (!toggleBtn) return;
+        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggleBtn.setAttribute('aria-label', collapsed ? 'Expandir menú lateral' : 'Colapsar menú lateral');
+    }
+
     function applyState(collapsed) {
         if (isMobile()) return;
         var w = collapsed ? MINI_WIDTH : FULL_WIDTH;
@@ -1004,6 +1003,7 @@
         if (collapsed)  { document.body.classList.add('sidebar-collapsed'); }
         else            { document.body.classList.remove('sidebar-collapsed'); }
         if (toggleIcon) { toggleIcon.textContent = collapsed ? 'chevron_right' : 'chevron_left'; }
+        syncToggleA11y(collapsed);
     }
 
     window.sidebarToggle = function () {
@@ -1014,6 +1014,12 @@
     };
 
     // ── Mobile: slide-in drawer ───────────────────────────────────────────
+    var mobileBtn = document.getElementById('mobileMenuBtn');
+
+    function syncMobileA11y(open) {
+        if (mobileBtn) mobileBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
     window.mobileSidebarToggle = function () {
         if (!sidebar) return;
         if (sidebar.classList.contains('mobile-open')) {
@@ -1022,6 +1028,7 @@
             sidebar.classList.add('mobile-open');
             if (overlay) overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            syncMobileA11y(true);
         }
     };
 
@@ -1030,6 +1037,7 @@
         sidebar.classList.remove('mobile-open');
         if (overlay) overlay.classList.remove('active');
         document.body.style.overflow = '';
+        syncMobileA11y(false);
     };
 
     // Close mobile sidebar when a nav link is clicked
