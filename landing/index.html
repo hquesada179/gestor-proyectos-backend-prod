@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3626ce" />
+    <title>Scrumter - Gestion inteligente de proyectos Scrum con IA</title>
+    <meta
+      name="description"
+      content="Scrumter transforma tus ideas en backlog listo: insumos, requerimientos, historias y sprints con IA. Kanban, calendario y equipo en un solo lugar. Empieza gratis."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Scrumter - Gestion inteligente de proyectos Scrum con IA" />
+    <meta
+      property="og:description"
+      content="Transforma insumos en requerimientos, historias y sprints con IA. Kanban, calendario y equipo. Pago en COP con Wompi."
+    />
+    <meta property="og:url" content="https://scrumter.com" />
+    <meta property="og:image" content="/scrumter-logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Scrumter - Gestion inteligente de proyectos Scrum con IA" />
+    <meta
+      name="twitter:description"
+      content="Transforma insumos en requerimientos, historias y sprints con IA. Empieza gratis."
+    />
+    <link rel="icon" href="/scrumter-logo.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/scrumter-logo.png" />
+    <link rel="canonical" href="https://scrumter.com/" />
+    <link rel="alternate" hreflang="es" href="https://scrumter.com/" />
+    <link rel="alternate" hreflang="en" href="https://scrumter.com/en" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Scrumter",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "Gestion inteligente de proyectos Scrum con IA: insumos, requerimientos, historias, sprints y Kanban.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "COP" },
+        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "ratingCount": "1240" }
+      }
+    </script>
+    <script>
+      (function () {
+        try {
+          var theme =
+            localStorage.getItem("scrumter-theme") ||
+            (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.documentElement.setAttribute("data-theme", theme);
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", theme === "dark" ? "#0b1626" : "#3626ce");
+        } catch (error) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
