@@ -96,7 +96,7 @@ export function Header({
       >
         <nav className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8">
           <a href="#main" className="group flex items-center gap-2.5 font-extrabold text-slate-950 dark:text-white" aria-label="Scrumter — Inicio">
-            <img className="h-8 w-8 rounded-lg object-contain" src="/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="eager" decoding="async" />
+            <img className="h-8 w-8 rounded-lg object-contain" src="/landing/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="eager" decoding="async" />
             <span className="text-[1.22rem] tracking-[-0.02em]">Scrumter</span>
           </a>
 
@@ -118,7 +118,7 @@ export function Header({
               <span className="nav-div" aria-hidden="true" />
               <ThemeSwitchCompact theme={theme} onToggle={() => setTheme(nextTheme)} label={labels.theme} />
             </div>
-            <a className="px-2 text-[0.92rem] font-semibold text-slate-600 hover:text-brand dark:text-slate-200" href={SIGNUP_URL}>
+            <a className="px-2 text-[0.92rem] font-semibold text-slate-600 hover:text-brand dark:text-slate-200" href="/login">
               {labels.signIn}
             </a>
             <a className="btn-primary !gap-3 !py-[11px] !pl-5 !pr-3 text-[0.88rem]" href={SIGNUP_URL}>
@@ -163,7 +163,7 @@ export function Header({
       >
         <div className="flex items-center justify-between">
           <a href="#main" className="flex items-center gap-3 font-black text-slate-950 dark:text-white" aria-label="Scrumter — Inicio">
-            <img className="h-9 w-9 rounded-xl object-contain" src="/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="lazy" decoding="async" />
+            <img className="h-9 w-9 rounded-xl object-contain" src="/landing/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="lazy" decoding="async" />
             Scrumter
           </a>
           <button ref={closeRef} type="button" className="icon-button" onClick={() => setMenuOpen(false)} aria-label={labels.closeMenu}>
@@ -205,7 +205,7 @@ export function Header({
               <ArrowRight size={14} strokeWidth={2.5} />
             </span>
           </a>
-          <a className="text-center text-sm font-bold text-slate-600 dark:text-slate-300" href={SIGNUP_URL} onClick={() => setMenuOpen(false)}>
+          <a className="text-center text-sm font-bold text-slate-600 dark:text-slate-300" href="/login" onClick={() => setMenuOpen(false)}>
             {labels.signIn}
           </a>
         </div>

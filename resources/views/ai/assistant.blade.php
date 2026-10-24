@@ -830,7 +830,7 @@
             setLoading(true);
             hideError();
 
-            fetch('{{ route("asistente-ia.submit") }}', {
+            fetch('{{ route("asistente-ia.submit", [], false) }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
                 body: JSON.stringify({
@@ -870,7 +870,7 @@
             this.disabled = true;
             this.textContent = 'Guardando proyecto...';
 
-            fetch('{{ route("asistente-ia.apply") }}', {
+            fetch('{{ route("asistente-ia.apply", [], false) }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
                 body: JSON.stringify({ chat_id: S.pendingId, action: 'confirm', data: S.generatedProposal }),
@@ -894,7 +894,7 @@
         // ── Cancel ────────────────────────────────────────────────────────────
         document.getElementById('btn-cancel').addEventListener('click', function () {
             if (S.pendingId) {
-                fetch('{{ route("asistente-ia.apply") }}', {
+                fetch('{{ route("asistente-ia.apply", [], false) }}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
                     body: JSON.stringify({ chat_id: S.pendingId, action: 'discard' }),
@@ -1714,7 +1714,7 @@
             const list = document.getElementById('history-list');
             list.innerHTML = `<div class="text-center py-4"><span style="font-size:11px;color:#374151">${_ai.history_loading}</span></div>`;
 
-            fetch('{{ route("asistente-ia.historial") }}', { headers: { 'X-CSRF-TOKEN': csrf } })
+            fetch('{{ route("asistente-ia.historial", [], false) }}', { headers: { 'X-CSRF-TOKEN': csrf } })
             .then(r => r.json())
             .then(data => {
                 S.allItems = data.history || [];
@@ -1799,7 +1799,7 @@
 
         // ── VIEW a single history record ───────────────────────────────────────
         window.viewHistoryItem = async function (id) {
-            const r = await fetch('{{ url("asistente-ia/historial") }}/' + id, { headers: { 'X-CSRF-TOKEN': csrf } });
+            const r = await fetch('{{ "/asistente-ia/historial" }}/' + id, { headers: { 'X-CSRF-TOKEN': csrf } });
             const data = await r.json();
             if (!data.ok) { alert(_ai.error_load); return; }
 
@@ -1856,7 +1856,7 @@
 
         // ── REUTILIZE a history record ─────────────────────────────────────────
         window.reuseHistoryItem = async function (id) {
-            const r = await fetch('{{ url("asistente-ia/historial") }}/' + id, { headers: { 'X-CSRF-TOKEN': csrf } });
+            const r = await fetch('{{ "/asistente-ia/historial" }}/' + id, { headers: { 'X-CSRF-TOKEN': csrf } });
             const data = await r.json();
             if (!data.ok) { alert(_ai.error_load); return; }
 
@@ -1934,7 +1934,7 @@
         // ── APPLY a borrador record from history ──────────────────────────────
         window.applyHistoryItem = async function (id) {
             if (!confirm(_ai.confirm_apply)) return;
-            const r = await fetch('{{ route("asistente-ia.apply") }}', {
+            const r = await fetch('{{ route("asistente-ia.apply", [], false) }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
                 body: JSON.stringify({ chat_id: id, action: 'confirm' }),
@@ -1951,7 +1951,7 @@
         // ── DELETE a history record ────────────────────────────────────────────
         window.deleteHistoryItem = async function (id) {
             if (!confirm(_ai.confirm_delete)) return;
-            const r = await fetch('{{ url("asistente-ia/historial") }}/' + id, {
+            const r = await fetch('{{ "/asistente-ia/historial" }}/' + id, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': csrf },
             });
@@ -1972,7 +1972,7 @@
             if (!confirm(confirmMsg)) return;
             const payload = {};
             if (scope === 'project' && S.proyectoId) payload.proyecto_id = S.proyectoId;
-            const r = await fetch('{{ route("asistente-ia.historial.clear") }}', {
+            const r = await fetch('{{ route("asistente-ia.historial.clear", [], false) }}', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
                 body: JSON.stringify(payload),
