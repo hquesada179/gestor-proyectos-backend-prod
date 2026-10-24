@@ -21,6 +21,19 @@ Proveer una plataforma backend que centralice la información inicial de un proy
 | Estilos | Tailwind CSS |
 | Frontend build | Vite |
 | Autenticación | Laravel Breeze |
+| Landing | React 19 + TypeScript + Vite 7 + Tailwind 4 |
+
+---
+
+## Estructura del repositorio
+
+| Ruta | Contenido |
+|---|---|
+| `app/`, `routes/`, `resources/`, `public/` | Aplicación Laravel |
+| `landing/` | Landing page en React, con su propio `package.json` y build |
+| `Docs/` | Contexto local del proyecto; no se versiona |
+
+La app y la landing tienen builds independientes: la raíz usa Vite 8 y la landing Vite 7.
 
 ---
 
@@ -42,7 +55,7 @@ Proveer una plataforma backend que centralice la información inicial de un proy
 
 - PHP 8.3+
 - Composer
-- Node.js 18+
+- Node.js 20+
 - npm
 
 ### Pasos
@@ -98,6 +111,21 @@ Para desarrollo con hot-reload:
 
 ```bash
 npm run dev
+```
+
+### Landing page
+
+La landing vive en `landing/` y se instala y ejecuta aparte:
+
+```bash
+# Instalar dependencias de la landing
+npm run landing:install
+
+# Desarrollo con hot-reload
+npm run landing:dev
+
+# Build de producción (sale en landing/dist)
+npm run landing:build
 ```
 
 ---

@@ -53,3 +53,7 @@ backups/
 /docs/ui-source/
 /Docs
 /.opencode
+
+# ── Contexto local de agentes — no se versiona ────────────────────────────────
+opencode.json
+AGENTS.md
