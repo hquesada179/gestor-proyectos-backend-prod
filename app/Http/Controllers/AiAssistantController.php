@@ -36,14 +36,14 @@ class AiAssistantController extends Controller
         $aiOnline        = $this->aiAssistant->isReachable();
         $ai              = [
             'routes' => [
-                'generateProject'   => route('api.ai.generate-project'),
-                'improveProject'    => route('api.ai.improve-project'),
-                'chat'              => route('api.ai.chat'),
-                'refineProposal'    => route('asistente-ia.refine'),
-                'regenerateSection' => route('asistente-ia.regenerate-section'),
-                'regenerateItem'    => route('asistente-ia.regenerate-item'),
-                'estructuraBase'    => url('asistente-ia/proyecto'),
-                'balance'           => route('asistente-ia.balance'),
+                'generateProject'   => route('api.ai.generate-project', [], false),
+                'improveProject'    => route('api.ai.improve-project', [], false),
+                'chat'              => route('api.ai.chat', [], false),
+                'refineProposal'    => route('asistente-ia.refine', [], false),
+                'regenerateSection' => route('asistente-ia.regenerate-section', [], false),
+                'regenerateItem'    => route('asistente-ia.regenerate-item', [], false),
+                'estructuraBase'    => '/asistente-ia/proyecto',
+                'balance'           => route('asistente-ia.balance', [], false),
             ],
         ];
         $proyectos       = Proyecto::where('user_id', auth()->id())

@@ -1,0 +1,49 @@
+# Credenciales y configuraciones privadas
+.env
+.env.*
+!.env.example
+auth.json
+**/*.pem
+**/*.key
+
+# Git e IDE
+.git
+.gitignore
+.vscode
+.idea
+.cursor
+.DS_Store
+
+# Dependencias y artefactos locales
+vendor
+node_modules
+public/hot
+.phpunit.cache
+.phpunit.result.cache
+
+# Datos persistentes
+database/*.sqlite
+database/*.sqlite-*
+storage/*
+!storage/.gitignore
+!storage/framework/
+!storage/framework/.gitignore
+!storage/framework/cache/
+!storage/framework/cache/.gitignore
+!storage/framework/sessions/
+!storage/framework/sessions/.gitignore
+!storage/framework/views/
+!storage/framework/views/.gitignore
+!storage/logs/
+!storage/logs/.gitignore
+!storage/app/
+!storage/app/.gitignore
+
+# Respaldos y temporales
+*.bak
+*.backup
+*.zip
+backups/
+
+# Landing React: despliegue independiente
+landing/

@@ -50,7 +50,7 @@ export function ProductMockup({ locale }: { locale: Locale }) {
         {/* Sidebar */}
         <aside className="hidden min-w-0 border-r border-slate-200 bg-slate-50 p-3 md:block dark:border-white/[0.06] dark:bg-[#0f1f33]">
           <div className="mb-5 flex items-center gap-2 px-2 font-black text-slate-950 dark:text-white">
-            <img className="h-6 w-6 rounded-lg" src="/scrumter-logo.png" alt="Scrumter" width={24} height={24} loading="lazy" decoding="async" />
+            <img className="h-6 w-6 rounded-lg" src="/landing/scrumter-logo.png" alt="Scrumter" width={24} height={24} loading="lazy" decoding="async" />
             Scrumter
           </div>
 

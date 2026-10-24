@@ -23,7 +23,7 @@ export type Theme = "light" | "dark";
 export type Currency = "cop" | "usd";
 
 /** URL de la app SaaS — destino de todos los CTAs de conversión */
-export const SIGNUP_URL = "https://scrumter.io/";
+export const SIGNUP_URL = "/register";
 
 export type IconName =
   | "activity"

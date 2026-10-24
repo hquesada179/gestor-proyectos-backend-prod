@@ -29,7 +29,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('auth.login');
+    return response()->file(public_path('landing/index.html'), [
+        'Cache-Control' => 'no-cache, must-revalidate',
+    ]);
 });
 
 Route::post('/language', [LanguageController::class, 'change'])->name('language.change');
