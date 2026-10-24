@@ -2,16 +2,17 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\BrevoChannel;
 use App\Services\BrevoMailService;
 use Illuminate\Notifications\Notification;
 
 class ResetPasswordBrevoNotification extends Notification
 {
-    public function __construct(private readonly string $token) {}
+    public function __construct(public readonly string $token) {}
 
     public function via(object $notifiable): array
     {
-        return [];
+        return [BrevoChannel::class];
     }
 
     public function send(object $notifiable): void
@@ -21,10 +22,11 @@ class ResetPasswordBrevoNotification extends Notification
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        $userName    = $notifiable->name ?? 'Usuario';
-        $fromName    = config('mail.from.name', 'Scrumter');
-        $appUrl      = config('app.url', 'https://scrumter.io');
-        $htmlContent = $this->buildHtml($userName, $resetUrl, $appUrl);
+        $userName      = $notifiable->name ?? 'Usuario';
+        $fromName      = config('mail.from.name', 'Scrumter');
+        $appUrl        = config('app.url', 'https://scrumter.io');
+        $expireMinutes = config('auth.passwords.users.expire', 60);
+        $htmlContent   = $this->buildHtml($userName, $resetUrl, $appUrl, $expireMinutes);
 
         app(BrevoMailService::class)->send(
             $notifiable->getEmailForPasswordReset(),
@@ -33,7 +35,7 @@ class ResetPasswordBrevoNotification extends Notification
         );
     }
 
-    private function buildHtml(string $userName, string $resetUrl, string $appUrl): string
+    private function buildHtml(string $userName, string $resetUrl, string $appUrl, int $expireMinutes): string
     {
         $escapedUrl  = htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8');
         $escapedName = htmlspecialchars($userName, ENT_QUOTES, 'UTF-8');
@@ -76,7 +78,7 @@ class ResetPasswordBrevoNotification extends Notification
                         <a href="{$escapedUrl}" class="btn">Restablecer contraseña</a>
                     </div>
                     <div class="expiry">
-                        Este enlace expira en <strong>60 minutos</strong>. Si no solicitaste esto, puedes ignorar este correo con seguridad.
+                        Este enlace expira en <strong>{$expireMinutes} minutos</strong>. Si no solicitaste esto, puedes ignorar este correo con seguridad.
                     </div>
                     <hr class="divider">
                     <p class="alt-link">
