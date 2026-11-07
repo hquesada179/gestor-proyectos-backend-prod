@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex flex-col">
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                <a href="{{ route('proyectos.tasks.index', $proyecto) }}" class="hover:text-secondary-container transition-colors flex items-center gap-1">
+                <a href="{{ request('from') === 'scrum-board' ? route('scrum-board.show', $proyecto) : route('proyectos.tasks.index', $proyecto) }}" class="hover:text-secondary-container transition-colors flex items-center gap-1">
                     <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span>
                     {{ $proyecto->nombre }}
                 </a>
                 <span>/</span>
-                <span>Tareas</span>
+                <span>{{ request('from') === 'scrum-board' ? 'Scrum Board' : 'Tareas' }}</span>
             </div>
             <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-secondary-container" style="font-size: 24px;">task</span>
@@ -71,8 +71,11 @@
                 <div class="p-6 sm:p-8">
                     <form method="POST" action="{{ route('proyectos.tasks.store', $proyecto) }}" class="space-y-6">
                         @csrf
+                        <input type="hidden" name="from" value="{{ request('from') }}" />
                         @php
-                            $defaultStatusId = $statuses->first(fn ($status) => str_contains(strtolower($status->nombre), 'pendiente'))?->id
+                            $requestedStatusId = request('status_id');
+                            $defaultStatusId = $requestedStatusId
+                                ?? $statuses->first(fn ($status) => str_contains(strtolower($status->nombre), 'pendiente'))?->id
                                 ?? $statuses->first()?->id;
                             $selectedStatusId = old('task_status_id', $defaultStatusId);
                         @endphp
@@ -173,7 +176,7 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-8">
-                            <a href="{{ route('proyectos.tasks.index', $proyecto) }}"
+                            <a href="{{ request('from') === 'scrum-board' ? route('scrum-board.show', $proyecto) : route('proyectos.tasks.index', $proyecto) }}"
                                class="flex items-center gap-2 bg-surface border border-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-white/5 transition-all active:scale-95">
                                 Cancelar
                             </a>
