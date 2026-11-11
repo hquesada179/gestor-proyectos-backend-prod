@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contexts\ScrumCore\Application\UseCases\ListUserProjectsUseCase;
 use App\Http\Controllers\Controller;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
@@ -13,13 +14,11 @@ use Illuminate\Validation\ValidationException;
 
 class ProyectoApiController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(ListUserProjectsUseCase $listUseCase): JsonResponse
     {
-        $proyectos = Proyecto::accessibleBy(Auth::id())
-            ->withCount(['tasks', 'sprints'])
-            ->latest()
-            ->get()
-            ->map(fn(Proyecto $p) => $this->formatProject($p));
+        // Se ejecuta el mismo caso de uso de la arquitectura hexagonal compartido con la web
+        $proyectos = $listUseCase->execute((int) Auth::id())
+            ->map(fn (Proyecto $p) => $this->formatProject($p));
 
         return response()->json($proyectos);
     }
@@ -37,15 +36,15 @@ class ProyectoApiController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Los datos del proyecto no son validos.',
-                'errors'  => $validator->errors(),
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $validated = $validator->validated();
 
         if (
-            !empty($validated['fecha_inicio']) &&
-            !empty($validated['fecha_fin_estimada']) &&
+            ! empty($validated['fecha_inicio']) &&
+            ! empty($validated['fecha_fin_estimada']) &&
             $validated['fecha_fin_estimada'] < $validated['fecha_inicio']
         ) {
             throw ValidationException::withMessages([
@@ -57,14 +56,14 @@ class ProyectoApiController extends Controller
 
         try {
             $data = [
-                'nombre'             => $validated['nombre'],
-                'descripcion'        => $validated['descripcion'] ?? null,
-                'estado'             => $validated['estado'] ?? 'activo',
-                'fecha_inicio'       => $validated['fecha_inicio'] ?? null,
+                'nombre' => $validated['nombre'],
+                'descripcion' => $validated['descripcion'] ?? null,
+                'estado' => $validated['estado'] ?? 'activo',
+                'fecha_inicio' => $validated['fecha_inicio'] ?? null,
                 'fecha_fin_estimada' => $validated['fecha_fin_estimada'] ?? null,
             ];
 
-            if (!empty($validated['cover_image'])) {
+            if (! empty($validated['cover_image'])) {
                 $storedImage = $validated['cover_image']->store('projects', 'public');
                 $data['cover_image'] = $storedImage;
             }
@@ -81,7 +80,7 @@ class ProyectoApiController extends Controller
         return response()->json([
             'message' => 'Proyecto creado correctamente',
             'project' => $this->formatProject($proyecto),
-            'data'    => $this->formatProject($proyecto),
+            'data' => $this->formatProject($proyecto),
         ], 201);
     }
 
@@ -90,7 +89,7 @@ class ProyectoApiController extends Controller
         $proyecto = Proyecto::accessibleBy(Auth::id())
             ->withCount(['tasks', 'sprints'])
             ->with([
-                'sprints' => fn($q) => $q->withCount('tasks')->orderBy('nombre'),
+                'sprints' => fn ($q) => $q->withCount('tasks')->orderBy('nombre'),
                 'tasks.status',
             ])
             ->find($id);
@@ -100,22 +99,22 @@ class ProyectoApiController extends Controller
         }
 
         return response()->json(array_merge($this->formatProject($proyecto), [
-            'sprints'            => $proyecto->sprints->map(fn($s) => [
-                'id'          => $s->id,
-                'nombre'      => $s->nombre,
-                'objetivo'    => $s->objetivo,
-                'estado'      => $s->estado,
-                'fecha_inicio'=> $s->fecha_inicio?->toDateString(),
-                'fecha_fin'   => $s->fecha_fin?->toDateString(),
+            'sprints' => $proyecto->sprints->map(fn ($s) => [
+                'id' => $s->id,
+                'nombre' => $s->nombre,
+                'objetivo' => $s->objetivo,
+                'estado' => $s->estado,
+                'fecha_inicio' => $s->fecha_inicio?->toDateString(),
+                'fecha_fin' => $s->fecha_fin?->toDateString(),
                 'tasks_count' => $s->tasks_count,
             ]),
-            'tasks'              => $proyecto->tasks->map(fn($t) => [
-                'id'          => $t->id,
-                'titulo'      => $t->titulo,
+            'tasks' => $proyecto->tasks->map(fn ($t) => [
+                'id' => $t->id,
+                'titulo' => $t->titulo,
                 'descripcion' => $t->descripcion,
-                'estado'      => $t->status?->nombre,
-                'fecha_limite'=> $t->fecha_limite?->toDateString(),
-                'sprint_id'   => $t->sprint_id,
+                'estado' => $t->status?->nombre,
+                'fecha_limite' => $t->fecha_limite?->toDateString(),
+                'sprint_id' => $t->sprint_id,
             ]),
         ]));
     }
@@ -136,7 +135,7 @@ class ProyectoApiController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'La imagen del proyecto no es valida.',
-                'errors'  => $validator->errors(),
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -150,7 +149,7 @@ class ProyectoApiController extends Controller
 
         return response()->json([
             'message' => 'Imagen del proyecto actualizada correctamente',
-            'data'    => $this->formatProject($proyecto->fresh()),
+            'data' => $this->formatProject($proyecto->fresh()),
         ]);
     }
 
@@ -169,7 +168,7 @@ class ProyectoApiController extends Controller
 
         return response()->json([
             'message' => 'Imagen del proyecto eliminada correctamente',
-            'data'    => $this->formatProject($proyecto->fresh()),
+            'data' => $this->formatProject($proyecto->fresh()),
         ]);
     }
 
@@ -180,25 +179,25 @@ class ProyectoApiController extends Controller
             : null;
 
         return [
-            'id'                 => $project->id,
-            'name'               => $project->nombre,
-            'nombre'             => $project->nombre,
-            'description'        => $project->descripcion,
-            'descripcion'        => $project->descripcion,
-            'status'             => $project->estado,
-            'estado'             => $project->estado,
-            'fecha_inicio'       => $project->fecha_inicio?->toDateString(),
-            'start_date'         => $project->fecha_inicio?->toDateString(),
+            'id' => $project->id,
+            'name' => $project->nombre,
+            'nombre' => $project->nombre,
+            'description' => $project->descripcion,
+            'descripcion' => $project->descripcion,
+            'status' => $project->estado,
+            'estado' => $project->estado,
+            'fecha_inicio' => $project->fecha_inicio?->toDateString(),
+            'start_date' => $project->fecha_inicio?->toDateString(),
             'fecha_fin_estimada' => $project->fecha_fin_estimada?->toDateString(),
-            'end_date'           => $project->fecha_fin_estimada?->toDateString(),
-            'cover_image'        => $project->cover_image,
-            'image'              => $imageUrl,
-            'imagen'             => $imageUrl,
-            'image_url'          => $imageUrl,
-            'cover_url'          => $imageUrl,
-            'thumbnail_url'      => $imageUrl,
-            'tasks_count'        => $project->tasks_count ?? null,
-            'sprints_count'      => $project->sprints_count ?? null,
+            'end_date' => $project->fecha_fin_estimada?->toDateString(),
+            'cover_image' => $project->cover_image,
+            'image' => $imageUrl,
+            'imagen' => $imageUrl,
+            'image_url' => $imageUrl,
+            'cover_url' => $imageUrl,
+            'thumbnail_url' => $imageUrl,
+            'tasks_count' => $project->tasks_count ?? null,
+            'sprints_count' => $project->sprints_count ?? null,
         ];
     }
 
@@ -207,16 +206,16 @@ class ProyectoApiController extends Controller
         $payload = $request->all();
 
         $aliases = [
-            'name'        => 'nombre',
+            'name' => 'nombre',
             'description' => 'descripcion',
-            'status'      => 'estado',
-            'start_date'  => 'fecha_inicio',
-            'end_date'    => 'fecha_fin_estimada',
-            'fecha_fin'   => 'fecha_fin_estimada',
+            'status' => 'estado',
+            'start_date' => 'fecha_inicio',
+            'end_date' => 'fecha_fin_estimada',
+            'fecha_fin' => 'fecha_fin_estimada',
         ];
 
         foreach ($aliases as $alias => $field) {
-            if (!array_key_exists($field, $payload) && array_key_exists($alias, $payload)) {
+            if (! array_key_exists($field, $payload) && array_key_exists($alias, $payload)) {
                 $payload[$field] = $payload[$alias];
             }
         }
@@ -233,12 +232,12 @@ class ProyectoApiController extends Controller
     private function projectRules(): array
     {
         return [
-            'nombre'             => ['required', 'string', 'max:255'],
-            'descripcion'        => ['nullable', 'string', 'max:5000'],
-            'estado'             => ['nullable', 'string', 'in:activo,pausado,completado,cancelado'],
-            'fecha_inicio'       => ['nullable', 'date_format:Y-m-d'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:5000'],
+            'estado' => ['nullable', 'string', 'in:activo,pausado,completado,cancelado'],
+            'fecha_inicio' => ['nullable', 'date_format:Y-m-d'],
             'fecha_fin_estimada' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:fecha_inicio'],
-            'cover_image'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

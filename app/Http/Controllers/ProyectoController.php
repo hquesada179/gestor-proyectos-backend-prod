@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Contexts\ScrumCore\Application\DTOs\CreateProjectDTO;
+use App\Contexts\ScrumCore\Application\UseCases\CreateProjectUseCase;
+use App\Contexts\ScrumCore\Application\UseCases\ListUserProjectsUseCase;
 use App\Models\Proyecto;
 use App\Models\TaskStatus;
 use App\Services\ProjectActivityLogger;
@@ -11,12 +14,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ProyectoController extends Controller
 {
-    public function index()
+    public function index(ListUserProjectsUseCase $listUseCase)
     {
-        $proyectos = Proyecto::accessibleBy(Auth::id())
-            ->withCount(['tasks', 'sprints', 'requirements'])
-            ->latest()
-            ->get();
+        // Se ejecuta el caso de uso desacoplado que aplica el scope de autorización accesibleBy
+        $proyectos = $listUseCase->execute((int) Auth::id());
 
         return view('proyectos.index', compact('proyectos'));
     }
@@ -26,7 +27,7 @@ class ProyectoController extends Controller
         return view('proyectos.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, CreateProjectUseCase $createUseCase)
     {
         $request->validate(
             array_merge($this->rules(), $this->imageRules()),
@@ -35,16 +36,17 @@ class ProyectoController extends Controller
 
         $data = $request->only(['nombre', 'descripcion', 'estado', 'fecha_inicio', 'fecha_fin_estimada']);
 
+        // Si se subió imagen de portada se almacena en disco público
         if ($request->hasFile('cover_image')) {
             $data['cover_image'] = $request->file('cover_image')
                 ->store('proyectos', 'public');
         }
 
-        $proyecto = Auth::user()->proyectos()->create($data);
+        // Se construye el DTO inmutable para transferir datos a la capa de aplicación
+        $dto = CreateProjectDTO::fromArray((int) Auth::id(), $data);
 
-        ProjectActivityLogger::log($proyecto, 'created', 'proyectos',
-            "Proyecto creado: «{$proyecto->nombre}»", null, $proyecto
-        );
+        // Se delega la creación y registro de auditoría al caso de uso
+        $proyecto = $createUseCase->execute($dto);
 
         return redirect()->route('proyectos.show', $proyecto)
             ->with('success', 'Proyecto creado correctamente.');
@@ -52,14 +54,14 @@ class ProyectoController extends Controller
 
     public function show(Proyecto $proyecto)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
 
         $stats = [
-            'inputs'       => $proyecto->inputs()->count(),
+            'inputs' => $proyecto->inputs()->count(),
             'requirements' => $proyecto->requirements()->count(),
-            'userStories'  => $proyecto->userStories()->count(),
-            'tasks'        => $proyecto->tasks()->count(),
-            'sprints'      => $proyecto->sprints()->count(),
+            'userStories' => $proyecto->userStories()->count(),
+            'tasks' => $proyecto->tasks()->count(),
+            'sprints' => $proyecto->sprints()->count(),
         ];
 
         $tasksByStatus = $proyecto->tasks()
@@ -70,16 +72,16 @@ class ProyectoController extends Controller
             ->get();
 
         $kanbanStatuses = TaskStatus::orderBy('orden')->get();
-        $kanbanSprints  = $proyecto->sprints()
+        $kanbanSprints = $proyecto->sprints()
             ->withCount([
                 'tasks',
-                'tasks as completed_tasks_count' => fn($q) => $q->whereHas(
-                    'status', fn($sq) => $sq->where('nombre', 'Completado')
+                'tasks as completed_tasks_count' => fn ($q) => $q->whereHas(
+                    'status', fn ($sq) => $sq->where('nombre', 'Completado')
                 ),
             ])
             ->orderBy('nombre')
             ->get();
-        $kanbanSprint   = request('kanban_sprint', 'todos');
+        $kanbanSprint = request('kanban_sprint', 'todos');
 
         $kanbanQuery = $proyecto->tasks()->with('assignedTo');
 
@@ -164,10 +166,10 @@ class ProyectoController extends Controller
     private function rules(): array
     {
         return [
-            'nombre'             => ['required', 'string', 'max:255'],
-            'descripcion'        => ['nullable', 'string', 'max:5000'],
-            'estado'             => ['required', 'string', 'in:activo,pausado,completado,cancelado'],
-            'fecha_inicio'       => ['nullable', 'date'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:5000'],
+            'estado' => ['required', 'string', 'in:activo,pausado,completado,cancelado'],
+            'fecha_inicio' => ['nullable', 'date'],
             'fecha_fin_estimada' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
         ];
     }
@@ -182,13 +184,13 @@ class ProyectoController extends Controller
     private function messages(): array
     {
         return [
-            'nombre.required'               => 'El nombre del proyecto es obligatorio.',
-            'nombre.max'                    => 'El nombre no puede superar los 255 caracteres.',
-            'descripcion.max'               => 'La descripción no puede superar los 5000 caracteres.',
-            'estado.required'               => 'El estado es obligatorio.',
-            'estado.in'                     => 'El estado seleccionado no es válido.',
-            'fecha_inicio.date'             => 'La fecha de inicio no tiene un formato válido.',
-            'fecha_fin_estimada.date'       => 'La fecha estimada de cierre no tiene un formato válido.',
+            'nombre.required' => 'El nombre del proyecto es obligatorio.',
+            'nombre.max' => 'El nombre no puede superar los 255 caracteres.',
+            'descripcion.max' => 'La descripción no puede superar los 5000 caracteres.',
+            'estado.required' => 'El estado es obligatorio.',
+            'estado.in' => 'El estado seleccionado no es válido.',
+            'fecha_inicio.date' => 'La fecha de inicio no tiene un formato válido.',
+            'fecha_fin_estimada.date' => 'La fecha estimada de cierre no tiene un formato válido.',
             'fecha_fin_estimada.after_or_equal' => 'La fecha estimada de cierre debe ser igual o posterior a la fecha de inicio.',
         ];
     }
