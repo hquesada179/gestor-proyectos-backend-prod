@@ -28,5 +28,5 @@ interface SubscriptionRepositoryInterface
     /**
      * Registra o actualiza la suscripción y recarga los créditos correspondientes.
      */
-    public function activatePlanForUser(int $userId, int $planId, string $reference): Subscription;
+    public function activatePlanForUser(int $userId, int $planId, string $providerSubscriptionId): Subscription;
 }
