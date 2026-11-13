@@ -16,7 +16,7 @@ export function HowItWorks({ locale }: { locale: Locale }) {
               <Reveal key={step.title} delay={index * 70}>
                 <article className="feature-card h-full">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand dark:bg-brand-400/12 dark:text-brand-200">
-                    <Icon size={23} />
+                    <Icon size={23} aria-hidden="true" />
                   </div>
                   <span className="mt-6 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-xs font-black text-white dark:bg-white dark:text-slate-950">
                     {index + 1}

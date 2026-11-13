@@ -21,8 +21,9 @@ export function Reveal({ children, className = "", delay = 0 }: RevealProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.16 }}
       transition={{
-        duration: 0.52,
-        ease: "easeOut",
+        // Curva exponencial de salida y duración breve para evitar sensación de pesadez.
+        duration: 0.42,
+        ease: [0.22, 1, 0.36, 1],
         delay: delay / 1000,
       }}
     >
