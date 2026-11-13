@@ -23,10 +23,9 @@ export type Locale = "es" | "en";
 export type Theme = "light" | "dark";
 export type Currency = "cop" | "usd";
 
-/** Rutas reales de la app Laravel en VPS (`routes/web.php` y `routes/auth.php`). */
-export const APP_URL = "https://scrumter.io";
-export const LOGIN_URL = `${APP_URL}/login`;
-export const SIGNUP_URL = `${APP_URL}/register`;
+/** Rutas relativas de la app Laravel en VPS (`routes/web.php` y `routes/auth.php`) para funcionar bajo cualquier dominio. */
+export const LOGIN_URL = "/login";
+export const SIGNUP_URL = "/register";
 export const SUPPORT_EMAIL = "soporte@scrumter.io";
 export const CONTACT_SALES_URL = `mailto:${SUPPORT_EMAIL}?subject=Plan%20Enterprise%20Scrumter`;
 

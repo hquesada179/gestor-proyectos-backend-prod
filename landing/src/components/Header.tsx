@@ -118,7 +118,7 @@ export function Header({
       >
         <nav aria-label={labels.mainNav} className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8">
           <a href="#hero" className="group flex items-center gap-2.5 font-extrabold text-slate-950 dark:text-white" aria-label={labels.homeAria}>
-            <img className="h-8 w-8 rounded-lg object-contain" src="/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="eager" decoding="async" />
+            <img className="h-8 w-8 rounded-lg object-contain" src="/landing/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="eager" decoding="async" />
             <span className="text-[1.22rem] tracking-[-0.02em]">Scrumter</span>
           </a>
 
@@ -188,7 +188,7 @@ export function Header({
       >
         <div className="flex items-center justify-between">
           <a href="#hero" onClick={closeFromAnchor} className="flex items-center gap-3 font-black text-slate-950 dark:text-white" aria-label={labels.homeAria}>
-            <img className="h-9 w-9 rounded-xl object-contain" src="/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="lazy" decoding="async" />
+            <img className="h-9 w-9 rounded-xl object-contain" src="/landing/scrumter-logo.png" alt="Scrumter" width={32} height={32} loading="lazy" decoding="async" />
             Scrumter
           </a>
           <button ref={closeRef} type="button" className="icon-button" onClick={() => setMenuOpen(false)} aria-label={labels.closeMenu}>

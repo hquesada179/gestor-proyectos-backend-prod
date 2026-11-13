@@ -10,7 +10,7 @@ export function Footer({ locale }: { locale: Locale }) {
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
           <div>
             <a href="#hero" className="inline-flex items-center gap-3 font-black text-slate-950 dark:text-white" aria-label={navCopy.homeAria}>
-              <img className="h-10 w-10 rounded-xl object-contain" src="/scrumter-logo.png" alt="Scrumter" width={40} height={40} loading="lazy" decoding="async" />
+              <img className="h-10 w-10 rounded-xl object-contain" src="/landing/scrumter-logo.png" alt="Scrumter" width={40} height={40} loading="lazy" decoding="async" />
               <span className="text-xl">Scrumter</span>
             </a>
             <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600 dark:text-slate-300">{copy.description}</p>
