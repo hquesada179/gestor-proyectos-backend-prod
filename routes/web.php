@@ -1,14 +1,18 @@
 <?php
 
 use App\Http\Controllers\AiAssistantController;
-use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\AiHistoryController;
 use App\Http\Controllers\CalendarioController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ModuloSelectorController;
 use App\Http\Controllers\MyTasksController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProjectInputController;
 use App\Http\Controllers\ProjectActivityController;
 use App\Http\Controllers\ProjectChatController;
+use App\Http\Controllers\ProjectInputController;
 use App\Http\Controllers\ProjectInvitationController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RequirementController;
@@ -18,9 +22,6 @@ use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserStoryController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\PlanController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WompiWebhookController;
 use App\Models\Proyecto;
 use App\Models\Sprint;
@@ -39,17 +40,18 @@ Route::post('/language', [LanguageController::class, 'change'])->name('language.
 Route::get('/dashboard', function () {
     $userId = Auth::id();
 
-    $totalProyectos    = Proyecto::accessibleBy($userId)->count();
-    $sprintsActivos    = Sprint::whereHas('proyecto', fn($q) => $q->accessibleBy($userId))
-                             ->where('estado', 'en_progreso')->count();
-    $tareasPendientes  = Task::where('assigned_to', $userId)
-                             ->whereHas('status', fn($q) => $q->where('nombre', '!=', 'Completado'))
-                             ->count();
+    $totalProyectos = Proyecto::accessibleBy($userId)->count();
+    $sprintsActivos = Sprint::whereHas('proyecto', fn ($q) => $q->accessibleBy($userId))
+        ->where('estado', 'en_progreso')->count();
+    $tareasPendientes = Task::where('assigned_to', $userId)
+        ->whereHas('status', fn ($q) => $q->where('nombre', '!=', 'Completado'))
+        ->count();
     $proyectosRecientes = Proyecto::accessibleBy($userId)
-                             ->withCount(['tasks', 'sprints'])
-                             ->latest()
-                             ->take(4)
-                             ->get();
+        ->withCount(['tasks', 'sprints'])
+        ->latest()
+        ->take(4)
+        ->get();
+
     return view('dashboard', compact('totalProyectos', 'sprintsActivos', 'tareasPendientes', 'proyectosRecientes'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -93,30 +95,31 @@ Route::middleware('auth')->group(function () {
 
     // Páginas de resultado de pago (retorno desde Wompi)
     Route::get('/pagos/resultado', [PaymentController::class, 'resultado'])->name('pagos.resultado');
-    Route::get('/pagos/exitoso',   [PaymentController::class, 'success'])->name('pagos.exitoso');   // legacy
+    Route::get('/pagos/exitoso', [PaymentController::class, 'success'])->name('pagos.exitoso');   // legacy
     Route::get('/pagos/pendiente', [PaymentController::class, 'pending'])->name('pagos.pendiente'); // legacy
-    Route::get('/pagos/fallido',   [PaymentController::class, 'failed'])->name('pagos.fallido');    // legacy
+    Route::get('/pagos/fallido', [PaymentController::class, 'failed'])->name('pagos.fallido');    // legacy
 
     // Asistente IA — pantalla principal (nueva)
     Route::get('/asistente-ia', [AiAssistantController::class, 'index'])->name('asistente-ia.index');
 
-    // Asistente IA — endpoints principales (nuevos)
-    Route::post('/asistente-ia/submit', [AiAssistantController::class, 'submit'])->name('asistente-ia.submit');
-    Route::post('/asistente-ia/apply', [AiAssistantController::class, 'apply'])->name('asistente-ia.apply');
-    Route::post('/asistente-ia/refinar-propuesta', [AiAssistantController::class, 'refineProposal'])->name('asistente-ia.refine');
-    Route::post('/asistente-ia/regenerar-seccion', [AiAssistantController::class, 'regenerateSection'])->name('asistente-ia.regenerate-section');
-    Route::post('/asistente-ia/regenerar-elemento', [AiAssistantController::class, 'regenerateItem'])->name('asistente-ia.regenerate-item');
+    // Asistente IA — endpoints de generación protegidos con Throttling
+    Route::middleware('throttle:ai-generation')->group(function () {
+        Route::post('/asistente-ia/submit', [AiAssistantController::class, 'submit'])->name('asistente-ia.submit');
+        Route::post('/asistente-ia/apply', [AiAssistantController::class, 'apply'])->name('asistente-ia.apply');
+        Route::post('/asistente-ia/refinar-propuesta', [AiAssistantController::class, 'refineProposal'])->name('asistente-ia.refine');
+        Route::post('/asistente-ia/regenerar-seccion', [AiAssistantController::class, 'regenerateSection'])->name('asistente-ia.regenerate-section');
+        Route::post('/asistente-ia/regenerar-elemento', [AiAssistantController::class, 'regenerateItem'])->name('asistente-ia.regenerate-item');
+        Route::post('/asistente-ia/generar', [AiAssistantController::class, 'generate'])->name('asistente-ia.generar');
+        Route::post('/asistente-ia/interpretar', [AiAssistantController::class, 'interpret'])->name('asistente-ia.interpretar');
+    });
+
     Route::get('/asistente-ia/proyecto/{id}/estructura', [AiAssistantController::class, 'loadProjectStructure'])->name('asistente-ia.proyecto.estructura');
     Route::get('/asistente-ia/creditos', [AiAssistantController::class, 'getBalance'])->name('asistente-ia.balance');
-    Route::get('/asistente-ia/historial', [AiAssistantController::class, 'history'])->name('asistente-ia.historial');
-    Route::delete('/asistente-ia/historial/limpiar', [AiAssistantController::class, 'clearHistory'])->name('asistente-ia.historial.clear');
-    Route::get('/asistente-ia/historial/{id}', [AiAssistantController::class, 'historyDetail'])->name('asistente-ia.historial.detail');
-    Route::delete('/asistente-ia/historial/{id}', [AiAssistantController::class, 'deleteHistoryItem'])->name('asistente-ia.historial.delete');
-
-    // Asistente IA — legacy (no romper)
-    Route::post('/asistente-ia/generar', [AiAssistantController::class, 'generate'])->name('asistente-ia.generar');
+    Route::get('/asistente-ia/historial', [AiHistoryController::class, 'history'])->name('asistente-ia.historial');
+    Route::delete('/asistente-ia/historial/limpiar', [AiHistoryController::class, 'clearHistory'])->name('asistente-ia.historial.clear');
+    Route::get('/asistente-ia/historial/{id}', [AiHistoryController::class, 'historyDetail'])->name('asistente-ia.historial.detail');
+    Route::delete('/asistente-ia/historial/{id}', [AiHistoryController::class, 'deleteHistoryItem'])->name('asistente-ia.historial.delete');
     Route::get('/asistente-ia/guiado', [AiAssistantController::class, 'guided'])->name('asistente-ia.guiado');
-    Route::post('/asistente-ia/interpretar', [AiAssistantController::class, 'interpret'])->name('asistente-ia.interpretar');
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
     Route::resource('proyectos.requirements', RequirementController::class);

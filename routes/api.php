@@ -6,23 +6,28 @@ use App\Http\Controllers\Api\CalendarEventApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\EquipoApiController;
 use App\Http\Controllers\Api\FirebaseApiAuthController;
-use App\Http\Controllers\Api\RolApiController;
 use App\Http\Controllers\Api\InsumoApiController;
 use App\Http\Controllers\Api\InvitacionApiController;
 use App\Http\Controllers\Api\MessageApiController;
 use App\Http\Controllers\Api\NotificacionApiController;
 use App\Http\Controllers\Api\PrivateMessageApiController;
 use App\Http\Controllers\Api\ProyectoApiController;
+use App\Http\Controllers\Api\Public\PublicPingController;
+use App\Http\Controllers\Api\Public\PublicProjectController;
+use App\Http\Controllers\Api\Public\PublicTaskController;
+use App\Http\Controllers\Api\Public\PublicTokenController;
 use App\Http\Controllers\Api\RequerimientoApiController;
-use App\Http\Controllers\Api\UserStoryApiController;
+use App\Http\Controllers\Api\RolApiController;
 use App\Http\Controllers\Api\ScrumBoardApiController;
 use App\Http\Controllers\Api\SprintApiController;
 use App\Http\Controllers\Api\TareaApiController;
 use App\Http\Controllers\Api\UserApiController;
+use App\Http\Controllers\Api\UserStoryApiController;
 use Illuminate\Support\Facades\Route;
 
 // ── Público: Android envía Firebase ID Token y recibe Bearer token ─────────────
-Route::post('/auth/firebase-login', [FirebaseApiAuthController::class, 'login']);
+Route::post('/auth/firebase-login', [FirebaseApiAuthController::class, 'login'])
+    ->middleware('throttle:firebase-auth');
 
 // ── Protegidas: requieren Authorization: Bearer <sanctum-token> ────────────────
 Route::middleware('auth:sanctum')->group(function () {
@@ -141,8 +146,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/permisos', [RolApiController::class, 'permisos']);
     Route::get('/permissions', [RolApiController::class, 'permisos']);
 
-    // IA
-    Route::prefix('ai')->name('api.ai.')->group(function () {
+    // IA protegida con límite de tasa de resiliencia
+    Route::prefix('ai')->name('api.ai.')->middleware('throttle:ai-generation')->group(function () {
         Route::get('/credits', [AiApiController::class, 'credits'])->name('credits');
         Route::get('/history', [AiProjectApiController::class, 'history'])->name('history');
         Route::get('/history/{id}', [AiProjectApiController::class, 'historyDetail'])
@@ -151,18 +156,47 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Flujo Android: generar → ajustar → confirmar
         Route::prefix('projects')->name('projects.')->group(function () {
-            Route::post('/generate',   [AiProjectApiController::class, 'generate'])->name('generate');
+            Route::post('/generate', [AiProjectApiController::class, 'generate'])->name('generate');
             Route::post('/regenerate', [AiProjectApiController::class, 'regenerate'])->name('regenerate');
-            Route::post('/adjust',     [AiProjectApiController::class, 'adjust'])->name('adjust');
-            Route::post('/confirm',    [AiProjectApiController::class, 'confirm'])->name('confirm');
+            Route::post('/adjust', [AiProjectApiController::class, 'adjust'])->name('adjust');
+            Route::post('/confirm', [AiProjectApiController::class, 'confirm'])->name('confirm');
         });
 
         // Rutas heredadas (usadas por Laravel web via API)
-        Route::post('/generate-project',   [AiApiController::class, 'generateProject'])->name('generate-project');
-        Route::post('/improve-project',    [AiApiController::class, 'improveProject'])->name('improve-project');
-        Route::post('/chat',               [AiApiController::class, 'chat'])->name('chat');
-        Route::post('/refine-proposal',    [AiApiController::class, 'refineProposal'])->name('refine-proposal');
+        Route::post('/generate-project', [AiApiController::class, 'generateProject'])->name('generate-project');
+        Route::post('/improve-project', [AiApiController::class, 'improveProject'])->name('improve-project');
+        Route::post('/chat', [AiApiController::class, 'chat'])->name('chat');
+        Route::post('/refine-proposal', [AiApiController::class, 'refineProposal'])->name('refine-proposal');
         Route::post('/regenerate-section', [AiApiController::class, 'regenerateSection'])->name('regenerate-section');
-        Route::post('/regenerate-item',    [AiApiController::class, 'regenerateItem'])->name('regenerate-item');
+        Route::post('/regenerate-item', [AiApiController::class, 'regenerateItem'])->name('regenerate-item');
+    });
+});
+
+// ── 3.er CANAL DE PRESENTACIÓN: API PÚBLICA PARA INTEGRACIONES CI/CD Y HERRAMIENTAS CLI ──
+Route::prefix('v1/public')->name('api.v1.public.')->middleware('throttle:public-api')->group(function () {
+    // Ping y estado operativo del canal
+    Route::get('/ping', PublicPingController::class)->name('ping');
+
+    // Emisión de tokens de acceso personal con capacidades acotadas
+    Route::post('/tokens', [PublicTokenController::class, 'store'])->name('tokens.store');
+
+    // Endpoints protegidos por Sanctum con autorización granular por abilities
+    Route::middleware('auth:sanctum')->group(function () {
+        // Consulta de proyectos (habilidad: projects:read)
+        Route::middleware('ability:projects:read')->group(function () {
+            Route::get('/projects', [PublicProjectController::class, 'index'])->name('projects.index');
+            Route::get('/projects/{id}', [PublicProjectController::class, 'show'])->name('projects.show');
+        });
+
+        // Consulta de tareas (habilidad: tasks:read)
+        Route::middleware('ability:tasks:read')->group(function () {
+            Route::get('/projects/{projectId}/tasks', [PublicTaskController::class, 'index'])->name('tasks.index');
+        });
+
+        // Creación y actualización de tareas (habilidad: tasks:write)
+        Route::middleware('ability:tasks:write')->group(function () {
+            Route::post('/projects/{projectId}/tasks', [PublicTaskController::class, 'store'])->name('tasks.store');
+            Route::patch('/tasks/{taskId}/status', [PublicTaskController::class, 'updateStatus'])->name('tasks.update-status');
+        });
     });
 });

@@ -16,14 +16,18 @@ import {
   ShieldCheck,
   Sparkles,
   UsersRound,
+  Zap,
 } from "lucide-react";
 
 export type Locale = "es" | "en";
 export type Theme = "light" | "dark";
 export type Currency = "cop" | "usd";
 
-/** URL de la app SaaS — destino de todos los CTAs de conversión */
+/** Rutas relativas de la app Laravel en VPS (`routes/web.php` y `routes/auth.php`) para funcionar bajo cualquier dominio. */
+export const LOGIN_URL = "/login";
 export const SIGNUP_URL = "/register";
+export const SUPPORT_EMAIL = "soporte@scrumter.io";
+export const CONTACT_SALES_URL = `mailto:${SUPPORT_EMAIL}?subject=Plan%20Enterprise%20Scrumter`;
 
 export type IconName =
   | "activity"
@@ -41,7 +45,8 @@ export type IconName =
   | "rocket"
   | "shield"
   | "sparkles"
-  | "users";
+  | "users"
+  | "zap";
 
 export const iconMap: Record<IconName, LucideIcon> = {
   activity: Activity,
@@ -60,45 +65,50 @@ export const iconMap: Record<IconName, LucideIcon> = {
   shield: ShieldCheck,
   sparkles: Sparkles,
   users: UsersRound,
+  zap: Zap,
 };
 
 export const content = {
   es: {
     nav: {
       features: "Funcionalidades",
-      how: "Como funciona",
+      how: "Cómo funciona",
       pricing: "Precios",
-      resources: "Recursos",
-      signIn: "Iniciar sesion",
+      resources: "Preguntas",
+      signIn: "Iniciar sesión",
       cta: "Crear cuenta gratis",
       language: "Idioma",
       theme: "Tema",
-      openMenu: "Abrir menu",
-      closeMenu: "Cerrar menu",
+      openMenu: "Abrir menú",
+      closeMenu: "Cerrar menú",
       toTop: "Volver arriba",
+      skipToContent: "Saltar al contenido",
+      homeAria: "Scrumter — Inicio",
+      mainNav: "Navegación principal",
     },
     hero: {
-      badge: "IA para Scrum - OpenAI + Ollama",
+      badgeTag: "NUEVO",
+      badge: "IA para Scrum · OpenAI + Ollama",
       title: "Gestiona proyectos Scrum más rápido con IA",
       accent: "de insumo a sprint sin perder control",
       lead:
         "Scrumter convierte ideas, documentos y solicitudes en backlog priorizado, historias INVEST, tareas y sprints listos para ejecutar.",
       primary: "Crear cuenta gratis",
-      secondary: "Ver flujo demo",
+      secondary: "Cómo funciona",
       checks: ["Sin tarjeta requerida", "Créditos IA incluidos", "Pago local con Wompi"],
       metrics: [
-        { value: "2.500+", label: "Proyectos gestionados" },
-        { value: "4.8/5", label: "Satisfacción promedio" },
-        { value: "99.9%", label: "Uptime garantizado" },
+        { to: 2, decimals: 0, prefix: "", suffix: "", display: "2", label: "Motores IA (OpenAI + Ollama)" },
+        { to: 4, decimals: 0, prefix: "", suffix: "", display: "4", label: "Pasos de insumo a sprint" },
+        { to: 50, decimals: 0, prefix: "", suffix: "+", display: "50+", label: "Créditos IA gratis al mes" },
       ],
     },
     trust: {
-      eyebrow: "CON LA CONFIANZA DE EQUIPOS AGILES",
-      logos: ["Lumina", "Northwind", "Brightpath", "Aster Labs", "Nexa"],
-      badges: ["4.8/5 en G2","99.9% uptime"],
+      eyebrow: "TECNOLOGÍA Y CAPACIDADES VERIFICADAS",
+      logos: ["OpenAI", "Ollama", "Wompi Colombia", "PSE · Nequi", "Android + Web", "Brevo"],
+      badges: ["OpenAI + Ollama", "Pagos Wompi COP y USD", "Web + App Android"],
     },
     how: {
-      eyebrow: "COMO FUNCIONA",
+      eyebrow: "CÓMO FUNCIONA",
       title: "De idea a sprint en",
       accent: "4 pasos",
       subtitle: "Un flujo liviano para Product Owners, Scrum Masters y Dev Leads.",
@@ -111,17 +121,17 @@ export const content = {
         {
           icon: "sparkles" as IconName,
           title: "Genera con IA",
-          text: "Scrumter propone requerimientos, historias, criterios de aceptacion y story points.",
+          text: "Scrumter propone requerimientos, historias, criterios de aceptación y story points para revisar antes de aplicar.",
         },
         {
           icon: "kanban" as IconName,
           title: "Planifica sprints",
-          text: "Ordena prioridades, ajusta capacidad y visualiza el avance con tablero y burndown.",
+          text: "Ordena prioridades, ajusta capacidad y visualiza el avance en tablero Kanban y calendario.",
         },
         {
           icon: "users" as IconName,
           title: "Entrega en equipo",
-          text: "Coordina roles, comentarios, cambios y auditoria para mantener trazabilidad.",
+          text: "Coordina roles, chat, exportación de tareas y registro de actividad para mantener trazabilidad.",
         },
       ],
     },
@@ -130,6 +140,10 @@ export const content = {
       title: "Todo lo que necesitas para",
       accent: "entregar mejor",
       subtitle: "Backlog, sprints, equipo, IA y pagos en una experiencia clara y enfocada.",
+      learnMore: "Saber más",
+      learnMorePrefix: "Saber más sobre",
+      aiPromptSample: "> genera 5 historias INVEST del insumo #12",
+      wompiMethods: ["COP / USD", "PSE", "Tarjeta", "Nequi", "Bancolombia"],
       items: [
         {
           icon: "layers" as IconName,
@@ -139,64 +153,70 @@ export const content = {
         {
           icon: "bot" as IconName,
           title: "Historias con IA",
-          text: "Historias con formato claro, criterios de aceptacion y estimacion inicial automatizada.",
+          text: "Historias con formato claro, criterios de aceptación y estimación inicial lista para ajustar.",
         },
         {
           icon: "activity" as IconName,
           title: "Sprints medibles",
-          text: "Capacidad, progreso, burndown y estados configurables para cada ciclo de trabajo.",
+          text: "Tablero Scrum, calendario, estados configurables y seguimiento de tareas por ciclo de trabajo.",
         },
         {
           icon: "message" as IconName,
-          title: "Colaboracion trazable",
-          text: "Chat, menciones, decisiones y auditoria para no perder contexto entre cambios.",
+          title: "Colaboración trazable",
+          text: "Chat grupal y privado, invitaciones y registro de actividad para no perder contexto entre cambios.",
         },
         {
           icon: "shield" as IconName,
-          title: "Roles y seguridad",
-          text: "Permisos por rol, invitaciones y controles pensados para equipos en crecimiento.",
+          title: "Roles y acceso",
+          text: "Permisos por rol, acceso por proyecto autorizado y control de sesiones web y móvil.",
         },
         {
           icon: "credit" as IconName,
           title: "Pagos Wompi",
-          text: "Planes en COP y USD con una ruta simple para PSE, tarjeta y suscripcion mensual.",
+          text: "Planes en COP y USD con una ruta simple para PSE, tarjeta, Nequi y suscripción mensual.",
         },
       ],
     },
     scale: {
-      eyebrow: "ESCALA SIN FRICCION",
-      title: "Crece de un proyecto piloto a una operacion completa",
+      eyebrow: "ESCALA SIN FRICCIÓN",
+      title: "Crece de un proyecto piloto a una operación completa",
       text:
-        "Empieza gratis, suma usuarios cuando el equipo lo necesite y mantiene una vista clara de creditos, proyectos y entregas.",
-      checks: ["De 1 a 15+ usuarios", "Seguridad enterprise", "Soporte 24/7", "Exportacion de artefactos"],
+        "Empieza gratis, suma usuarios cuando el equipo lo necesite y mantén una vista clara de créditos, proyectos y entregas.",
+      checks: ["De 1 a 15+ usuarios", "Permisos por rol", "Chat y calendario integrados", "Exportación de tareas"],
       cta: "Crear cuenta gratis",
+      metrics: [
+        { icon: "users" as IconName, to: 15, decimals: 0, prefix: "", suffix: "+", display: "15+", label: "Usuarios por equipo", tone: "brand" as const },
+        { icon: "zap" as IconName, to: 5000, decimals: 0, prefix: "", suffix: "", display: "5.000", label: "Créditos IA / mes (Empresa)", tone: "amber" as const },
+        { icon: "gauge" as IconName, to: 100, decimals: 0, prefix: "", suffix: "", display: "100", label: "Proyectos (Plan Empresa)", tone: "emerald" as const },
+        { icon: "shield" as IconName, to: 100, decimals: 0, prefix: "", suffix: "%", display: "100%", label: "Confirmación previa en IA", tone: "slate" as const },
+      ],
     },
     testimonials: {
-      eyebrow: "TESTIMONIOS",
-      title: "Equipos agiles que",
-      accent: "ya trabajan mas claro",
-      subtitle: "Historias cortas de equipos que redujeron ruido y aceleraron discovery.",
+      eyebrow: "PARA CADA ROL",
+      title: "Equipos ágiles con",
+      accent: "roles bien definidos",
+      subtitle: "Cada perfil encuentra herramientas concretas para reducir ruido en su entrega diaria.",
       items: [
         {
           quote:
-            "Scrumter reemplazo cuatro herramientas. Generamos backlog con IA en minutos y ahora tenemos una unica fuente de verdad.",
-          name: "Sofia Martinez",
-          role: "Head of Product, Lumina",
+            "Centraliza insumos del negocio, genera borradores de requerimientos e historias INVEST con IA y ajusta prioridades antes de confirmar al backlog.",
+          name: "Product Owner",
+          role: "Insumos y backlog priorizado",
+          initials: "PO",
+        },
+        {
+          quote:
+            "Organiza sprints con capacidad clara, visualiza el avance en el Scrum Board y mantén fechas clave y entregas visibles en el calendario del equipo.",
+          name: "Scrum Master",
+          role: "Sprints, Kanban y calendario",
           initials: "SM",
         },
         {
           quote:
-            "El burndown y las metricas nos dieron conversaciones mas objetivas. Recortamos el tiempo de entrega sin aumentar carga.",
-          name: "David Weber",
-          role: "COO, Northwind Labs",
-          initials: "DW",
-        },
-        {
-          quote:
-            "El onboarding tomo minutos. Las automatizaciones nos ahorran horas cada sprint y mantienen al equipo alineado.",
-          name: "Amara Okafor",
-          role: "Founder, Brightpath",
-          initials: "AO",
+            "Coordina tareas por estado, conversa en tiempo real por chat grupal o privado y revisa la trazabilidad de actividad en cada proyecto.",
+          name: "Tech Lead",
+          role: "Ejecución, chat y trazabilidad",
+          initials: "TL",
         },
       ],
     },
@@ -204,50 +224,56 @@ export const content = {
       eyebrow: "PLANES",
       title: "Precios simples y",
       accent: "transparentes",
-      subtitle: "Empieza gratis y escala cuando necesites mas IA, usuarios o proyectos.",
+      subtitle: "Empieza gratis y escala cuando necesites más IA, usuarios o proyectos.",
+      currencyLabel: "Moneda",
       monthly: "/mes",
       toggleCop: "COP - Wompi",
       toggleUsd: "USD",
-      popular: "Mas popular",
-      wompi: "Pagos seguros con Wompi Colombia - PSE - Tarjeta - Nequi - Bancolombia",
+      popular: "Más popular",
+      wompi: "Pagos seguros con Wompi Colombia · PSE · Tarjeta · Nequi · Bancolombia",
       plans: [
         {
           name: "Gratis",
           price: { cop: "$0", usd: "$0" },
-          description: "Para explorar la gestion basica.",
-          features: ["50 creditos IA / mes", "1 usuario", "2 proyectos", "Soporte comunitario"],
+          isCustom: false,
+          description: "Para explorar la gestión básica.",
+          features: ["50 créditos IA / mes", "1 usuario", "2 proyectos", "Soporte comunitario"],
           cta: "Crear cuenta gratis",
           highlighted: false,
         },
         {
           name: "Personal",
           price: { cop: "$39.900", usd: "$9.99" },
+          isCustom: false,
           description: "Optimiza tu flujo individual.",
-          features: ["300 creditos IA / mes", "1 usuario", "Hasta 10 proyectos", "Historial IA completo"],
+          features: ["300 créditos IA / mes", "1 usuario", "Hasta 10 proyectos", "Historial IA completo"],
           cta: "Elegir Personal",
           highlighted: false,
         },
         {
           name: "Equipo",
           price: { cop: "$119.900", usd: "$29.99" },
-          description: "Colaboracion avanzada.",
-          features: ["1.500 creditos IA / mes", "Hasta 5 usuarios", "Hasta 30 proyectos", "Chat y roles"],
+          isCustom: false,
+          description: "Colaboración avanzada.",
+          features: ["1.500 créditos IA / mes", "Hasta 5 usuarios", "Hasta 30 proyectos", "Chat y roles"],
           cta: "Elegir Equipo",
           highlighted: true,
         },
         {
           name: "Empresa",
           price: { cop: "$319.900", usd: "$79.99" },
+          isCustom: false,
           description: "Potencia total para organizaciones.",
-          features: ["5.000 creditos IA / mes", "Hasta 15 usuarios", "Hasta 100 proyectos", "Reportes y auditoria"],
+          features: ["5.000 créditos IA / mes", "Hasta 15 usuarios", "Hasta 100 proyectos", "Reportes y auditoría"],
           cta: "Elegir Empresa",
           highlighted: false,
         },
         {
           name: "Enterprise",
-          price: { cop: "A medida", usd: "Custom" },
+          price: { cop: "A medida", usd: "A medida" },
+          isCustom: true,
           description: "Soluciones para operaciones grandes.",
-          features: ["Creditos ilimitados", "Usuarios ilimitados", "Proyectos ilimitados", "Gestor dedicado"],
+          features: ["Créditos ilimitados", "Usuarios ilimitados", "Proyectos ilimitados", "Gestor dedicado"],
           cta: "Contactar ventas",
           highlighted: false,
         },
@@ -260,67 +286,79 @@ export const content = {
       subtitle: "Lo esencial antes de empezar con Scrumter.",
       items: [
         {
-          question: "Como funcionan los creditos IA?",
+          question: "¿Cómo funcionan los créditos IA?",
           answer:
-            "Cada plan incluye creditos mensuales y limites de uso. Puedes ver el consumo en tiempo real y escalar cuando el equipo lo necesite.",
+            "Cada plan incluye créditos mensuales y límites diarios de uso. Solo se descuentan tras una respuesta exitosa de la IA y puedes consultar tu saldo en todo momento.",
         },
         {
-          question: "Puedo cambiar de plan luego?",
-          answer: "Si. Puedes pasar de Gratis a Personal, Equipo o Empresa cuando necesites mas usuarios o capacidad.",
+          question: "¿Puedo cambiar de plan luego?",
+          answer: "Sí. Puedes pasar de Gratis a Personal, Equipo o Empresa cuando necesites más usuarios, proyectos o créditos de IA.",
         },
         {
-          question: "Mis datos estan seguros?",
+          question: "¿Cómo protege Scrumter el acceso a mis proyectos?",
           answer:
-            "La landing comunica una arquitectura pensada para cifrado, permisos por rol, auditoria y buenas practicas de operacion.",
+            "Cada proyecto restringe el acceso a su propietario y miembros activos con permisos por rol. Las contraseñas se almacenan cifradas con hashing seguro y la app móvil autentica vía tokens Sanctum.",
         },
         {
-          question: "Tienen plan Enterprise?",
+          question: "¿Tienen plan Enterprise?",
           answer:
-            "Si. Enterprise esta pensado para creditos, usuarios y proyectos ilimitados, con acompanamiento dedicado.",
+            "Sí. Enterprise está pensado para organizaciones que requieren capacidad a medida en créditos, usuarios y proyectos, coordinado directamente por correo con nuestro equipo.",
         },
         {
-          question: "Puedo exportar mis artefactos?",
-          answer: "Si. La propuesta incluye exportar backlog, historias y sprints para que el equipo conserve su informacion.",
+          question: "¿Puedo exportar tareas de mis proyectos?",
+          answer: "Sí. Puedes exportar las tareas de cada proyecto directamente desde la plataforma para compartir avances o respaldar tu información.",
         },
       ],
     },
     cta: {
-      title: "Listo para convertir ideas en sprints?",
-      subtitle: "Deja tu correo y prepara el camino para probar Scrumter con tu equipo.",
-      placeholder: "Ingresa tu correo de trabajo",
-      button: "Crear cuenta gratis",
-      note: "Gratis para empezar - Sin tarjeta - Cancela cuando quieras",
-      error: "Ingresa un email valido.",
-      success: "Revisa tu bandeja para activar tu cuenta.",
+      title: "¿Listo para convertir ideas en sprints?",
+      subtitle: "Crea tu cuenta gratuita y empieza a estructurar tu backlog con ayuda de la IA.",
+      primary: "Crear cuenta gratis",
+      secondary: "Ver planes",
+      note: "Gratis para empezar · Sin tarjeta · Escala cuando lo necesites",
     },
     mockup: {
-      ariaLabel: "Vista previa de Scrumter — dashboard con modulos Sprints, Tablero Tareas, Requerimientos e Insumos",
+      ariaLabel: "Vista previa del panel de Scrumter con proyectos activos, módulos y sprint en curso",
       sidebarSections: [
         { label: null, items: ["Dashboard", "Proyectos", "Mis Tareas"] },
-        { label: "Modulos", items: ["Requerimientos", "Scrum Board", "Sprints", "Tablero Tareas", "Insumos", "Calendario"] },
+        { label: "Módulos", items: ["Requerimientos", "Scrum Board", "Sprints", "Tablero Tareas", "Insumos", "Calendario"] },
         { label: "Inteligencia", items: ["Asistente IA", "Planes"] },
       ],
       newProject: "Nuevo proyecto",
       profile: "Perfil",
-      signOut: "Cerrar sesion",
+      signOut: "Cerrar sesión",
       dashboard: "Dashboard",
-      welcome: "Bienvenido",
-      welcomeText: "Crea tu primer proyecto y empieza a planificar con IA.",
+      welcome: "Panel activo",
+      welcomeText: "Revisa tus sprints en curso o genera un backlog con IA.",
       createWithAI: "Crear con IA",
+      statsValues: ["4", "12", "2"],
       statsLabels: ["Mis Proyectos", "Tareas Pendientes", "Sprints Activos"],
       modulesLabels: ["Sprints", "Tablero Tareas", "Requerimientos", "Insumos"],
-      emptyTitle: "Aun no tienes proyectos.",
-      emptyCta: "Crear el primero",
+      recentTitle: "Sprint 04 · Portal Clientes — 8 de 12 tareas completadas",
+      recentCta: "Abrir Scrum Board",
     },
     footer: {
       description: "La plataforma inteligente para gestionar Scrum con IA, del insumo al sprint.",
-      made: "Hecho para equipos agiles",
+      made: "Hecho para equipos ágiles",
       rights: "2026 Scrumter. Todos los derechos reservados.",
       columns: [
-        { title: "Producto", links: ["Funcionalidades", "Precios", "Como funciona", "Novedades"] },
-        { title: "Compania", links: ["Nosotros", "Carreras", "Blog", "Prensa"] },
-        { title: "Recursos", links: ["Documentacion", "Centro de ayuda", "API", "Estado"] },
-        { title: "Legal", links: ["Privacidad", "Terminos", "Seguridad", "Cookies"] },
+        {
+          title: "Navegación",
+          links: [
+            { label: "Funcionalidades", href: "#features" },
+            { label: "Cómo funciona", href: "#how" },
+            { label: "Precios", href: "#pricing" },
+            { label: "Preguntas frecuentes", href: "#faq" },
+          ],
+        },
+        {
+          title: "Plataforma y soporte",
+          links: [
+            { label: "Crear cuenta gratis", href: SIGNUP_URL },
+            { label: "Iniciar sesión", href: LOGIN_URL },
+            { label: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}` },
+          ],
+        },
       ],
     },
   },
@@ -329,7 +367,7 @@ export const content = {
       features: "Features",
       how: "How it works",
       pricing: "Pricing",
-      resources: "Resources",
+      resources: "FAQ",
       signIn: "Sign in",
       cta: "Create free account",
       language: "Language",
@@ -337,26 +375,30 @@ export const content = {
       openMenu: "Open menu",
       closeMenu: "Close menu",
       toTop: "Back to top",
+      skipToContent: "Skip to content",
+      homeAria: "Scrumter — Home",
+      mainNav: "Main navigation",
     },
     hero: {
-      badge: "AI for Scrum - OpenAI + Ollama",
+      badgeTag: "NEW",
+      badge: "AI for Scrum · OpenAI + Ollama",
       title: "Manage Scrum projects faster with AI",
       accent: "from input to sprint with control",
       lead:
         "Scrumter turns ideas, documents and requests into prioritized backlog, INVEST stories, tasks and sprints ready to execute.",
       primary: "Create free account",
-      secondary: "Watch demo flow",
+      secondary: "How it works",
       checks: ["No credit card required", "AI credits included", "Local payments with Wompi"],
       metrics: [
-        { value: "2,500+", label: "Projects managed" },
-        { value: "4.8/5", label: "Average rating" },
-        { value: "99.9%", label: "Guaranteed uptime" },
+        { to: 2, decimals: 0, prefix: "", suffix: "", display: "2", label: "AI engines (OpenAI + Ollama)" },
+        { to: 4, decimals: 0, prefix: "", suffix: "", display: "4", label: "Steps from input to sprint" },
+        { to: 50, decimals: 0, prefix: "", suffix: "+", display: "50+", label: "Free AI credits per month" },
       ],
     },
     trust: {
-      eyebrow: "TRUSTED BY AGILE TEAMS",
-      logos: ["Lumina", "Northwind", "Brightpath", "Aster Labs", "Nexa"],
-      badges: ["4.8/5 on G2", "2,500+ teams", "99.9% uptime"],
+      eyebrow: "VERIFIED STACK & INTEGRATIONS",
+      logos: ["OpenAI", "Ollama", "Wompi Colombia", "PSE · Nequi", "Android + Web", "Brevo"],
+      badges: ["OpenAI + Ollama", "Wompi COP & USD payments", "Web + Android App"],
     },
     how: {
       eyebrow: "HOW IT WORKS",
@@ -372,17 +414,17 @@ export const content = {
         {
           icon: "sparkles" as IconName,
           title: "Generate with AI",
-          text: "Scrumter proposes requirements, stories, acceptance criteria and initial story points.",
+          text: "Scrumter proposes requirements, stories, acceptance criteria and story points to review before applying.",
         },
         {
           icon: "kanban" as IconName,
           title: "Plan sprints",
-          text: "Sort priorities, tune capacity and visualize progress with board and burndown.",
+          text: "Sort priorities, tune capacity and track progress across Kanban board and calendar.",
         },
         {
           icon: "users" as IconName,
           title: "Deliver as a team",
-          text: "Coordinate roles, comments, changes and audit history to keep traceability.",
+          text: "Coordinate roles, chat, task exports and activity logs to preserve full traceability.",
         },
       ],
     },
@@ -391,6 +433,10 @@ export const content = {
       title: "Everything you need to",
       accent: "deliver better",
       subtitle: "Backlog, sprints, team, AI and payments in one focused experience.",
+      learnMore: "Learn more",
+      learnMorePrefix: "Learn more about",
+      aiPromptSample: "> generate 5 INVEST stories from input #12",
+      wompiMethods: ["COP / USD", "PSE", "Card", "Nequi", "Bancolombia"],
       items: [
         {
           icon: "layers" as IconName,
@@ -400,27 +446,27 @@ export const content = {
         {
           icon: "bot" as IconName,
           title: "AI stories",
-          text: "Clear user stories, acceptance criteria and automated first-pass estimation.",
+          text: "Clear user stories, acceptance criteria and initial estimation ready for your review.",
         },
         {
           icon: "activity" as IconName,
           title: "Measurable sprints",
-          text: "Capacity, progress, burndown and configurable states for every work cycle.",
+          text: "Scrum board, calendar, configurable task statuses and progress tracking per sprint cycle.",
         },
         {
           icon: "message" as IconName,
           title: "Traceable collaboration",
-          text: "Chat, mentions, decisions and audit history so context survives changes.",
+          text: "Group and private chat, invitations and activity log so context survives changes.",
         },
         {
           icon: "shield" as IconName,
-          title: "Roles and security",
-          text: "Role-based permissions, invitations and controls for growing teams.",
+          title: "Roles and access",
+          text: "Role-based permissions, authorized project scoping and web + mobile session security.",
         },
         {
           icon: "credit" as IconName,
           title: "Wompi payments",
-          text: "COP and USD plans with a simple path for PSE, card and monthly subscription.",
+          text: "COP and USD plans with a simple path for PSE, card, Nequi and monthly subscriptions.",
         },
       ],
     },
@@ -429,35 +475,41 @@ export const content = {
       title: "Grow from a pilot project to a complete operation",
       text:
         "Start free, add users when the team needs it and keep a clear view of credits, projects and delivery.",
-      checks: ["From 1 to 15+ users", "Enterprise-grade security", "24/7 support", "Artifact exports"],
+      checks: ["From 1 to 15+ users", "Role-based permissions", "Built-in chat & calendar", "Task exports"],
       cta: "Create free account",
+      metrics: [
+        { icon: "users" as IconName, to: 15, decimals: 0, prefix: "", suffix: "+", display: "15+", label: "Users per team", tone: "brand" as const },
+        { icon: "zap" as IconName, to: 5000, decimals: 0, prefix: "", suffix: "", display: "5,000", label: "AI credits / mo (Business)", tone: "amber" as const },
+        { icon: "gauge" as IconName, to: 100, decimals: 0, prefix: "", suffix: "", display: "100", label: "Projects (Business plan)", tone: "emerald" as const },
+        { icon: "shield" as IconName, to: 100, decimals: 0, prefix: "", suffix: "%", display: "100%", label: "Pre-apply AI confirmation", tone: "slate" as const },
+      ],
     },
     testimonials: {
-      eyebrow: "TESTIMONIALS",
-      title: "Agile teams that",
-      accent: "already work clearer",
-      subtitle: "Short stories from teams reducing noise and accelerating discovery.",
+      eyebrow: "FOR EVERY ROLE",
+      title: "Agile teams with",
+      accent: "clearer workflows",
+      subtitle: "Each team role gets dedicated tools inside Scrumter to cut delivery noise.",
       items: [
         {
           quote:
-            "Scrumter replaced four tools. We generate backlog with AI in minutes and now have a single source of truth.",
-          name: "Sofia Martinez",
-          role: "Head of Product, Lumina",
+            "Centralize business inputs, draft requirements and INVEST stories with AI, and refine priorities before confirming changes to the backlog.",
+          name: "Product Owner",
+          role: "Inputs & prioritized backlog",
+          initials: "PO",
+        },
+        {
+          quote:
+            "Organize sprints with clear capacity, monitor daily work on the Scrum Board and keep milestones visible on the team calendar.",
+          name: "Scrum Master",
+          role: "Sprints, Kanban & calendar",
           initials: "SM",
         },
         {
           quote:
-            "Burndown and metrics gave us more objective conversations. We reduced delivery time without adding load.",
-          name: "David Weber",
-          role: "COO, Northwind Labs",
-          initials: "DW",
-        },
-        {
-          quote:
-            "Onboarding took minutes. Automations save hours each sprint and keep the team aligned.",
-          name: "Amara Okafor",
-          role: "Founder, Brightpath",
-          initials: "AO",
+            "Coordinate tasks by status, message teammates in group or private chat and review project activity logs at any point.",
+          name: "Tech Lead",
+          role: "Execution, chat & traceability",
+          initials: "TL",
         },
       ],
     },
@@ -466,15 +518,17 @@ export const content = {
       title: "Simple, transparent",
       accent: "pricing",
       subtitle: "Start free and scale when you need more AI, users or projects.",
+      currencyLabel: "Currency",
       monthly: "/mo",
       toggleCop: "COP - Wompi",
       toggleUsd: "USD",
       popular: "Most popular",
-      wompi: "Secure payments with Wompi Colombia - PSE - Card - Nequi - Bancolombia",
+      wompi: "Secure payments with Wompi Colombia · PSE · Card · Nequi · Bancolombia",
       plans: [
         {
           name: "Free",
           price: { cop: "$0", usd: "$0" },
+          isCustom: false,
           description: "For exploring basic management.",
           features: ["50 AI credits / mo", "1 user", "2 projects", "Community support"],
           cta: "Create free account",
@@ -483,6 +537,7 @@ export const content = {
         {
           name: "Personal",
           price: { cop: "$39,900", usd: "$9.99" },
+          isCustom: false,
           description: "Optimize your individual flow.",
           features: ["300 AI credits / mo", "1 user", "Up to 10 projects", "Full AI history"],
           cta: "Choose Personal",
@@ -491,6 +546,7 @@ export const content = {
         {
           name: "Team",
           price: { cop: "$119,900", usd: "$29.99" },
+          isCustom: false,
           description: "Advanced collaboration.",
           features: ["1,500 AI credits / mo", "Up to 5 users", "Up to 30 projects", "Chat and roles"],
           cta: "Choose Team",
@@ -499,6 +555,7 @@ export const content = {
         {
           name: "Business",
           price: { cop: "$319,900", usd: "$79.99" },
+          isCustom: false,
           description: "Full power for organizations.",
           features: ["5,000 AI credits / mo", "Up to 15 users", "Up to 100 projects", "Reports and audit"],
           cta: "Choose Business",
@@ -506,7 +563,8 @@ export const content = {
         },
         {
           name: "Enterprise",
-          price: { cop: "A medida", usd: "Custom" },
+          price: { cop: "Custom", usd: "Custom" },
+          isCustom: true,
           description: "Solutions for larger operations.",
           features: ["Unlimited credits", "Unlimited users", "Unlimited projects", "Dedicated manager"],
           cta: "Contact sales",
@@ -523,39 +581,37 @@ export const content = {
         {
           question: "How do AI credits work?",
           answer:
-            "Each plan includes monthly credits and usage limits. You can track consumption in real time and scale when the team needs it.",
+            "Each plan includes monthly credits and daily rate limits. Credits are only charged after a successful AI response and you can check your balance anytime.",
         },
         {
           question: "Can I change plans later?",
-          answer: "Yes. Move from Free to Personal, Team or Business whenever you need more users or capacity.",
+          answer: "Yes. Move from Free to Personal, Team or Business whenever you need more users, projects or AI credits.",
         },
         {
-          question: "Is my data secure?",
+          question: "How does Scrumter protect project access?",
           answer:
-            "The landing communicates an architecture designed for encryption, role permissions, audit history and operating best practices.",
+            "Every project restricts access to its owner and active members according to role permissions. Passwords use secure hashing and the mobile API authenticates via Sanctum tokens.",
         },
         {
           question: "Do you offer Enterprise?",
           answer:
-            "Yes. Enterprise is intended for unlimited credits, users and projects, with dedicated support.",
+            "Yes. Enterprise is designed for organizations requiring custom credit, user and project limits, coordinated directly with our team via email.",
         },
         {
-          question: "Can I export my artifacts?",
-          answer: "Yes. The proposal includes exporting backlog, stories and sprints so your team keeps its information.",
+          question: "Can I export project tasks?",
+          answer: "Yes. You can export project tasks directly from the platform to share progress or back up your records.",
         },
       ],
     },
     cta: {
       title: "Ready to turn ideas into sprints?",
-      subtitle: "Leave your email and prepare the path to try Scrumter with your team.",
-      placeholder: "Enter your work email",
-      button: "Create free account",
-      note: "Free to start - No card - Cancel anytime",
-      error: "Please enter a valid email address.",
-      success: "Check your inbox to activate your account.",
+      subtitle: "Create your free account and start structuring your backlog with AI.",
+      primary: "Create free account",
+      secondary: "View plans",
+      note: "Free to start · No card required · Scale when you need",
     },
     mockup: {
-      ariaLabel: "Scrumter preview — dashboard with Sprints, Task Board, Requirements and Inputs modules",
+      ariaLabel: "Scrumter workspace preview showing active projects, modules and ongoing sprint",
       sidebarSections: [
         { label: null, items: ["Dashboard", "Projects", "My Tasks"] },
         { label: "Modules", items: ["Requirements", "Scrum Board", "Sprints", "Task Board", "Inputs", "Calendar"] },
@@ -565,23 +621,37 @@ export const content = {
       profile: "Profile",
       signOut: "Sign out",
       dashboard: "Dashboard",
-      welcome: "Welcome",
-      welcomeText: "Create your first project and start planning with AI.",
+      welcome: "Active workspace",
+      welcomeText: "Review active sprints or generate a backlog with AI.",
       createWithAI: "Create with AI",
+      statsValues: ["4", "12", "2"],
       statsLabels: ["My Projects", "Pending Tasks", "Active Sprints"],
       modulesLabels: ["Sprints", "Task Board", "Requirements", "Inputs"],
-      emptyTitle: "You have no projects yet.",
-      emptyCta: "Create your first",
+      recentTitle: "Sprint 04 · Client Portal — 8 of 12 tasks completed",
+      recentCta: "Open Scrum Board",
     },
     footer: {
       description: "The intelligent platform to manage Scrum with AI, from input to sprint.",
-      made: "Made for agile teams",
+      made: "Built for agile teams",
       rights: "2026 Scrumter. All rights reserved.",
       columns: [
-        { title: "Product", links: ["Features", "Pricing", "How it works", "Changelog"] },
-        { title: "Company", links: ["About", "Careers", "Blog", "Press"] },
-        { title: "Resources", links: ["Documentation", "Help Center", "API", "Status"] },
-        { title: "Legal", links: ["Privacy", "Terms", "Security", "Cookies"] },
+        {
+          title: "Navigation",
+          links: [
+            { label: "Features", href: "#features" },
+            { label: "How it works", href: "#how" },
+            { label: "Pricing", href: "#pricing" },
+            { label: "FAQ", href: "#faq" },
+          ],
+        },
+        {
+          title: "Platform & support",
+          links: [
+            { label: "Create free account", href: SIGNUP_URL },
+            { label: "Sign in", href: LOGIN_URL },
+            { label: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}` },
+          ],
+        },
       ],
     },
   },
