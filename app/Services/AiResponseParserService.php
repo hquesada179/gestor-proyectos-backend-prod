@@ -20,25 +20,25 @@ class AiResponseParserService
 
         if ($data === null) {
             Log::warning('AiResponseParserService@parseInterpretation: failed to extract JSON', [
-                'raw_type'    => gettype($raw),
+                'raw_type' => gettype($raw),
                 'raw_snippet' => is_string($raw) ? substr($raw, 0, 300) : json_encode($raw),
             ]);
 
             return [
-                'ok'    => false,
+                'ok' => false,
                 'error' => 'La IA no devolvió un JSON reconocible. Puedes copiar la respuesta cruda y revisarla.',
-                'raw'   => is_string($raw) ? $raw : json_encode($raw),
+                'raw' => is_string($raw) ? $raw : json_encode($raw),
             ];
         }
 
         $result = [
-            'nombre_sugerido'           => $this->str($data, ['nombre_sugerido', 'nombre', 'name', 'project_name', 'titulo', 'title'], 'Proyecto sin nombre'),
-            'descripcion_mejorada'      => $this->str($data, ['descripcion_mejorada', 'descripcion', 'description', 'resumen', 'summary', 'about'], ''),
-            'modulos_detectados'        => $this->arr($data, ['modulos_detectados', 'modulos', 'modules', 'features', 'components', 'caracteristicas'], []),
-            'tecnologias_sugeridas'     => $this->arr($data, ['tecnologias_sugeridas', 'tecnologias', 'technologies', 'tech_stack', 'stack', 'tools'], []),
-            'complejidad'               => $this->enum($data, ['complejidad', 'complexity', 'nivel'], ['baja', 'media', 'alta'], 'media'),
+            'nombre_sugerido' => $this->str($data, ['nombre_sugerido', 'nombre', 'name', 'project_name', 'titulo', 'title'], 'Proyecto sin nombre'),
+            'descripcion_mejorada' => $this->str($data, ['descripcion_mejorada', 'descripcion', 'description', 'resumen', 'summary', 'about'], ''),
+            'modulos_detectados' => $this->arr($data, ['modulos_detectados', 'modulos', 'modules', 'features', 'components', 'caracteristicas'], []),
+            'tecnologias_sugeridas' => $this->arr($data, ['tecnologias_sugeridas', 'tecnologias', 'technologies', 'tech_stack', 'stack', 'tools'], []),
+            'complejidad' => $this->enum($data, ['complejidad', 'complexity', 'nivel'], ['baja', 'media', 'alta'], 'media'),
             'duracion_semanas_estimada' => $this->int($data, ['duracion_semanas_estimada', 'duracion_semanas', 'duration_weeks', 'weeks', 'duracion', 'semanas'], 8),
-            'tipo_proyecto'             => $this->enum($data, ['tipo_proyecto', 'tipo', 'type', 'project_type', 'category'], ['web', 'movil', 'escritorio', 'api', 'mixto'], 'web'),
+            'tipo_proyecto' => $this->enum($data, ['tipo_proyecto', 'tipo', 'type', 'project_type', 'category'], ['web', 'movil', 'escritorio', 'api', 'mixto'], 'web'),
         ];
 
         // Safe fallbacks so the UI never breaks
@@ -66,13 +66,13 @@ class AiResponseParserService
             return $this->failParse('requerimientos', $raw);
         }
 
-        $functional    = $this->arr($data, ['requerimientos_funcionales', 'functional', 'requirements', 'funcionales', 'rf'], []);
+        $functional = $this->arr($data, ['requerimientos_funcionales', 'functional', 'requirements', 'funcionales', 'rf'], []);
         $nonFunctional = $this->arr($data, ['requerimientos_no_funcionales', 'non_functional', 'no_funcionales', 'rnf'], []);
 
         return [
-            'ok'   => true,
+            'ok' => true,
             'data' => [
-                'requerimientos_funcionales'    => $functional,
+                'requerimientos_funcionales' => $functional,
                 'requerimientos_no_funcionales' => $nonFunctional,
             ],
         ];
@@ -150,7 +150,7 @@ class AiResponseParserService
 
         // Find and extract outermost JSON object
         $start = strpos($text, '{');
-        $end   = strrpos($text, '}');
+        $end = strrpos($text, '}');
         if ($start !== false && $end !== false && $end > $start) {
             if ($decoded = $this->tryDecode(substr($text, $start, $end - $start + 1))) {
                 return $decoded;
@@ -159,7 +159,7 @@ class AiResponseParserService
 
         // Find and extract outermost JSON array
         $start = strpos($text, '[');
-        $end   = strrpos($text, ']');
+        $end = strrpos($text, ']');
         if ($start !== false && $end !== false && $end > $start) {
             if ($decoded = $this->tryDecode(substr($text, $start, $end - $start + 1))) {
                 return is_array($decoded) ? ['items' => $decoded] : null;
@@ -183,12 +183,14 @@ class AiResponseParserService
         if (is_string($value)) {
             return $this->extractJson($value);
         }
+
         return null;
     }
 
     private function tryDecode(string $text): ?array
     {
         $decoded = json_decode($text, true);
+
         return (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) ? $decoded : null;
     }
 
@@ -199,6 +201,7 @@ class AiResponseParserService
                 return trim($data[$key]);
             }
         }
+
         return $default;
     }
 
@@ -209,6 +212,7 @@ class AiResponseParserService
                 return array_values($data[$key]);
             }
         }
+
         return $default;
     }
 
@@ -222,6 +226,7 @@ class AiResponseParserService
                 }
             }
         }
+
         return $default;
     }
 
@@ -235,6 +240,7 @@ class AiResponseParserService
                 }
             }
         }
+
         return $default;
     }
 
@@ -245,9 +251,175 @@ class AiResponseParserService
         ]);
 
         return [
-            'ok'    => false,
+            'ok' => false,
             'error' => "No se pudieron extraer los {$context} de la respuesta de la IA.",
-            'raw'   => is_string($raw) ? $raw : json_encode($raw),
+            'raw' => is_string($raw) ? $raw : json_encode($raw),
         ];
+    }
+
+    /**
+     * Normaliza la propuesta de creación tolerando formatos JSON anteriores y nuevos.
+     */
+    public function normalizeCreateProposal(array $data): array
+    {
+        // Compatibilidad con formato antiguo de sprint_sugerido único frente a array de sprints
+        $sprints = $data['sprints'] ?? [];
+        if (empty($sprints) && isset($data['sprint_sugerido'])) {
+            $s = $data['sprint_sugerido'];
+            $sprints = [[
+                'nombre' => $s['nombre'] ?? 'Sprint 1',
+                'objetivo' => $s['objetivo'] ?? '',
+                'semanas' => $s['duracion_semanas'] ?? 2,
+            ]];
+        }
+
+        // Fusión de requerimientos funcionales y no funcionales si vienen separados
+        $reqs = $data['requerimientos'] ?? [];
+        if (empty($reqs)) {
+            $func = $data['requerimientos_funcionales'] ?? [];
+            $nofunc = $data['requerimientos_no_funcionales'] ?? [];
+            foreach ($func as $r) {
+                $r['tipo'] = 'funcional';
+                $reqs[] = $r;
+            }
+            foreach ($nofunc as $r) {
+                $r['tipo'] = 'no_funcional';
+                $reqs[] = $r;
+            }
+        }
+
+        $tareas = $data['tareas']
+            ?? $data['tasks']
+            ?? $data['tareas_sugeridas']
+            ?? [];
+
+        return [
+            'nombre' => $data['nombre'] ?? $data['name'] ?? 'Proyecto sin nombre',
+            'descripcion' => $data['descripcion'] ?? $data['description'] ?? $data['resumen'] ?? '',
+            'requerimientos' => $reqs,
+            'tareas' => $tareas,
+            'sprints' => $sprints,
+            'insumos' => $data['insumos'] ?? $data['inputs'] ?? [],
+        ];
+    }
+
+    /**
+     * Normaliza la propuesta de mejora para homogeneizar las claves detectadas.
+     */
+    public function normalizeImproveProposal(array $data): array
+    {
+        return [
+            'resumen' => $data['resumen'] ?? $data['summary'] ?? 'Propuesta de mejora generada por IA',
+            'requerimientos_nuevos' => $data['requerimientos_nuevos'] ?? $data['requerimientos'] ?? $data['requirements'] ?? [],
+            'tareas_nuevas' => $data['tareas_nuevas'] ?? $data['tareas'] ?? $data['tasks'] ?? [],
+            'actualizaciones_tareas' => $data['actualizaciones_tareas'] ?? $data['actualizaciones'] ?? $data['task_updates'] ?? [],
+            'sprints_nuevos' => $data['sprints_nuevos'] ?? $data['sprints'] ?? [],
+            'insumos_nuevos' => $data['insumos_nuevos'] ?? $data['insumos'] ?? [],
+        ];
+    }
+
+    /**
+     * Normaliza los datos enviados desde el frontend antes de la persistencia.
+     */
+    public function normalizeClientProposal(array $data, array $fallback = []): array
+    {
+        // Si el cliente agrupó nombre o descripción bajo la clave 'project', la aplanamos
+        if (isset($data['project']) && is_array($data['project'])) {
+            $data['nombre'] = $data['project']['nombre'] ?? $data['project']['name'] ?? $data['nombre'] ?? null;
+            $data['descripcion'] = $data['project']['descripcion'] ?? $data['project']['description'] ?? $data['descripcion'] ?? null;
+        }
+
+        $type = $data['_tipo'] ?? $fallback['_tipo'] ?? 'create';
+
+        // Manejo diferenciado según el tipo de acción recibido
+        if ($type === 'improve') {
+            $normalized = $this->normalizeImproveProposal($data);
+            $normalized['_tipo'] = 'improve';
+            $normalized['_proyecto_id'] = $data['_proyecto_id'] ?? $fallback['_proyecto_id'] ?? null;
+
+            return $normalized;
+        }
+
+        if ($type === 'project_edit') {
+            $normalized = $this->normalizeCreateProposal($data);
+            $normalized['_tipo'] = 'project_edit';
+            $normalized['_proyecto_id'] = $data['_proyecto_id'] ?? $fallback['_proyecto_id'] ?? null;
+
+            return $normalized;
+        }
+
+        $normalized = $this->normalizeCreateProposal($data);
+        $normalized['_tipo'] = 'create';
+
+        return $normalized;
+    }
+
+    /**
+     * Valida que el borrador de creación contenga los campos indispensables.
+     */
+    public function validateCreateDraft(array $data): ?string
+    {
+        // Validación de campos mínimos obligatorios para no persistir proyectos vacíos
+        if (blank($data['nombre'] ?? null)) {
+            return 'El borrador debe tener nombre de proyecto.';
+        }
+
+        if (blank($data['descripcion'] ?? null)) {
+            return 'El borrador debe tener descripcion del proyecto.';
+        }
+
+        // Filtramos requerimientos que contengan un título real no vacío
+        $validReqs = array_filter(
+            $data['requerimientos'] ?? [],
+            fn ($r) => is_array($r) && ! blank($r['titulo'] ?? null)
+        );
+        if (empty($validReqs)) {
+            return 'Agrega al menos un requerimiento con título antes de guardar.';
+        }
+
+        // Filtramos tareas que contengan un título real no vacío
+        $validTasks = array_filter(
+            $data['tareas'] ?? [],
+            fn ($t) => is_array($t) && ! blank($t['titulo'] ?? null)
+        );
+        if (empty($validTasks)) {
+            return 'Agrega al menos una tarea con título antes de guardar.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Fusiona la propuesta refinada con la original para no perder secciones no tocadas.
+     */
+    public function mergeRefinedWithOriginal(array $refined, array $original): array
+    {
+        $tipo = $refined['_tipo'] ?? $original['_tipo'] ?? 'create';
+
+        $sections = $tipo === 'improve'
+            ? ['requerimientos_nuevos', 'tareas_nuevas', 'actualizaciones_tareas', 'sprints_nuevos', 'insumos_nuevos']
+            : ['requerimientos', 'tareas', 'sprints', 'insumos'];
+
+        foreach ($sections as $section) {
+            $originalItems = $original[$section] ?? [];
+            $refinedItems = $refined[$section] ?? [];
+
+            // Si la IA devolvió una sección vacía pero el original tenía contenido, conservamos el original
+            if (empty($refinedItems) && ! empty($originalItems)) {
+                $refined[$section] = $originalItems;
+            }
+        }
+
+        // Si es creación, preservamos nombre o descripción originales si la refinación los omitió
+        if ($tipo === 'create') {
+            if (blank($refined['nombre'] ?? null) && ! blank($original['nombre'] ?? null)) {
+                $refined['nombre'] = $original['nombre'];
+            }
+            if (blank($refined['descripcion'] ?? null) && ! blank($original['descripcion'] ?? null)) {
+                $refined['descripcion'] = $original['descripcion'];
+            }
+        }
+
+        return $refined;
     }
 }

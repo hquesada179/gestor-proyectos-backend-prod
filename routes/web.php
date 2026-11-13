@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AiAssistantController;
+use App\Http\Controllers\AiHistoryController;
 use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\LanguageController;
@@ -107,16 +108,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/asistente-ia/regenerar-seccion', [AiAssistantController::class, 'regenerateSection'])->name('asistente-ia.regenerate-section');
         Route::post('/asistente-ia/regenerar-elemento', [AiAssistantController::class, 'regenerateItem'])->name('asistente-ia.regenerate-item');
         Route::post('/asistente-ia/generar', [AiAssistantController::class, 'generate'])->name('asistente-ia.generar');
+        Route::post('/asistente-ia/interpretar', [AiAssistantController::class, 'interpret'])->name('asistente-ia.interpretar');
     });
 
     Route::get('/asistente-ia/proyecto/{id}/estructura', [AiAssistantController::class, 'loadProjectStructure'])->name('asistente-ia.proyecto.estructura');
     Route::get('/asistente-ia/creditos', [AiAssistantController::class, 'getBalance'])->name('asistente-ia.balance');
-    Route::get('/asistente-ia/historial', [AiAssistantController::class, 'history'])->name('asistente-ia.historial');
-    Route::delete('/asistente-ia/historial/limpiar', [AiAssistantController::class, 'clearHistory'])->name('asistente-ia.historial.clear');
-    Route::get('/asistente-ia/historial/{id}', [AiAssistantController::class, 'historyDetail'])->name('asistente-ia.historial.detail');
-    Route::delete('/asistente-ia/historial/{id}', [AiAssistantController::class, 'deleteHistoryItem'])->name('asistente-ia.historial.delete');
+    Route::get('/asistente-ia/historial', [AiHistoryController::class, 'history'])->name('asistente-ia.historial');
+    Route::delete('/asistente-ia/historial/limpiar', [AiHistoryController::class, 'clearHistory'])->name('asistente-ia.historial.clear');
+    Route::get('/asistente-ia/historial/{id}', [AiHistoryController::class, 'historyDetail'])->name('asistente-ia.historial.detail');
+    Route::delete('/asistente-ia/historial/{id}', [AiHistoryController::class, 'deleteHistoryItem'])->name('asistente-ia.historial.delete');
     Route::get('/asistente-ia/guiado', [AiAssistantController::class, 'guided'])->name('asistente-ia.guiado');
-    Route::post('/asistente-ia/interpretar', [AiAssistantController::class, 'interpret'])->name('asistente-ia.interpretar');
     Route::resource('proyectos', ProyectoController::class);
     Route::resource('proyectos.inputs', ProjectInputController::class);
     Route::resource('proyectos.requirements', RequirementController::class);
