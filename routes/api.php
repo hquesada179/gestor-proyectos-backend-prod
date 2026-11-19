@@ -157,6 +157,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Flujo Android: generar → ajustar → confirmar
         Route::prefix('projects')->name('projects.')->group(function () {
             Route::post('/generate', [AiProjectApiController::class, 'generate'])->name('generate');
+            Route::post('/generate-async', [AiProjectApiController::class, 'generateAsync'])->name('generate-async');
             Route::post('/regenerate', [AiProjectApiController::class, 'regenerate'])->name('regenerate');
             Route::post('/adjust', [AiProjectApiController::class, 'adjust'])->name('adjust');
             Route::post('/confirm', [AiProjectApiController::class, 'confirm'])->name('confirm');

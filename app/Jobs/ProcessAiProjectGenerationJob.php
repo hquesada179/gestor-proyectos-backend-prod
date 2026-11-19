@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Contexts\AiAssistant\Application\DTOs\GenerateProjectDraftDTO;
 use App\Contexts\AiAssistant\Application\UseCases\GenerateProjectDraftUseCase;
+use App\Models\AiProjectChat;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -39,7 +40,8 @@ class ProcessAiProjectGenerationJob implements ShouldQueue
         public readonly int $userId,
         public readonly int $projectId,
         public readonly string $inputBrief,
-        public readonly string $targetLanguage = 'es'
+        public readonly string $targetLanguage = 'es',
+        public readonly ?int $chatId = null
     ) {}
 
     public function handle(GenerateProjectDraftUseCase $useCase): void
@@ -56,6 +58,15 @@ class ProcessAiProjectGenerationJob implements ShouldQueue
         // Se delega al caso de uso de la arquitectura hexagonal
         $result = $useCase->execute($dto);
 
+        // Si el job fue originado desde un registro de chat, actualizamos su estado para polling del cliente
+        if ($this->chatId) {
+            AiProjectChat::whereKey($this->chatId)->update([
+                'estado' => 'borrador',
+                'respuesta_ia' => json_encode($result['proposal'], JSON_UNESCAPED_UNICODE),
+                'datos_detectados' => $result['proposal'],
+            ]);
+        }
+
         Log::info("ProcessAiProjectGenerationJob: Borrador #{$result['draft_id']} generado exitosamente en background.");
     }
 
@@ -64,9 +75,14 @@ class ProcessAiProjectGenerationJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
+        if ($this->chatId) {
+            AiProjectChat::whereKey($this->chatId)->update(['estado' => 'error']);
+        }
+
         Log::error("ProcessAiProjectGenerationJob: Fallo definitivo para proyecto #{$this->projectId}", [
             'error' => $exception?->getMessage(),
             'user_id' => $this->userId,
+            'chat_id' => $this->chatId,
         ]);
     }
 }
