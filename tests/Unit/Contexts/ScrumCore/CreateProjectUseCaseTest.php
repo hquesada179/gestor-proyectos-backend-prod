@@ -4,10 +4,11 @@ namespace Tests\Unit\Contexts\ScrumCore;
 
 use App\Contexts\ScrumCore\Application\DTOs\CreateProjectDTO;
 use App\Contexts\ScrumCore\Application\UseCases\CreateProjectUseCase;
+use App\Contexts\ScrumCore\Domain\Entities\ProjectEntity;
+use App\Contexts\ScrumCore\Domain\Ports\ProjectAuditLoggerInterface;
 use App\Contexts\ScrumCore\Domain\Ports\ProjectRepositoryInterface;
-use App\Models\Proyecto;
 use Mockery;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class CreateProjectUseCaseTest extends TestCase
 {
@@ -29,14 +30,13 @@ class CreateProjectUseCaseTest extends TestCase
             fechaFinEstimada: '2026-12-01'
         );
 
-        $mockProyecto = new Proyecto([
-            'id' => 99,
-            'user_id' => $userId,
-            'nombre' => $dto->nombre,
-            'descripcion' => $dto->descripcion,
-            'estado' => $dto->estado,
-        ]);
-        $mockProyecto->id = 99;
+        $createdProject = new ProjectEntity(
+            id: 99,
+            userId: $userId,
+            nombre: $dto->nombre,
+            descripcion: $dto->descripcion,
+            estado: $dto->estado
+        );
 
         $repoMock = Mockery::mock(ProjectRepositoryInterface::class);
         $repoMock->shouldReceive('create')
@@ -44,12 +44,17 @@ class CreateProjectUseCaseTest extends TestCase
             ->with($userId, Mockery::on(function ($data) use ($dto) {
                 return $data['nombre'] === $dto->nombre && $data['estado'] === $dto->estado;
             }))
-            ->andReturn($mockProyecto);
+            ->andReturn($createdProject);
 
-        $useCase = new CreateProjectUseCase($repoMock);
+        $auditMock = Mockery::mock(ProjectAuditLoggerInterface::class);
+        $auditMock->shouldReceive('logProjectAction')
+            ->once()
+            ->with(99, 'created', 'Proyecto creado: «Nuevo Scrum Project»');
+
+        $useCase = new CreateProjectUseCase($repoMock, $auditMock);
         $result = $useCase->execute($dto);
 
-        $this->assertInstanceOf(Proyecto::class, $result);
+        $this->assertInstanceOf(ProjectEntity::class, $result);
         $this->assertEquals('Nuevo Scrum Project', $result->nombre);
     }
 }

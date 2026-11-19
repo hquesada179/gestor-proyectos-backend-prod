@@ -60,7 +60,7 @@
                         @foreach ($proyectos as $proyecto)
                             <tr class="group">
                                 <td>
-                                    <a href="{{ route('proyectos.show', $proyecto) }}"
+                                    <a href="{{ route('proyectos.show', $proyecto->id) }}"
                                        class="text-sm font-semibold text-on-surface hover:text-blue-400 transition-colors">
                                         {{ $proyecto->nombre }}
                                     </a>
@@ -96,35 +96,35 @@
                                     <div class="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
                                         <span class="flex items-center gap-1">
                                             <span class="material-symbols-outlined" style="font-size: 13px;">task_alt</span>
-                                            {{ $proyecto->tasks_count }} {{ __('app.projects.tasks_short') }}
+                                            {{ $proyecto->tasksCount }} {{ __('app.projects.tasks_short') }}
                                         </span>
                                         <span class="flex items-center gap-1">
                                             <span class="material-symbols-outlined" style="font-size: 13px;">view_kanban</span>
-                                            {{ $proyecto->sprints_count }} {{ __('app.projects.sprints_short') }}
+                                            {{ $proyecto->sprintsCount }} {{ __('app.projects.sprints_short') }}
                                         </span>
                                         <span class="flex items-center gap-1">
                                             <span class="material-symbols-outlined" style="font-size: 13px;">edit_note</span>
-                                            {{ $proyecto->requirements_count }} {{ __('app.projects.req_short') }}
+                                            {{ $proyecto->requirementsCount }} {{ __('app.projects.req_short') }}
                                         </span>
                                     </div>
                                 </td>
 
                                 <td class="text-xs text-gray-400">
-                                    {{ $proyecto->fecha_inicio?->format('d/m/Y') ?? '—' }}
+                                    {{ $proyecto->fechaInicio?->format('d/m/Y') ?? '—' }}
                                 </td>
 
                                 <td class="text-xs text-gray-400">
-                                    {{ $proyecto->fecha_fin_estimada?->format('d/m/Y') ?? '—' }}
+                                    {{ $proyecto->fechaFinEstimada?->format('d/m/Y') ?? '—' }}
                                 </td>
 
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <a href="{{ route('proyectos.edit', $proyecto) }}"
+                                        <a href="{{ route('proyectos.edit', $proyecto->id) }}"
                                            class="text-xs text-blue-400 hover:underline flex items-center gap-1">
                                             <span class="material-symbols-outlined" style="font-size: 13px;">edit</span>
                                             {{ __('app.actions.edit') }}
                                         </a>
-                                        <form method="POST" action="{{ route('proyectos.destroy', $proyecto) }}" class="inline">
+                                        <form method="POST" action="{{ route('proyectos.destroy', $proyecto->id) }}" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

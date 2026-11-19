@@ -2,7 +2,7 @@
 
 namespace App\Contexts\Billing\Domain\Ports;
 
-use App\Models\Plan;
+use App\Contexts\Billing\Domain\Entities\PlanEntity;
 
 /**
  * Puerto de salida para interacción con la pasarela de pagos (Wompi).
@@ -22,7 +22,7 @@ interface PaymentGatewayInterface
     /**
      * Calcula el monto en centavos para el checkout.
      */
-    public function calculateAmountInCents(Plan $plan): int;
+    public function calculateAmountInCents(PlanEntity $plan): int;
 
     /**
      * Valida la firma criptográfica SHA-256 del webhook recibido.

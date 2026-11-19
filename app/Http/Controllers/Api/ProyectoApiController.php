@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contexts\ScrumCore\Application\DTOs\CreateProjectDTO;
+use App\Contexts\ScrumCore\Application\UseCases\CreateProjectUseCase;
+use App\Contexts\ScrumCore\Application\UseCases\GetAccessibleProjectUseCase;
 use App\Contexts\ScrumCore\Application\UseCases\ListUserProjectsUseCase;
+use App\Contexts\ScrumCore\Domain\Entities\ProjectEntity;
 use App\Http\Controllers\Controller;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
@@ -17,13 +21,15 @@ class ProyectoApiController extends Controller
     public function index(ListUserProjectsUseCase $listUseCase): JsonResponse
     {
         // Se ejecuta el mismo caso de uso de la arquitectura hexagonal compartido con la web
-        $proyectos = $listUseCase->execute((int) Auth::id())
-            ->map(fn (Proyecto $p) => $this->formatProject($p));
+        $proyectos = array_map(
+            fn (ProjectEntity $p) => $this->formatProject($p),
+            $listUseCase->execute((int) Auth::id())
+        );
 
         return response()->json($proyectos);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, CreateProjectUseCase $createUseCase): JsonResponse
     {
         $payload = $this->normalizedProjectPayload($request);
         $image = $this->projectImageFile($request);
@@ -68,7 +74,9 @@ class ProyectoApiController extends Controller
                 $data['cover_image'] = $storedImage;
             }
 
-            $proyecto = Auth::user()->proyectos()->create($data);
+            // Se reutiliza el caso de uso de creación para mantener auditoría y reglas unificadas entre Web y API
+            $dto = CreateProjectDTO::fromArray((int) Auth::id(), $data);
+            $proyecto = $createUseCase->execute($dto);
         } catch (\Throwable $e) {
             if ($storedImage && Storage::disk('public')->exists($storedImage)) {
                 Storage::disk('public')->delete($storedImage);
@@ -84,38 +92,17 @@ class ProyectoApiController extends Controller
         ], 201);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(int $id, GetAccessibleProjectUseCase $getProjectUseCase): JsonResponse
     {
-        $proyecto = Proyecto::accessibleBy(Auth::id())
-            ->withCount(['tasks', 'sprints'])
-            ->with([
-                'sprints' => fn ($q) => $q->withCount('tasks')->orderBy('nombre'),
-                'tasks.status',
-            ])
-            ->find($id);
+        $proyecto = $getProjectUseCase->execute($id, (int) Auth::id());
 
         if (! $proyecto) {
             return response()->json(['message' => 'Proyecto no encontrado o sin acceso.'], 404);
         }
 
         return response()->json(array_merge($this->formatProject($proyecto), [
-            'sprints' => $proyecto->sprints->map(fn ($s) => [
-                'id' => $s->id,
-                'nombre' => $s->nombre,
-                'objetivo' => $s->objetivo,
-                'estado' => $s->estado,
-                'fecha_inicio' => $s->fecha_inicio?->toDateString(),
-                'fecha_fin' => $s->fecha_fin?->toDateString(),
-                'tasks_count' => $s->tasks_count,
-            ]),
-            'tasks' => $proyecto->tasks->map(fn ($t) => [
-                'id' => $t->id,
-                'titulo' => $t->titulo,
-                'descripcion' => $t->descripcion,
-                'estado' => $t->status?->nombre,
-                'fecha_limite' => $t->fecha_limite?->toDateString(),
-                'sprint_id' => $t->sprint_id,
-            ]),
+            'sprints' => $proyecto->sprints,
+            'tasks' => $proyecto->tasks,
         ]));
     }
 
@@ -172,11 +159,20 @@ class ProyectoApiController extends Controller
         ]);
     }
 
-    private function formatProject(Proyecto $project): array
+    private function formatProject(ProjectEntity|Proyecto $project): array
     {
-        $imageUrl = $project->cover_image
-            ? Storage::disk('public')->url($project->cover_image)
+        $isEntity = $project instanceof ProjectEntity;
+        $coverImage = $isEntity ? $project->coverImage : $project->cover_image;
+        $imageUrl = $coverImage
+            ? Storage::disk('public')->url($coverImage)
             : null;
+
+        $startDate = $isEntity
+            ? $project->fechaInicio?->format('Y-m-d')
+            : $project->fecha_inicio?->toDateString();
+        $endDate = $isEntity
+            ? $project->fechaFinEstimada?->format('Y-m-d')
+            : $project->fecha_fin_estimada?->toDateString();
 
         return [
             'id' => $project->id,
@@ -186,18 +182,18 @@ class ProyectoApiController extends Controller
             'descripcion' => $project->descripcion,
             'status' => $project->estado,
             'estado' => $project->estado,
-            'fecha_inicio' => $project->fecha_inicio?->toDateString(),
-            'start_date' => $project->fecha_inicio?->toDateString(),
-            'fecha_fin_estimada' => $project->fecha_fin_estimada?->toDateString(),
-            'end_date' => $project->fecha_fin_estimada?->toDateString(),
-            'cover_image' => $project->cover_image,
+            'fecha_inicio' => $startDate,
+            'start_date' => $startDate,
+            'fecha_fin_estimada' => $endDate,
+            'end_date' => $endDate,
+            'cover_image' => $coverImage,
             'image' => $imageUrl,
             'imagen' => $imageUrl,
             'image_url' => $imageUrl,
             'cover_url' => $imageUrl,
             'thumbnail_url' => $imageUrl,
-            'tasks_count' => $project->tasks_count ?? null,
-            'sprints_count' => $project->sprints_count ?? null,
+            'tasks_count' => $isEntity ? $project->tasksCount : ($project->tasks_count ?? null),
+            'sprints_count' => $isEntity ? $project->sprintsCount : ($project->sprints_count ?? null),
         ];
     }
 

@@ -12,8 +12,10 @@ use App\Contexts\Billing\Domain\Ports\PaymentGatewayInterface;
 use App\Contexts\Billing\Domain\Ports\SubscriptionRepositoryInterface;
 use App\Contexts\Billing\Infrastructure\Adapters\EloquentSubscriptionRepository;
 use App\Contexts\Billing\Infrastructure\Adapters\WompiGatewayAdapter;
+use App\Contexts\ScrumCore\Domain\Ports\ProjectAuditLoggerInterface;
 use App\Contexts\ScrumCore\Domain\Ports\ProjectRepositoryInterface;
 use App\Contexts\ScrumCore\Domain\Ports\TaskRepositoryInterface;
+use App\Contexts\ScrumCore\Infrastructure\Adapters\EloquentProjectActivityLoggerAdapter;
 use App\Contexts\ScrumCore\Infrastructure\Adapters\EloquentProjectRepository;
 use App\Contexts\ScrumCore\Infrastructure\Adapters\EloquentTaskRepository;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +34,7 @@ class ContextsServiceProvider extends ServiceProvider
         // ── 1. Bounded Context: Scrum Core ─────────────────────────────────────
         $this->app->bind(ProjectRepositoryInterface::class, EloquentProjectRepository::class);
         $this->app->bind(TaskRepositoryInterface::class, EloquentTaskRepository::class);
+        $this->app->bind(ProjectAuditLoggerInterface::class, EloquentProjectActivityLoggerAdapter::class);
 
         // ── 2. Bounded Context: AI Assistant ──────────────────────────────────
         $this->app->bind(AIEngineInterface::class, OpenAiEngineAdapter::class);

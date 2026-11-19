@@ -4,6 +4,7 @@ namespace Tests\Unit\Contexts\Billing;
 
 use App\Contexts\Billing\Application\DTOs\ProcessWebhookDTO;
 use App\Contexts\Billing\Application\UseCases\ProcessWompiWebhookUseCase;
+use App\Contexts\Billing\Domain\Entities\SubscriptionEntity;
 use App\Contexts\Billing\Domain\Ports\PaymentGatewayInterface;
 use App\Contexts\Billing\Domain\Ports\SubscriptionRepositoryInterface;
 use App\Models\Payment;
@@ -67,11 +68,20 @@ class ProcessWompiWebhookUseCaseTest extends TestCase
             'current_period_end' => now()->addMonth(),
         ]);
 
+        $subscriptionEntity = new SubscriptionEntity(
+            id: (int) $subscription->id,
+            userId: (int) $user->id,
+            planId: (int) $plan->id,
+            status: 'active',
+            provider: 'wompi',
+            providerSubscriptionId: 'tx-999'
+        );
+
         $subscriptionMock = Mockery::mock(SubscriptionRepositoryInterface::class);
         $subscriptionMock->shouldReceive('activatePlanForUser')
             ->once()
             ->with($user->id, $plan->id, 'tx-999')
-            ->andReturn($subscription);
+            ->andReturn($subscriptionEntity);
 
         $useCase = new ProcessWompiWebhookUseCase($gatewayMock, $subscriptionMock);
         $result = $useCase->execute(ProcessWebhookDTO::fromPayload($payload));
@@ -102,10 +112,17 @@ class ProcessWompiWebhookUseCaseTest extends TestCase
             'current_period_end' => now()->addMonth(),
         ]);
 
+        $subscriptionEntity = new SubscriptionEntity(
+            id: (int) $subscription->id,
+            userId: (int) $user->id,
+            planId: (int) $plan->id,
+            status: 'active'
+        );
+
         $subscriptionMock = Mockery::mock(SubscriptionRepositoryInterface::class);
         $subscriptionMock->shouldReceive('activatePlanForUser')
             ->once()
-            ->andReturn($subscription);
+            ->andReturn($subscriptionEntity);
 
         $useCase = new ProcessWompiWebhookUseCase($gatewayMock, $subscriptionMock);
         $dto = ProcessWebhookDTO::fromPayload($payload);

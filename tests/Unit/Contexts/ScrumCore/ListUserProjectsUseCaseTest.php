@@ -3,9 +3,8 @@
 namespace Tests\Unit\Contexts\ScrumCore;
 
 use App\Contexts\ScrumCore\Application\UseCases\ListUserProjectsUseCase;
+use App\Contexts\ScrumCore\Domain\Entities\ProjectEntity;
 use App\Contexts\ScrumCore\Domain\Ports\ProjectRepositoryInterface;
-use App\Models\Proyecto;
-use Illuminate\Support\Collection;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -20,10 +19,10 @@ class ListUserProjectsUseCaseTest extends TestCase
     public function test_it_returns_accessible_projects_for_user(): void
     {
         $userId = 42;
-        $mockProjects = new Collection([
-            new Proyecto(['nombre' => 'Proyecto Alpha']),
-            new Proyecto(['nombre' => 'Proyecto Beta']),
-        ]);
+        $mockProjects = [
+            new ProjectEntity(id: 1, userId: $userId, nombre: 'Proyecto Alpha', descripcion: null, estado: 'activo'),
+            new ProjectEntity(id: 2, userId: $userId, nombre: 'Proyecto Beta', descripcion: null, estado: 'activo'),
+        ];
 
         $repoMock = Mockery::mock(ProjectRepositoryInterface::class);
         $repoMock->shouldReceive('listAccessibleByUser')

@@ -3,9 +3,9 @@
 namespace App\Contexts\ScrumCore\Application\UseCases;
 
 use App\Contexts\ScrumCore\Application\DTOs\CreateProjectDTO;
+use App\Contexts\ScrumCore\Domain\Entities\ProjectEntity;
+use App\Contexts\ScrumCore\Domain\Ports\ProjectAuditLoggerInterface;
 use App\Contexts\ScrumCore\Domain\Ports\ProjectRepositoryInterface;
-use App\Models\Proyecto;
-use App\Services\ProjectActivityLogger;
 
 /**
  * Caso de uso: Registrar y auditar un nuevo proyecto en el sistema.
@@ -13,25 +13,23 @@ use App\Services\ProjectActivityLogger;
 class CreateProjectUseCase
 {
     public function __construct(
-        private readonly ProjectRepositoryInterface $projectRepository
+        private readonly ProjectRepositoryInterface $projectRepository,
+        private readonly ProjectAuditLoggerInterface $auditLogger
     ) {}
 
     /**
      * Orquesta la creación del proyecto y su auditoría.
      */
-    public function execute(CreateProjectDTO $dto): Proyecto
+    public function execute(CreateProjectDTO $dto): ProjectEntity
     {
         // Se persiste el proyecto asociándolo a su creador mediante el repositorio
         $proyecto = $this->projectRepository->create($dto->userId, $dto->toArray());
 
-        // Se registra la traza de actividad de negocio en el log de auditoría
-        ProjectActivityLogger::log(
-            $proyecto,
+        // Se registra la traza de actividad de negocio mediante el puerto de auditoría
+        $this->auditLogger->logProjectAction(
+            $proyecto->id,
             'created',
-            'proyectos',
-            "Proyecto creado: «{$proyecto->nombre}»",
-            null,
-            $proyecto
+            "Proyecto creado: «{$proyecto->nombre}»"
         );
 
         return $proyecto;

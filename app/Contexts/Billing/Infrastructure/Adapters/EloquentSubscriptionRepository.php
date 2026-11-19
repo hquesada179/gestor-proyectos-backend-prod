@@ -2,36 +2,45 @@
 
 namespace App\Contexts\Billing\Infrastructure\Adapters;
 
+use App\Contexts\Billing\Domain\Entities\PlanEntity;
+use App\Contexts\Billing\Domain\Entities\SubscriptionEntity;
 use App\Contexts\Billing\Domain\Ports\SubscriptionRepositoryInterface;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\UserAiCredit;
+use DateTimeImmutable;
 
 /**
  * Adaptador de infraestructura para suscripciones y planes SaaS con Eloquent.
  */
 class EloquentSubscriptionRepository implements SubscriptionRepositoryInterface
 {
-    public function findPlanById(int $planId): ?Plan
+    public function findPlanById(int $planId): ?PlanEntity
     {
-        return Plan::find($planId);
+        $plan = Plan::find($planId);
+
+        return $plan ? $this->toPlanEntity($plan) : null;
     }
 
-    public function findPlanBySlug(string $slug): ?Plan
+    public function findPlanBySlug(string $slug): ?PlanEntity
     {
-        return Plan::where('slug', $slug)->first();
+        $plan = Plan::where('slug', $slug)->first();
+
+        return $plan ? $this->toPlanEntity($plan) : null;
     }
 
-    public function getActiveSubscription(int $userId): ?Subscription
+    public function getActiveSubscription(int $userId): ?SubscriptionEntity
     {
-        return Subscription::where('user_id', $userId)
+        $subscription = Subscription::where('user_id', $userId)
             ->where('status', 'active')
             ->latest('current_period_end')
             ->first();
+
+        return $subscription ? $this->toSubscriptionEntity($subscription) : null;
     }
 
-    public function activatePlanForUser(int $userId, int $planId, string $providerSubscriptionId): Subscription
+    public function activatePlanForUser(int $userId, int $planId, string $providerSubscriptionId): SubscriptionEntity
     {
         // La transacción la abre el caso de uso que orquesta pago, suscripción
         // y créditos; este adaptador solo aplica las escrituras.
@@ -69,6 +78,39 @@ class EloquentSubscriptionRepository implements SubscriptionRepositoryInterface
             ]
         );
 
-        return $subscription;
+        return $this->toSubscriptionEntity($subscription);
+    }
+
+    private function toPlanEntity(Plan $plan): PlanEntity
+    {
+        return new PlanEntity(
+            id: (int) $plan->id,
+            slug: (string) $plan->slug,
+            name: (string) $plan->name,
+            priceCop: (int) ($plan->price_cop ?? 0),
+            monthlyPrice: (float) ($plan->monthly_price ?? 0),
+            monthlyAiCredits: (int) ($plan->monthly_ai_credits ?? 0),
+            isCustom: (bool) ($plan->is_custom ?? false),
+            active: (bool) ($plan->active ?? true)
+        );
+    }
+
+    private function toSubscriptionEntity(Subscription $subscription): SubscriptionEntity
+    {
+        return new SubscriptionEntity(
+            id: (int) $subscription->id,
+            userId: (int) $subscription->user_id,
+            planId: (int) $subscription->plan_id,
+            status: (string) $subscription->status,
+            provider: $subscription->provider,
+            providerSubscriptionId: $subscription->provider_subscription_id,
+            currentPeriodStart: $subscription->current_period_start
+                ? DateTimeImmutable::createFromInterface($subscription->current_period_start)
+                : null,
+            currentPeriodEnd: $subscription->current_period_end
+                ? DateTimeImmutable::createFromInterface($subscription->current_period_end)
+                : null,
+            cancelAtPeriodEnd: (bool) $subscription->cancel_at_period_end
+        );
     }
 }

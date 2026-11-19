@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Public;
 
 use App\Contexts\ScrumCore\Application\UseCases\ListUserProjectsUseCase;
+use App\Contexts\ScrumCore\Domain\Entities\ProjectEntity;
 use App\Http\Controllers\Controller;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
@@ -18,25 +19,25 @@ class PublicProjectController extends Controller
      */
     public function index(ListUserProjectsUseCase $listUseCase): JsonResponse
     {
-        // Se ejecuta el caso de uso del Bounded Context ScrumCore
-        $proyectos = $listUseCase->execute((int) Auth::id())
-            ->map(function (Proyecto $p) {
-                return [
-                    'id' => $p->id,
-                    'nombre' => $p->nombre,
-                    'descripcion' => $p->descripcion,
-                    'estado' => $p->estado,
-                    'fecha_inicio' => $p->fecha_inicio?->format('Y-m-d'),
-                    'fecha_fin_estimada' => $p->fecha_fin_estimada?->format('Y-m-d'),
-                    'tasks_count' => $p->tasks_count ?? $p->tasks()->count(),
-                    'sprints_count' => $p->sprints_count ?? $p->sprints()->count(),
-                    'created_at' => $p->created_at?->toIso8601String(),
-                ];
-            });
+        // Se ejecuta el caso de uso del Bounded Context ScrumCore y se mapean sus entidades de dominio
+        $proyectos = array_map(
+            static fn (ProjectEntity $p): array => [
+                'id' => $p->id,
+                'nombre' => $p->nombre,
+                'descripcion' => $p->descripcion,
+                'estado' => $p->estado,
+                'fecha_inicio' => $p->fechaInicio?->format('Y-m-d'),
+                'fecha_fin_estimada' => $p->fechaFinEstimada?->format('Y-m-d'),
+                'tasks_count' => $p->tasksCount,
+                'sprints_count' => $p->sprintsCount,
+                'created_at' => $p->createdAt?->format(DATE_ATOM),
+            ],
+            $listUseCase->execute((int) Auth::id())
+        );
 
         return response()->json([
             'data' => $proyectos,
-            'count' => $proyectos->count(),
+            'count' => count($proyectos),
         ]);
     }
 
