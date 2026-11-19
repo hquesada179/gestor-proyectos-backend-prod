@@ -2,8 +2,8 @@
     <x-slot name="header">
         <div>
             <p class="text-xs text-gray-500 mb-1">
-                <a href="{{ route('proyectos.tasks.show', [$proyecto, $task]) }}" class="hover:text-indigo-600">
-                    {{ $proyecto->nombre }} › Tareas › {{ $task->titulo }}
+                <a href="{{ route('proyectos.tasks.show', array_filter(['proyecto' => $proyecto, 'task' => $task, 'from' => request('from')])) }}" class="hover:text-indigo-400">
+                    {{ $proyecto->nombre }} › {{ request('from') === 'scrum-board' ? 'Scrum Board' : 'Tareas' }} › {{ $task->titulo }}
                 </a>
             </p>
             <h2 class="font-semibold text-xl text-slate-100 leading-tight">
@@ -20,6 +20,7 @@
                     <form method="POST" action="{{ route('proyectos.tasks.update', [$proyecto, $task]) }}">
                         @csrf
                         @method('PATCH')
+                        <input type="hidden" name="from" value="{{ request('from') }}" />
 
                         <div class="mb-4">
                             <x-input-label for="titulo" value="Título" />
@@ -107,7 +108,7 @@
 
                         <div class="flex items-center gap-3 mt-6">
                             <x-primary-button>Actualizar tarea</x-primary-button>
-                            <a href="{{ route('proyectos.tasks.show', [$proyecto, $task]) }}">
+                            <a href="{{ route('proyectos.tasks.show', array_filter(['proyecto' => $proyecto, 'task' => $task, 'from' => request('from')])) }}">
                                 <x-secondary-button type="button">Cancelar</x-secondary-button>
                             </a>
                         </div>

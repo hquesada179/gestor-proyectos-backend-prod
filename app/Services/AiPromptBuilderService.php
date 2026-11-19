@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\AiProjectChat;
+use App\Models\Proyecto;
+
 class AiPromptBuilderService
 {
     /**
@@ -11,12 +14,12 @@ class AiPromptBuilderService
     {
         $locale = app()->getLocale();
         $names = [
-            'es'    => 'español',
-            'en'    => 'English',
-            'fr'    => 'français',
-            'pt'    => 'português',
-            'de'    => 'Deutsch',
-            'it'    => 'italiano',
+            'es' => 'español',
+            'en' => 'English',
+            'fr' => 'français',
+            'pt' => 'português',
+            'de' => 'Deutsch',
+            'it' => 'italiano',
             'zh_CN' => '中文简体',
         ];
         $lang = $names[$locale] ?? 'español';
@@ -112,13 +115,13 @@ PROMPT;
         string $userInstruction,
         string $projectName,
         string $projectDesc,
-        array  $context  // keys: requerimientos, tareas, sprints, insumos
+        array $context  // keys: requerimientos, tareas, sprints, insumos
     ): string {
-        $reqLines    = empty($context['requerimientos']) ? '  (ninguno)' : implode("\n", array_map(fn($r) => "  - ID={$r['id']} | \"{$r['titulo']}\"", $context['requerimientos']));
-        $taskLines   = empty($context['tareas'])         ? '  (ninguna)' : implode("\n", array_map(fn($t) => "  - ID={$t['id']} | \"{$t['titulo']}\" | {$t['estado']}", $context['tareas']));
-        $sprintLines = empty($context['sprints'])        ? '  (ninguno)' : implode("\n", array_map(fn($s) => "  - ID={$s['id']} | \"{$s['nombre']}\"", $context['sprints']));
-        $inputLines  = empty($context['insumos'])        ? '  (ninguno)' : implode("\n", array_map(fn($i) => "  - ID={$i['id']} | \"{$i['titulo']}\"", $context['insumos']));
-        $lang        = $this->langInstruction();
+        $reqLines = empty($context['requerimientos']) ? '  (ninguno)' : implode("\n", array_map(fn ($r) => "  - ID={$r['id']} | \"{$r['titulo']}\"", $context['requerimientos']));
+        $taskLines = empty($context['tareas']) ? '  (ninguna)' : implode("\n", array_map(fn ($t) => "  - ID={$t['id']} | \"{$t['titulo']}\" | {$t['estado']}", $context['tareas']));
+        $sprintLines = empty($context['sprints']) ? '  (ninguno)' : implode("\n", array_map(fn ($s) => "  - ID={$s['id']} | \"{$s['nombre']}\"", $context['sprints']));
+        $inputLines = empty($context['insumos']) ? '  (ninguno)' : implode("\n", array_map(fn ($i) => "  - ID={$i['id']} | \"{$i['titulo']}\"", $context['insumos']));
+        $lang = $this->langInstruction();
 
         return <<<PROMPT
 {$lang}Eres un gestor de proyectos de software. El usuario quiere mejorar un proyecto existente. Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional.
@@ -174,18 +177,18 @@ PROMPT;
      * Chat-mode: update (rename/improve) existing tasks of a project.
      * Sends current task list with IDs so the AI can reference them precisely.
      *
-     * @param array<int, array{id: int, titulo: string, descripcion: string|null, estado: string}> $existingTasks
+     * @param  array<int, array{id: int, titulo: string, descripcion: string|null, estado: string}>  $existingTasks
      */
     public function updateTasksPrompt(
         string $userRequest,
         string $projectName,
         string $projectDescription,
-        array  $existingTasks
+        array $existingTasks
     ): string {
         $taskLines = '';
         foreach ($existingTasks as $task) {
-            $desc      = $task['descripcion'] ? '"' . mb_substr($task['descripcion'], 0, 80) . '"' : 'Sin descripción';
-            $estado    = $task['estado'] ?? 'pendiente';
+            $desc = $task['descripcion'] ? '"'.mb_substr($task['descripcion'], 0, 80).'"' : 'Sin descripción';
+            $estado = $task['estado'] ?? 'pendiente';
             $taskLines .= "  - ID={$task['id']} | \"{$task['titulo']}\" | {$desc} | Estado: {$estado}\n";
         }
 
@@ -229,16 +232,16 @@ PROMPT;
     /**
      * Chat-mode: propose deletion of specific tasks.
      *
-     * @param array<int, array{id: int, titulo: string, descripcion: string|null}> $existingTasks
+     * @param  array<int, array{id: int, titulo: string, descripcion: string|null}>  $existingTasks
      */
     public function deleteTasksPrompt(
         string $userRequest,
         string $projectName,
-        array  $existingTasks
+        array $existingTasks
     ): string {
         $taskLines = '';
         foreach ($existingTasks as $task) {
-            $desc       = $task['descripcion'] ? '"' . mb_substr($task['descripcion'], 0, 60) . '"' : 'Sin descripción';
+            $desc = $task['descripcion'] ? '"'.mb_substr($task['descripcion'], 0, 60).'"' : 'Sin descripción';
             $taskLines .= "  - ID={$task['id']} | \"{$task['titulo']}\" | {$desc}\n";
         }
 
@@ -265,20 +268,20 @@ PROMPT;
     /**
      * Chat-mode: propose status changes for tasks.
      *
-     * @param array<int, array{id: int, titulo: string, estado: string}> $existingTasks
-     * @param string[] $availableStatuses
+     * @param  array<int, array{id: int, titulo: string, estado: string}>  $existingTasks
+     * @param  string[]  $availableStatuses
      */
     public function moveTaskStatusPrompt(
         string $userRequest,
         string $projectName,
-        array  $existingTasks,
-        array  $availableStatuses
+        array $existingTasks,
+        array $availableStatuses
     ): string {
-        $taskLines    = '';
+        $taskLines = '';
         foreach ($existingTasks as $task) {
             $taskLines .= "  - ID={$task['id']} | \"{$task['titulo']}\" | Estado actual: {$task['estado']}\n";
         }
-        $statusList = implode(', ', array_map(fn($s) => "\"{$s}\"", $availableStatuses));
+        $statusList = implode(', ', array_map(fn ($s) => "\"{$s}\"", $availableStatuses));
 
         return <<<PROMPT
 Eres un gestor de proyectos. Propón cambios de estado para las tareas indicadas. Responde SOLO con JSON válido.
@@ -438,7 +441,7 @@ PROMPT;
      */
     public function sprintsPrompt(string $projectName, array $taskTitles): string
     {
-        $taskList = implode("\n", array_map(fn($t, $i) => ($i + 1) . '. ' . $t, $taskTitles, array_keys($taskTitles)));
+        $taskList = implode("\n", array_map(fn ($t, $i) => ($i + 1).'. '.$t, $taskTitles, array_keys($taskTitles)));
 
         return <<<PROMPT
 Eres un Scrum Master experto. Organiza las siguientes tareas en sprints de 2 semanas. Responde SOLO con JSON válido.
@@ -490,6 +493,93 @@ REGLAS:
 - tipo: "software", "hardware", "servicio", "recurso_humano" o "otro"
 - cantidad: número positivo
 - Todo en español, solo el JSON
+PROMPT;
+    }
+
+    /**
+     * Construye un prompt contextual acumulando el histórico previo si existe.
+     */
+    public function buildContinuationPrompt(AiProjectChat $parent, string $newInstruction): string
+    {
+        $prevSummary = '';
+        $data = $parent->datos_detectados ?? [];
+
+        // Evaluamos si existe un resumen previo o al menos un nombre para dar contexto a la IA
+        if (! empty($data['resumen'])) {
+            $prevSummary = "Contexto: en una solicitud anterior el usuario pidió \"{$parent->prompt_usuario}\" y la IA propuso: {$data['resumen']}.";
+        } elseif (! empty($data['nombre'])) {
+            $prevSummary = "Contexto: en una solicitud anterior el usuario describió: \"{$parent->prompt_usuario}\".";
+        }
+
+        // Si tenemos contexto previo lo concatenamos antes de la nueva instrucción
+        return $prevSummary
+            ? "{$prevSummary}\n\nNueva instrucción del usuario: {$newInstruction}"
+            : $newInstruction;
+    }
+
+    /**
+     * Carga el contexto del proyecto existente estructurado para la IA.
+     */
+    public function loadProjectContext(Proyecto $proyecto): array
+    {
+        // Mapeamos requerimientos, tareas con estado, sprints e insumos para el contexto del LLM
+        return [
+            'requerimientos' => $proyecto->requirements()
+                ->get(['id', 'titulo', 'tipo'])
+                ->map(fn ($r) => ['id' => $r->id, 'titulo' => $r->titulo, 'tipo' => $r->tipo])
+                ->toArray(),
+            'tareas' => $proyecto->tasks()
+                ->with('status:id,nombre')
+                ->get(['id', 'titulo', 'task_status_id'])
+                ->map(fn ($t) => ['id' => $t->id, 'titulo' => $t->titulo, 'estado' => $t->status?->nombre ?? 'pendiente'])
+                ->toArray(),
+            'sprints' => $proyecto->sprints()
+                ->get(['id', 'nombre'])
+                ->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre])
+                ->toArray(),
+            'insumos' => $proyecto->inputs()
+                ->get(['id', 'titulo', 'tipo'])
+                ->map(fn ($i) => ['id' => $i->id, 'titulo' => $i->titulo, 'tipo' => $i->tipo])
+                ->toArray(),
+        ];
+    }
+
+    /**
+     * Prompt clásico para compatibilidad heredada con generación básica.
+     */
+    public function buildClassicPrompt(string $descripcion): string
+    {
+        return <<<PROMPT
+Eres un analista de software experto en metodologías ágiles y Scrum.
+Analiza la siguiente descripción de proyecto y genera un borrador estructurado de análisis de requerimientos.
+
+DESCRIPCIÓN DEL PROYECTO:
+{$descripcion}
+
+Responde ÚNICAMENTE con un objeto JSON válido sin texto adicional.
+{
+  "resumen": "Descripción resumida del proyecto en 1-2 oraciones",
+  "requerimientos_funcionales": [
+    {"codigo": "RF-001", "titulo": "Título breve", "descripcion": "Descripción detallada", "prioridad": "alta"}
+  ],
+  "requerimientos_no_funcionales": [
+    {"codigo": "RNF-001", "titulo": "Título breve", "descripcion": "Descripción detallada", "prioridad": "media"}
+  ],
+  "historias_usuario": [
+    {"titulo": "Título", "como_usuario": "tipo", "quiero": "acción", "para_poder": "beneficio", "prioridad": "alta"}
+  ],
+  "tareas_sugeridas": [
+    {"titulo": "Título de la tarea", "descripcion": "Descripción", "prioridad": "alta"}
+  ],
+  "sprint_sugerido": {
+    "nombre": "Sprint 1 - Nombre corto",
+    "objetivo": "Objetivo en 1 oración",
+    "duracion_semanas": 2,
+    "tareas_incluidas": ["Tarea 1", "Tarea 2"]
+  }
+}
+
+REGLAS: prioridad = alta/media/baja. RF-001... RNF-001... Todo en español. Solo el JSON.
 PROMPT;
     }
 }

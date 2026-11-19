@@ -6,20 +6,23 @@ use App\Models\Proyecto;
 use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\User;
+use App\Models\UserStory;
 use App\Services\ProjectActivityLogger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
     public function index(Proyecto $proyecto, Request $request)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
 
-        $tasks    = $this->filteredQuery($proyecto, $request)->with('status', 'assignedTo')->latest()->paginate(15)->withQueryString();
+        $tasks = $this->filteredQuery($proyecto, $request)->with('status', 'assignedTo')->latest()->paginate(15)->withQueryString();
         $statuses = TaskStatus::orderBy('orden')->get();
-        $sprints  = $proyecto->sprints()->orderBy('created_at')->get();
+        $sprints = $proyecto->sprints()->orderBy('created_at')->get();
         $assignees = User::whereIn('id',
             $proyecto->tasks()->whereNotNull('assigned_to')->pluck('assigned_to')
         )->orderBy('name')->get();
@@ -29,25 +32,25 @@ class TaskController extends Controller
 
     public function export(Proyecto $proyecto, Request $request)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
 
         $tasks = $this->filteredQuery($proyecto, $request)
             ->with('status', 'sprint', 'userStory', 'assignedTo')
             ->latest()
             ->get();
 
-        $filename = 'tareas-' . \Illuminate\Support\Str::slug($proyecto->nombre) . '-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'tareas-'.Str::slug($proyecto->nombre).'-'.now()->format('Y-m-d').'.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
         $callback = function () use ($tasks) {
             $handle = fopen('php://output', 'w');
 
             // BOM para compatibilidad con Excel
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($handle, ['Título', 'Descripción', 'Estado', 'Responsable', 'Fecha límite', 'Sprint', 'Historia de usuario', 'Fecha de creación']);
 
@@ -102,19 +105,19 @@ class TaskController extends Controller
 
     public function create(Proyecto $proyecto)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
 
-        $statuses    = TaskStatus::orderBy('orden')->get();
+        $statuses = TaskStatus::orderBy('orden')->get();
         $userStories = $this->userStoriesForProject($proyecto);
-        $sprints     = $proyecto->sprints()->orderBy('created_at')->get();
-        $users       = $this->projectMemberUsers($proyecto);
+        $sprints = $proyecto->sprints()->orderBy('created_at')->get();
+        $users = $this->projectMemberUsers($proyecto);
 
         return view('proyectos.tasks.create', compact('proyecto', 'statuses', 'userStories', 'sprints', 'users'));
     }
 
     public function store(Request $request, Proyecto $proyecto)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
 
         $validated = $request->validate(
             $this->rules($proyecto, $request),
@@ -123,17 +126,27 @@ class TaskController extends Controller
 
         $task = $proyecto->tasks()->create($validated);
 
-        ProjectActivityLogger::log($proyecto, 'created', 'tareas',
-            "Tarea creada: «{$task->titulo}»", null, $task
+        ProjectActivityLogger::log(
+            $proyecto,
+            'created',
+            'tareas',
+            "Tarea creada: «{$task->titulo}»",
+            null,
+            $task
         );
 
-        return redirect()->route('proyectos.tasks.index', $proyecto)
+        // Retornar al Scrum Board si la creación se originó desde ese módulo
+        $redirectUrl = $request->input('from') === 'scrum-board'
+            ? route('scrum-board.show', $proyecto)
+            : route('proyectos.tasks.index', $proyecto);
+
+        return redirect($redirectUrl)
             ->with('success', 'Tarea creada correctamente.');
     }
 
     public function show(Proyecto $proyecto, Task $task)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $task->load('status', 'userStory', 'sprint', 'assignedTo');
@@ -143,20 +156,20 @@ class TaskController extends Controller
 
     public function edit(Proyecto $proyecto, Task $task)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
-        $statuses    = TaskStatus::orderBy('orden')->get();
+        $statuses = TaskStatus::orderBy('orden')->get();
         $userStories = $this->userStoriesForProject($proyecto);
-        $sprints     = $proyecto->sprints()->orderBy('created_at')->get();
-        $users       = $this->projectMemberUsers($proyecto);
+        $sprints = $proyecto->sprints()->orderBy('created_at')->get();
+        $users = $this->projectMemberUsers($proyecto);
 
         return view('proyectos.tasks.edit', compact('proyecto', 'task', 'statuses', 'userStories', 'sprints', 'users'));
     }
 
     public function update(Request $request, Proyecto $proyecto, Task $task)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $validated = $request->validate(
@@ -168,60 +181,82 @@ class TaskController extends Controller
         $task->update($validated);
         $newValues = $task->fresh()->only(['titulo', 'task_status_id', 'sprint_id', 'assigned_to', 'fecha_limite']);
 
-        ProjectActivityLogger::log($proyecto, 'updated', 'tareas',
-            "Tarea editada: «{$task->titulo}»", null, $task, $oldValues, $newValues
+        ProjectActivityLogger::log(
+            $proyecto,
+            'updated',
+            'tareas',
+            "Tarea editada: «{$task->titulo}»",
+            null,
+            $task,
+            $oldValues,
+            $newValues
         );
 
-        return redirect()->route('proyectos.tasks.show', [$proyecto, $task])
+        // Conservar el origen para mantener la navegación hacia el Scrum Board
+        $params = ['proyecto' => $proyecto, 'task' => $task];
+        if ($request->filled('from')) {
+            $params['from'] = $request->input('from');
+        }
+
+        return redirect()->route('proyectos.tasks.show', $params)
             ->with('success', 'Tarea actualizada correctamente.');
     }
 
-    public function destroy(Proyecto $proyecto, Task $task)
+    public function destroy(Request $request, Proyecto $proyecto, Task $task)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
         abort_if($task->proyecto_id !== $proyecto->id, 404);
 
         $titulo = $task->titulo;
-        ProjectActivityLogger::log($proyecto, 'deleted', 'tareas',
+        ProjectActivityLogger::log(
+            $proyecto,
+            'deleted',
+            'tareas',
             "Tarea eliminada: «{$titulo}»"
         );
 
         $task->delete();
 
-        return redirect()->route('proyectos.tasks.index', $proyecto)
+        // Retornar al Scrum Board si la eliminación proviene de ese tablero
+        $redirectUrl = $request->input('from') === 'scrum-board'
+            ? route('scrum-board.show', $proyecto)
+            : route('proyectos.tasks.index', $proyecto);
+
+        return redirect($redirectUrl)
             ->with('success', 'Tarea eliminada correctamente.');
     }
 
     private function rules(Proyecto $proyecto, Request $request): array
     {
         $validUserStoryIds = $this->userStoriesForProject($proyecto)->pluck('id')->toArray();
-        $validSprintIds    = $proyecto->sprints()->pluck('id')->toArray();
+        $validSprintIds = $proyecto->sprints()->pluck('id')->toArray();
 
         $sprintDateRule = function ($attribute, $value, $fail) use ($request, $proyecto) {
             $sprintId = $request->input('sprint_id');
 
-            if (!$sprintId || !$value) {
+            if (! $sprintId || ! $value) {
                 return;
             }
 
             $sprint = $proyecto->sprints()->find($sprintId);
 
-            if (!$sprint) {
+            if (! $sprint) {
                 return; // ya lo rechaza Rule::in arriba
             }
 
             if ($sprint->fecha_inicio && $value < $sprint->fecha_inicio->format('Y-m-d')) {
                 $fail(
-                    'La fecha límite no puede ser anterior a la fecha de inicio del sprint ' .
-                    '(' . $sprint->fecha_inicio->format('d/m/Y') . ').'
+                    'La fecha límite no puede ser anterior a la fecha de inicio del sprint '.
+                    '('.$sprint->fecha_inicio->format('d/m/Y').').'
                 );
+
                 return;
             }
 
             if ($sprint->fecha_fin && $value > $sprint->fecha_fin->format('Y-m-d')) {
                 $fail(
-                    'La fecha límite no puede ser posterior a la fecha de fin del sprint ' .
-                    '(' . $sprint->fecha_fin->format('d/m/Y') . ').'
+                    'La fecha límite no puede ser posterior a la fecha de fin del sprint '.
+                    '('.$sprint->fecha_fin->format('d/m/Y').').'
                 );
             }
         };
@@ -229,27 +264,27 @@ class TaskController extends Controller
         $validMemberIds = $this->projectMemberUsers($proyecto)->pluck('id')->all();
 
         return [
-            'titulo'         => ['required', 'string', 'max:255'],
-            'descripcion'    => ['nullable', 'string', 'max:5000'],
+            'titulo' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:5000'],
             'task_status_id' => ['required', 'exists:task_statuses,id'],
-            'user_story_id'  => ['nullable', Rule::in($validUserStoryIds)],
-            'sprint_id'      => ['nullable', Rule::in($validSprintIds)],
-            'assigned_to'    => ['nullable', Rule::in($validMemberIds)],
-            'fecha_limite'   => ['nullable', 'date', $sprintDateRule],
+            'user_story_id' => ['nullable', Rule::in($validUserStoryIds)],
+            'sprint_id' => ['nullable', Rule::in($validSprintIds)],
+            'assigned_to' => ['nullable', Rule::in($validMemberIds)],
+            'fecha_limite' => ['nullable', 'date', $sprintDateRule],
         ];
     }
 
     private function messages(): array
     {
         return [
-            'titulo.required'         => 'El título es obligatorio.',
-            'titulo.max'              => 'El título no puede superar los 255 caracteres.',
+            'titulo.required' => 'El título es obligatorio.',
+            'titulo.max' => 'El título no puede superar los 255 caracteres.',
             'task_status_id.required' => 'El estado es obligatorio.',
-            'task_status_id.exists'   => 'El estado seleccionado no es válido.',
-            'user_story_id.in'        => 'La historia de usuario seleccionada no es válida.',
-            'sprint_id.in'            => 'El sprint seleccionado no es válido.',
-            'assigned_to.in'          => 'El responsable seleccionado no pertenece a este proyecto.',
-            'fecha_limite.date'       => 'La fecha límite no tiene un formato válido.',
+            'task_status_id.exists' => 'El estado seleccionado no es válido.',
+            'user_story_id.in' => 'La historia de usuario seleccionada no es válida.',
+            'sprint_id.in' => 'El sprint seleccionado no es válido.',
+            'assigned_to.in' => 'El responsable seleccionado no pertenece a este proyecto.',
+            'fecha_limite.date' => 'La fecha límite no tiene un formato válido.',
         ];
     }
 
@@ -257,7 +292,7 @@ class TaskController extends Controller
      * Returns only the users who are members of the given project:
      * the project owner + active members with accounts, deduplicated and sorted by name.
      */
-    private function projectMemberUsers(Proyecto $proyecto): \Illuminate\Support\Collection
+    private function projectMemberUsers(Proyecto $proyecto): Collection
     {
         $members = collect();
 
@@ -274,7 +309,7 @@ class TaskController extends Controller
             ->with('user')
             ->get()
             ->each(function ($member) use ($members) {
-                if ($member->user && !$members->contains('id', $member->user->id)) {
+                if ($member->user && ! $members->contains('id', $member->user->id)) {
                     $members->push($member->user);
                 }
             });
@@ -284,7 +319,7 @@ class TaskController extends Controller
 
     private function userStoriesForProject(Proyecto $proyecto)
     {
-        return \App\Models\UserStory::whereHas('requirement', function ($q) use ($proyecto) {
+        return UserStory::whereHas('requirement', function ($q) use ($proyecto) {
             $q->where('proyecto_id', $proyecto->id);
         })->get();
     }

@@ -1,29 +1,40 @@
-import { motion, useSpring, useTransform } from "motion/react";
+import { motion, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef } from "react";
+import type { Locale } from "../data/content";
 
 type CountUpProps = {
   from: number;
   to: number;
-  duration?: number;
   decimals?: number;
   suffix?: string;
   prefix?: string;
+  locale?: Locale;
   className?: string;
   ariaLabel?: string;
 };
 
+/** Formatea un número evitando errores de separadores entre español e inglés. */
+function formatCountValue(value: number, decimals: number, locale: Locale): string {
+  const numberLocale = locale === "es" ? "es-CO" : "en-US";
+  return value.toLocaleString(numberLocale, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
 export function CountUp({
   from,
   to,
-  duration = 1.6,
   decimals = 0,
   suffix = "",
   prefix = "",
+  locale = "es",
   className = "",
   ariaLabel,
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const started = useRef(false);
+  const prefersReduced = useReducedMotion();
 
   const spring = useSpring(from, {
     stiffness: 60,
@@ -32,14 +43,13 @@ export function CountUp({
   });
 
   const display = useTransform(spring, (value) => {
-    const formatted = value.toLocaleString("es-ES", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
-    return `${prefix}${formatted}${suffix}`;
+    return `${prefix}${formatCountValue(value, decimals, locale)}${suffix}`;
   });
 
   useEffect(() => {
+    // No observamos intersección ni animamos si el usuario prefiere movimiento reducido.
+    if (prefersReduced) return;
+
     const node = ref.current;
     if (!node || started.current) return;
 
@@ -56,7 +66,16 @@ export function CountUp({
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [spring, to]);
+  }, [prefersReduced, spring, to]);
+
+  // Muestra el valor definitivo sin transición cuando prefers-reduced-motion está activo.
+  if (prefersReduced) {
+    return (
+      <span ref={ref} className={className} aria-label={ariaLabel}>
+        {`${prefix}${formatCountValue(to, decimals, locale)}${suffix}`}
+      </span>
+    );
+  }
 
   return (
     <motion.span ref={ref} className={className} aria-label={ariaLabel}>

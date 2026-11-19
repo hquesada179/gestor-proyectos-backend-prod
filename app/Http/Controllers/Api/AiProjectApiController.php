@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessAiProjectGenerationJob;
 use App\Models\AiProjectChat;
 use App\Models\Proyecto;
 use App\Models\TaskStatus;
@@ -32,10 +33,18 @@ class AiProjectApiController extends Controller
     public function generate(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'prompt' => ['required', 'string', 'min:5', 'max:3000'],
-            'mode'   => ['nullable', 'string', 'max:50'],
-            'model'  => ['nullable', 'string', 'max:100'],
+            'prompt'          => ['required', 'string', 'min:5', 'max:3000'],
+            'mode'            => ['nullable', 'string', 'max:50'],
+            'model'           => ['nullable', 'string', 'max:100'],
+            'async'           => ['nullable', 'boolean'],
+            'project_id'      => ['nullable', 'integer', 'min:1'],
+            'target_language' => ['nullable', 'string', 'max:10'],
         ]);
+
+        // Si el cliente solicita ejecución en segundo plano, delegamos al job de cola Redis
+        if (! empty($validated['async'])) {
+            return $this->dispatchGenerationJob($request, $validated);
+        }
 
         $userId = $request->user()->id;
         $prompt = trim($validated['prompt']);
@@ -89,6 +98,21 @@ class AiProjectApiController extends Controller
                 'total'     => $balance['credits_total'],
             ],
         ], 201);
+    }
+
+    /**
+     * POST /api/ai/projects/generate-async
+     * Encola la generación del proyecto en segundo plano y responde HTTP 202 Accepted.
+     */
+    public function generateAsync(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'prompt'          => ['required', 'string', 'min:5', 'max:3000'],
+            'project_id'      => ['nullable', 'integer', 'min:1'],
+            'target_language' => ['nullable', 'string', 'max:10'],
+        ]);
+
+        return $this->dispatchGenerationJob($request, $validated);
     }
 
     /**
@@ -523,5 +547,52 @@ class AiProjectApiController extends Controller
         if (empty($data['requerimientos'])) return 'La propuesta debe incluir al menos un requerimiento.';
         if (empty($data['tareas'])) return 'La propuesta debe incluir al menos una tarea.';
         return null;
+    }
+
+    /**
+     * Valida acceso, saldo de créditos y despacha ProcessAiProjectGenerationJob a la cola.
+     */
+    private function dispatchGenerationJob(Request $request, array $validated): JsonResponse
+    {
+        $userId = (int) $request->user()->id;
+        $prompt = trim($validated['prompt']);
+        $projectId = isset($validated['project_id']) ? (int) $validated['project_id'] : null;
+        $targetLanguage = (string) ($validated['target_language'] ?? 'es');
+
+        // Si se asocia un proyecto existente, validamos la frontera canónica de acceso
+        if ($projectId !== null && ! Proyecto::accessibleBy($userId)->whereKey($projectId)->exists()) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'No tienes permiso para operar sobre este proyecto.',
+            ], 403);
+        }
+
+        $creditCheck = $this->aiCredits->canUseAi($userId, 'generar_proyecto');
+        if (! $creditCheck['allowed']) {
+            return response()->json(['ok' => false, 'error' => $creditCheck['message']], 402);
+        }
+
+        $record = AiProjectChat::create([
+            'user_id' => $userId,
+            'proyecto_id' => $projectId,
+            'tipo_accion' => 'crear_proyecto',
+            'prompt_usuario' => $prompt,
+            'estado' => 'encolado',
+        ]);
+
+        ProcessAiProjectGenerationJob::dispatch(
+            userId: $userId,
+            projectId: $projectId ?? 0,
+            inputBrief: $prompt,
+            targetLanguage: $targetLanguage,
+            chatId: $record->id
+        );
+
+        return response()->json([
+            'ok' => true,
+            'status' => 'queued',
+            'message' => 'Generación encolada para procesamiento asíncrono.',
+            'chat_id' => $record->id,
+        ], 202);
     }
 }

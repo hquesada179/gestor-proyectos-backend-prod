@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,11 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
+            SetLocale::class,
         ]);
         // Excluir rutas de webhook de la verificación CSRF
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',
+        ]);
+
+        // Aliases para control de acceso granular por abilities de Sanctum
+        $middleware->alias([
+            'ability' => CheckForAnyAbility::class,
+            'abilities' => CheckAbilities::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

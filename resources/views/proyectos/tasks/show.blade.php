@@ -3,8 +3,8 @@
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <p class="mb-1 text-xs text-slate-500">
-                    <a href="{{ route('proyectos.tasks.index', $proyecto) }}" class="hover:text-indigo-300">
-                        {{ $proyecto->nombre }} / Tareas
+                    <a href="{{ request('from') === 'scrum-board' ? route('scrum-board.show', $proyecto) : route('proyectos.tasks.index', $proyecto) }}" class="hover:text-indigo-300">
+                        {{ $proyecto->nombre }} / {{ request('from') === 'scrum-board' ? 'Scrum Board' : 'Tareas' }}
                     </a>
                 </p>
                 <h2 class="text-xl font-semibold leading-tight text-slate-100">
@@ -12,12 +12,13 @@
                 </h2>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('proyectos.tasks.edit', [$proyecto, $task]) }}">
+                <a href="{{ route('proyectos.tasks.edit', array_filter(['proyecto' => $proyecto, 'task' => $task, 'from' => request('from')])) }}">
                     <x-secondary-button>Editar</x-secondary-button>
                 </a>
                 <form method="POST" action="{{ route('proyectos.tasks.destroy', [$proyecto, $task]) }}">
                     @csrf
                     @method('DELETE')
+                    <input type="hidden" name="from" value="{{ request('from') }}" />
                     <x-danger-button onclick="return confirm('Eliminar esta tarea? Esta accion no se puede deshacer.')">
                         Eliminar
                     </x-danger-button>

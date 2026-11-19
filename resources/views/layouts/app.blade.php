@@ -55,6 +55,7 @@
 
     {{-- ── Sidebar collapse system ────────────────────────────────────────── --}}
     <style>
+        [x-cloak] { display: none !important; }
         html { color-scheme: dark; overflow-x: hidden; }
         body { overflow-x: hidden; }
 
@@ -645,7 +646,8 @@
                  @keydown.escape.window="bellOpen = false">
 
                 {{-- Bell button --}}
-                <button @click="bellOpen = !bellOpen"
+                <button type="button"
+                        @click.stop="bellOpen = !bellOpen"
                         aria-label="Notificaciones"
                         aria-haspopup="true"
                         :aria-expanded="bellOpen.toString()"
@@ -663,6 +665,7 @@
 
                 {{-- Bell dropdown --}}
                 <div x-show="bellOpen"
+                     x-cloak
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
                      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -671,7 +674,7 @@
                      x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
                      class="header-dropdown-panel absolute right-0 top-full mt-3 w-[380px] z-[60] rounded-2xl overflow-hidden
                             bg-[#1c2b3c] border border-white/10 shadow-2xl shadow-black/60"
-                     style="display:none; box-shadow: 0 0 30px rgba(99,102,241,0.12), 0 25px 50px rgba(0,0,0,0.5);">
+                     style="box-shadow: 0 0 30px rgba(99,102,241,0.12), 0 25px 50px rgba(0,0,0,0.5);">
 
                     <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -753,7 +756,8 @@
                  @keydown.escape.window="open = false; showLang = false">
 
                 {{-- Avatar trigger --}}
-                <button @click="open = !open"
+                <button type="button"
+                        @click.stop="open = !open"
                         :aria-expanded="open.toString()"
                         aria-haspopup="true"
                         class="flex items-center gap-3 px-2 py-1 rounded-xl hover:bg-white/5 transition-all duration-150 cursor-pointer group outline-none focus:ring-2 focus:ring-blue-500/40">
@@ -778,6 +782,7 @@
 
                 {{-- Dropdown panel --}}
                 <div x-show="open"
+                     x-cloak
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
                      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -786,7 +791,7 @@
                      x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
                      class="header-dropdown-panel absolute right-0 top-full mt-3 w-[360px] z-[60] rounded-2xl overflow-hidden
                             bg-[#1c2b3c] border border-white/10 shadow-2xl shadow-black/60"
-                     style="display:none; box-shadow: 0 0 30px rgba(167,75,254,0.12), 0 25px 50px rgba(0,0,0,0.5);">
+                     style="box-shadow: 0 0 30px rgba(167,75,254,0.12), 0 25px 50px rgba(0,0,0,0.5);">
 
                     {{-- ── Cabecera de perfil ─────────────────────── --}}
                     <div class="px-6 py-5 border-b border-white/5 flex flex-col items-center text-center">
@@ -1407,6 +1412,12 @@ function chatPanel() {
         },
     };
 }
+window.chatPanel = chatPanel;
+document.addEventListener('alpine:init', function() {
+    if (window.Alpine) {
+        window.Alpine.data('chatPanel', chatPanel);
+    }
+});
 </script>
 </body>
 </html>

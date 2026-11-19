@@ -29,7 +29,7 @@ export function FAQ({ locale }: { locale: Locale }) {
                     <span>{item.question}</span>
                     <ChevronDown
                       aria-hidden="true"
-                      className={`shrink-0 text-brand transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                      className={`shrink-0 text-brand transition-transform duration-300 dark:text-brand-300 ${isOpen ? "rotate-180" : ""}`}
                       size={20}
                     />
                   </button>

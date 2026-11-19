@@ -17,8 +17,8 @@ class ScrumBoardController extends Controller
             ->with([
                 'user',
                 'members' => fn ($q) => $q->where('status', 'activo')
-                                          ->whereNotNull('user_id')
-                                          ->with('user'),
+                    ->whereNotNull('user_id')
+                    ->with('user'),
             ])
             ->withCount([
                 'tasks',
@@ -37,7 +37,7 @@ class ScrumBoardController extends Controller
 
     public function show(Proyecto $proyecto)
     {
-        abort_if(!$proyecto->isAccessibleBy(Auth::id()), 403);
+        abort_if(! $proyecto->isAccessibleBy(Auth::id()), 403);
 
         // Guarantee the 4 canonical Kanban columns always exist.
         // The seeder defines them but may not have run in all environments.
@@ -52,15 +52,17 @@ class ScrumBoardController extends Controller
             foreach ($canonical as $data) {
                 TaskStatus::firstOrCreate(
                     ['nombre' => $data['nombre']],
-                    ['color'  => $data['color'], 'orden' => $data['orden']]
+                    ['color' => $data['color'], 'orden' => $data['orden']]
                 );
             }
         }
 
         $statuses = TaskStatus::orderBy('orden')->get();
 
+        // Carga ansiosa de relaciones para evitar N+1 y ordenar tareas por fecha reciente
         $tasks = $proyecto->tasks()
-            ->with('status', 'assignedTo', 'sprint')
+            ->with(['status', 'assignedTo', 'sprint', 'userStory'])
+            ->latest()
             ->get()
             ->groupBy('task_status_id');
 
@@ -71,7 +73,7 @@ class ScrumBoardController extends Controller
     {
         $task->loadMissing('proyecto');
 
-        if (!$task->proyecto || !$task->proyecto->isAccessibleBy(Auth::id())) {
+        if (! $task->proyecto || ! $task->proyecto->isAccessibleBy(Auth::id())) {
             return response()->json(['ok' => false, 'error' => 'Sin permiso.'], 403);
         }
 

@@ -1,0 +1,95 @@
+name: scrumter-platform
+
+services:
+  # Servidor de Aplicación Laravel 13
+  app:
+    image: php:8.3-apache
+    container_name: scrumter-app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: scrumter
+      DB_USERNAME: scrumter_user
+      DB_PASSWORD: scrumter_password
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - scrumter-network
+
+  # Motor 1: Base de Datos Relacional Transaccional (PostgreSQL)
+  db:
+    image: postgres:16-alpine
+    container_name: scrumter-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: scrumter
+      POSTGRES_USER: scrumter_user
+      POSTGRES_PASSWORD: scrumter_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scrumter_user -d scrumter"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scrumter-network
+
+  # Motor 2: Almacén NoSQL Clave-Valor, Caché y Colas en Memoria (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: scrumter-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scrumter-network
+
+  # Trabajador en segundo plano para colas asíncronas de Redis
+  queue-worker:
+    image: php:8.3-cli-alpine
+    container_name: scrumter-queue-worker
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "queue:work", "redis", "--tries=3", "--backoff=5,15,30"]
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - redis
+      - db
+    networks:
+      - scrumter-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  scrumter-network:
+    driver: bridge

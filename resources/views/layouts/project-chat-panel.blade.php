@@ -27,7 +27,7 @@
     </style>
 
     <button type="button"
-            @click="toggleOpen()"
+            @click.stop="toggleOpen()"
             :aria-expanded="open.toString()"
             class="relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-white/5 transition-all duration-150 outline-none focus:ring-2 focus:ring-blue-500/40"
             :class="open ? 'bg-white/10 text-white' : ''"
@@ -36,6 +36,7 @@
     </button>
 
     <div x-show="open"
+         x-cloak
          x-transition:enter="transition ease-out duration-150"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -43,11 +44,11 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @click="open = false; stopPoll()"
-         class="fixed inset-0 z-[60] bg-black/20"
-         style="display:none;"></div>
+         class="fixed inset-0 z-[60] bg-black/20"></div>
 
     <div id="projectChatPanel"
          x-show="open"
+         x-cloak
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -56,7 +57,7 @@
          x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
          class="absolute right-0 top-full mt-3 z-[70] w-[390px] max-w-[calc(100vw-1rem)] h-[620px] max-h-[80vh]
                 rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/80 shadow-2xl shadow-black/80 flex flex-col backdrop-blur-xl"
-         style="display:none; height:min(620px,85vh); background:rgba(15,23,42,0.98); box-shadow:0 0 0 1px rgba(148,163,184,0.08), 0 24px 70px rgba(0,0,0,0.78);">
+         style="height:min(620px,85vh); background:rgba(15,23,42,0.98); box-shadow:0 0 0 1px rgba(148,163,184,0.08), 0 24px 70px rgba(0,0,0,0.78);">
 
         <div class="px-4 py-3 border-b border-slate-700/80 flex items-center justify-between gap-3 flex-shrink-0 bg-slate-900">
             <div class="flex items-center gap-3 min-w-0">

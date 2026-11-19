@@ -15,6 +15,9 @@ import { TrustLogos } from "./components/TrustLogos";
 import { content, type Currency, type Locale, type Theme } from "./data/content";
 
 function getInitialLocale(): Locale {
+  // Permite enlaces compartibles con ?lang=es|en sin perder preferencia previa si falta el parámetro.
+  const queryLang = new URLSearchParams(window.location.search).get("lang")?.toLowerCase();
+  if (queryLang === "es" || queryLang === "en") return queryLang;
   const stored = localStorage.getItem("scrumter-lang");
   return stored === "en" || stored === "es" ? stored : "es";
 }
@@ -50,18 +53,18 @@ export default function App() {
 
   useEffect(() => {
     document.body.classList.toggle("overflow-hidden", menuOpen);
-    const main = document.getElementById("main-content") as HTMLElement & { inert?: boolean };
-    if (main) {
-      if (menuOpen) main.setAttribute("inert", "");
-      else main.removeAttribute("inert");
-      if ("inert" in main) main.inert = menuOpen;
+    const shell = document.getElementById("page-shell") as (HTMLElement & { inert?: boolean }) | null;
+    if (shell) {
+      if (menuOpen) shell.setAttribute("inert", "");
+      else shell.removeAttribute("inert");
+      if ("inert" in shell) shell.inert = menuOpen;
     }
     return () => {
       document.body.classList.remove("overflow-hidden");
-      const m = document.getElementById("main-content") as HTMLElement & { inert?: boolean } | null;
-      if (m) {
-        m.removeAttribute("inert");
-        if ("inert" in m) m.inert = false;
+      const currentShell = document.getElementById("page-shell") as (HTMLElement & { inert?: boolean }) | null;
+      if (currentShell) {
+        currentShell.removeAttribute("inert");
+        if ("inert" in currentShell) currentShell.inert = false;
       }
     };
   }, [menuOpen]);
@@ -83,23 +86,17 @@ export default function App() {
     };
   }, [scrollY, scrollYProgress]);
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
   const scrollToTop = () => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   };
 
+  const toTopVisible = scrollState.showTop && !menuOpen;
+
   return (
     <div className="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
-      <a className="skip-link" href="#main">
-        Skip to content
+      <a className="skip-link" href="#main-content">
+        {labels.skipToContent}
       </a>
       <div
         className="fixed left-0 top-0 z-[60] h-1 w-full origin-left bg-gradient-to-r from-brand via-brand-400 to-brand-500"
@@ -120,28 +117,34 @@ export default function App() {
         setMenuOpen={setMenuOpen}
         labels={labels}
       />
-      <div id="main-content">
-        <Hero locale={locale} />
-        <TrustLogos locale={locale} />
-        <HowItWorks locale={locale} />
-        <Features locale={locale} />
-        <ScaleSection locale={locale} />
-        <Testimonials locale={locale} />
-        <Pricing locale={locale} currency={currency} setCurrency={setCurrency} />
-        <FAQ locale={locale} />
-        <CTA locale={locale} />
+
+      {/* Aísla el contenido principal y pie de página cuando el cajón móvil está abierto. */}
+      <div id="page-shell">
+        <main id="main-content" tabIndex={-1}>
+          <Hero locale={locale} />
+          <TrustLogos locale={locale} />
+          <HowItWorks locale={locale} />
+          <Features locale={locale} />
+          <ScaleSection locale={locale} />
+          <Testimonials locale={locale} />
+          <Pricing locale={locale} currency={currency} setCurrency={setCurrency} />
+          <FAQ locale={locale} />
+          <CTA locale={locale} />
+        </main>
         <Footer locale={locale} />
       </div>
 
       <button
         type="button"
-        className={`fixed bottom-5 right-5 z-40 grid h-12 w-12 place-items-center rounded-full bg-brand text-white shadow-xl shadow-brand/30 transition ${
-          scrollState.showTop ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
+        tabIndex={toTopVisible ? 0 : -1}
+        aria-hidden={!toTopVisible}
+        className={`fixed bottom-5 right-5 z-40 grid h-12 w-12 place-items-center rounded-full bg-brand text-white shadow-xl shadow-brand/30 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 ${
+          toTopVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
         }`}
         onClick={scrollToTop}
         aria-label={labels.toTop}
       >
-        <ArrowUp size={20} />
+        <ArrowUp size={20} aria-hidden="true" />
       </button>
     </div>
   );

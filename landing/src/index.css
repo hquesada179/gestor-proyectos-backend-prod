@@ -1,16 +1,19 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
+/* Evita escanear el bundle generado en landing/dist como fuentes de clases */
+@source not "../dist";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  /* Familias registradas por @fontsource-variable para evitar fallback silencioso al sistema */
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", monospace;
 
   /* brand scale */
   --color-brand-50: #eef0ff;
   --color-brand-100: #e0e4ff;
   --color-brand-200: #c7cbf8;
+  --color-brand-300: #a5b4fc;
   --color-brand-400: #818cf8;
   --color-brand-500: #4f46e5;
   --color-brand: #3626ce;
@@ -256,12 +259,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 28px;
-  padding: 6px 10px;
+  min-height: 38px;
+  padding: 6px 12px;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: rgb(100 116 139);
+  color: rgb(71 85 105);
   transition:
     background 160ms ease,
     box-shadow 160ms ease,
@@ -581,6 +584,8 @@ body {
 }
 
 .marquee-track {
+  /* width: max-content evita que translateX(-50%) calcule sobre el viewport y provoque saltos en el loop */
+  width: max-content;
   animation: marquee 30s linear infinite;
 }
 
@@ -600,6 +605,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
     animation: none;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .marquee-wrapper {
     mask-image: none;
